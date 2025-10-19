@@ -20,7 +20,7 @@
         body {
             font-family: 'Hind Siliguri', sans-serif;
             display: flex;
-            flex-direction: column; /* Changed for footer */
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
@@ -36,15 +36,16 @@
             max-width: 700px;
             text-align: center;
             position: relative;
-            flex-grow: 1; /* Added for footer */
-            display: flex; /* Added for footer */
-            flex-direction: column; /* Added for footer */
-            justify-content: center; /* Added for footer */
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         h1 {
             color: var(--primary-dark);
             margin-bottom: 20px;
+            font-size: 2rem;
         }
         
         /* Fullscreen Button Styles */
@@ -77,9 +78,10 @@
 
         .flashcard-scene {
             width: 100%;
-            height: 400px;
-            perspective: 1000px;
+            perspective: 1200px;
             margin-bottom: 20px;
+            /* DYNAMIC HEIGHT: Height is now set by JavaScript */
+            transition: height 0.4s ease-in-out; 
         }
 
         .flashcard {
@@ -89,8 +91,6 @@
             transform-style: preserve-3d;
             transition: transform 0.6s;
             cursor: pointer;
-            border-radius: 15px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
         }
 
         .flashcard.is-flipped {
@@ -100,16 +100,17 @@
         .card-face {
             position: absolute;
             width: 100%;
-            height: 100%;
+            height: auto; /* Allow content to define height */
+            min-height: 200px; /* Minimum height for small content */
             backface-visibility: hidden;
             border-radius: 15px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 30px 25px; /* Increased padding */
             box-sizing: border-box;
-            overflow-y: auto;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
         }
 
         .card-face-front {
@@ -131,7 +132,7 @@
             color: white;
             padding: 5px 10px;
             border-radius: 20px;
-            font-size: 14px;
+            font-size: 0.8rem;
             font-weight: 600;
         }
 
@@ -151,16 +152,16 @@
         }
         
         .front-content {
-            font-size: 22px;
+            font-size: 1.5rem;
             font-weight: 600;
             color: var(--primary-dark);
-            padding: 0 20px;
         }
 
         .back-content {
             text-align: left;
-            font-size: 16px;
-            line-height: 1.6;
+            font-size: 1rem;
+            line-height: 1.7;
+            width: 100%;
         }
         
         .back-content h3 {
@@ -168,6 +169,7 @@
             border-bottom: 2px solid var(--primary-color);
             padding-bottom: 5px;
             margin-top: 0;
+            font-size: 1.1rem;
         }
         
         .back-content strong {
@@ -183,7 +185,7 @@
 
         .nav-button {
             padding: 12px 25px;
-            font-size: 16px;
+            font-size: 1rem;
             font-weight: 600;
             border: none;
             border-radius: 8px;
@@ -215,28 +217,32 @@
         /* Footer Style */
         .footer {
             margin-top: 30px;
-            font-size: 14px;
+            font-size: 0.9rem;
             color: #555;
             font-weight: 600;
         }
         
+        /* Mobile Friendly Adjustments */
         @media (max-width: 600px) {
-            .flashcard-scene {
-                height: 450px;
+            body {
+                padding: 10px;
+            }
+            h1 {
+                font-size: 1.5rem;
             }
             .front-content {
-                font-size: 18px;
+                font-size: 1.2rem;
             }
             .back-content {
-                font-size: 14px;
+                font-size: 0.9rem;
             }
             .nav-button {
                 padding: 10px 15px;
-                font-size: 14px;
+                font-size: 0.9rem;
             }
             .fullscreen-btn {
-                top: 0;
-                right: 0;
+                top: -5px;
+                right: -5px;
             }
         }
     </style>
@@ -252,7 +258,7 @@
             <svg class="icon-exit-fullscreen" viewBox="0 0 24 24"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>
         </button>
 
-        <div class="flashcard-scene">
+        <div id="flashcardScene" class="flashcard-scene">
             <div id="flashcard" class="flashcard">
                 <div class="card-face card-face-front">
                     <div id="category" class="category"></div>
@@ -278,6 +284,7 @@
 
     <script>
         const flashcardsData = [
+            // All 30 flashcard data objects are here
             {
                 category: "মৌলিক ধারণা",
                 question: "তড়িৎ প্রবাহের মান ও দিক থাকা সত্ত্বেও এটি স্কেলার কেন?",
@@ -406,7 +413,7 @@
             {
                 category: "ভেক্টর ক্যালকুলাস",
                 question: "সলিনয়েডাল ভেক্টর ক্ষেত্র কী?",
-                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3> <p>যে ভেক্টর ক্ষেত্রের ডাইভারজেন্স শূন্য (<strong>∇ · A = 0</strong>), তাকে সলিনয়েডাল ভেক্টর ক্ষেত্র বলে। এর ভৌত তাৎপর্য হলো, ঐ ক্ষেত্রে ফ্লাক্স লাইনের কোনো উৎস বা শেষ বিন্দু নেই; এগুলো বদ্ধ লুপ তৈরি করে। চৌম্বক ক্ষেত্র একটি উদাহরণ।</p><h3>আকর্ষণীয় ব্যাখ্যা:</h3><p><strong>বদ্ধ পাইপের মতো!</strong> একটা পাইপের মধ্যে দিয়ে পানির স্রোতের কথা ভাবো। যদি পাইপের কোথাও কোনো ফুটো না থাকে বা নতুন কোনো পানির উৎস না থাকে, তাহলে যতটুকু পানি ঢুকবে, ঠিক ততটুকু পানিই বের হবে। সলিনয়েডাল ক্ষেত্রও ঠিক এমনই।</p>`
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3> <p>যে ভেক্টর ক্ষেত্রের ডাইভারজেন্স শূন্য (<strong>∇ · A = 0</strong>), তাকে সলিনয়েডাল ভেক্টর ক্ষেত্র বলে। এর ভৌত তাৎপর্য হলো, ঐ ক্ষেত্রে ফ্লাক্স লাইনের কোনো উৎস বা শেষ বিন্দু নেই; এগুলো বদ্ধ লুপ তৈরি করে। চৌম্বক ক্ষেত্র একটি উদাহরণ।</p><h3>আকর্ষণীয় ব্যাখ্যা:</h3><p><strong>বদ্ধ পাইপের মতো!</strong> একটা পাইপের মধ্যে দিয়ে পানির স্রোতের কথা ভাবো। যদি পাইপের কোথাও কোনো ফুটো না থাকে বা নতুন কোনো পানির উৎস না থাকে, তাহলে যতটুকু পানি ঢুকবে, ঠিক ততটুকু পানিই বের হবে। সলিনয়েডال ক্ষেত্রও ঠিক এমনই।</p>`
             },
             {
                 category: "ভেক্টর ক্যালকুলাস",
@@ -431,7 +438,11 @@
         ];
         
         let currentCardIndex = 0;
+        const flashcardScene = document.getElementById('flashcardScene');
         const flashcard = document.getElementById('flashcard');
+        const frontFace = flashcard.querySelector('.card-face-front');
+        const backFace = flashcard.querySelector('.card-face-back');
+        
         const questionEl = document.getElementById('question');
         const answerEl = document.getElementById('answer');
         const categoryEl = document.getElementById('category');
@@ -440,16 +451,28 @@
         const nextBtn = document.getElementById('nextBtn');
         const randomBtn = document.getElementById('randomBtn');
         
-        // Fullscreen elements
         const fullscreenBtn = document.getElementById('fullscreenBtn');
         const iconEnter = fullscreenBtn.querySelector('.icon-enter-fullscreen');
         const iconExit = fullscreenBtn.querySelector('.icon-exit-fullscreen');
 
+        function updateCardHeight() {
+            // Use requestAnimationFrame to ensure DOM is updated before measuring height
+            requestAnimationFrame(() => {
+                const isFlipped = flashcard.classList.contains('is-flipped');
+                const activeFace = isFlipped ? backFace : frontFace;
+                // scrollHeight gives the true height of the content
+                const contentHeight = activeFace.scrollHeight; 
+                flashcardScene.style.height = `${contentHeight}px`;
+            });
+        }
+
         function showCard(index) {
+            // If the card is flipped, flip it back first smoothly
             if (flashcard.classList.contains('is-flipped')) {
                 flashcard.classList.remove('is-flipped');
             }
             
+            // Wait for the flip-back animation to finish before changing content
             setTimeout(() => {
                 const card = flashcardsData[index];
                 questionEl.textContent = card.question;
@@ -459,11 +482,15 @@
 
                 prevBtn.disabled = index === 0;
                 nextBtn.disabled = index === flashcardsData.length - 1;
-            }, 300); 
+                
+                // Update height after content is loaded
+                updateCardHeight();
+            }, 300); // Half of the flip duration
         }
 
         flashcard.addEventListener('click', () => {
             flashcard.classList.toggle('is-flipped');
+            updateCardHeight(); // Update height on every flip
         });
 
         prevBtn.addEventListener('click', () => {
@@ -515,6 +542,9 @@
 
         fullscreenBtn.addEventListener('click', toggleFullScreen);
         document.addEventListener('fullscreenchange', updateFullscreenIcon);
+
+        // Adjust height on window resize
+        window.addEventListener('resize', updateCardHeight);
 
         // Initial load
         showCard(currentCardIndex);
