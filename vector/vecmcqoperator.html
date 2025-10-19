@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ভেক্টর ডিফারেনশিয়াল অপারেটর কুইজ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --border-color: #30363d;
+            --text-color: #c9d1d9;
+            --text-secondary: #8b949e;
+            
+            --correct-color: #238636;
+            --correct-glow: rgba(35, 134, 54, 0.4);
+            --incorrect-color: #da3633;
+            --incorrect-glow: rgba(218, 54, 51, 0.4);
+            
+            --red: #f85149;
+            --blue: #388bfd;
+            --yellow: #d29922;
+            --green: #2ea043;
+            
+            --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            --font-primary: 'Poppins', sans-serif;
+            --font-secondary: 'Noto Sans Bengali', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-secondary);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            border: 1px solid var(--border-color);
+            animation: fadeIn 0.5s ease-in-out;
+            margin-bottom: 40px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hide {
+            display: none;
+        }
+
+        /* Start, Milestone and Results Screen */
+        #start-screen h1, #results-screen h1, #milestone-screen h1 {
+            font-family: var(--font-primary);
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        #results-screen p, #milestone-screen p {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+
+        .control-btn {
+            font-family: var(--font-primary);
+            font-size: 1.2rem;
+            font-weight: 700;
+            padding: 15px 40px;
+            cursor: pointer;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(90deg, var(--blue), var(--green));
+            color: white;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin: 10px;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(56, 139, 253, 0.3);
+        }
+        
+        .control-btn.secondary {
+            background: linear-gradient(90deg, #6e7681, #484f58);
+        }
+        .control-btn.secondary:hover {
+             box-shadow: 0 6px 20px rgba(110, 118, 129, 0.3);
+        }
+
+        /* Quiz Screen */
+        #progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background-color: var(--border-color);
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--blue);
+            border-radius: 4px;
+            transition: width 0.4s ease-in-out;
+        }
+        
+        #quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-family: var(--font-primary);
+            font-weight: 600;
+        }
+
+        #question-counter {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+        }
+        
+        #timer {
+            position: relative;
+            width: 70px;
+            height: 70px;
+        }
+        .timer-svg {
+            transform: rotate(-90deg);
+        }
+        .timer-circle-bg, .timer-circle {
+            fill: none;
+            stroke-width: 5;
+        }
+        .timer-circle-bg {
+            stroke: var(--border-color);
+        }
+        .timer-circle {
+            stroke: var(--blue);
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s linear, stroke 0.3s;
+        }
+        .timer-circle.low-time {
+            stroke: var(--red);
+        }
+        #timer-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        #question-container {
+            background-color: var(--bg-color);
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            min-height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid var(--border-color);
+        }
+
+        #question-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        #answer-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .answer-btn {
+            font-family: var(--font-secondary);
+            font-size: 1.1rem;
+            color: #fff;
+            border: 2px solid var(--border-color);
+            background-color: transparent;
+            padding: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            text-align: left;
+            font-weight: bold;
+        }
+        
+        .answer-btn:hover:not([disabled]) {
+            border-color: var(--blue);
+            background-color: rgba(56, 139, 253, 0.1);
+        }
+        
+        .answer-btn.correct {
+            background-color: var(--correct-color);
+            border-color: var(--correct-color);
+            box-shadow: 0 0 15px var(--correct-glow);
+            animation: pulse 0.5s;
+        }
+
+        .answer-btn.incorrect {
+            background-color: var(--incorrect-color);
+            border-color: var(--incorrect-color);
+        }
+        
+        .answer-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Report Styles */
+        #report-container {
+            margin-top: 30px;
+            text-align: left;
+        }
+        .report-item {
+            background-color: var(--bg-color);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 15px;
+        }
+        .report-question {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+        .report-answer {
+            padding: 8px;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+        .user-answer-correct {
+            background-color: rgba(35, 134, 54, 0.2);
+            border-left: 4px solid var(--correct-color);
+        }
+        .user-answer-incorrect {
+            background-color: rgba(218, 54, 51, 0.2);
+            border-left: 4px solid var(--incorrect-color);
+        }
+        .correct-answer {
+            background-color: rgba(88, 166, 255, 0.2);
+            border-left: 4px solid var(--blue);
+        }
+        .report-explanation {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+        .report-explanation strong {
+            color: var(--text-color);
+        }
+        .icon {
+            margin-right: 8px;
+            font-weight: bold;
+        }
+
+        /* Footer Style */
+        footer {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 20px 10px;
+            }
+            #answer-buttons {
+                grid-template-columns: 1fr;
+            }
+            #question-text {
+                font-size: 1.2rem;
+            }
+            .answer-btn {
+                font-size: 1rem;
+                padding: 15px;
+            }
+            #start-screen h1, #results-screen h1, #milestone-screen h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="start-screen" class="container">
+        <h1>ভেক্টর অপারেটর কুইজ</h1>
+        <p>আপনি কি প্রস্তুত? প্রতিটি প্রশ্নের জন্য ৩৭ সেকেন্ড সময় পাবেন।</p>
+        <button id="start-btn" class="control-btn">শুরু করুন</button>
+    </div>
+
+    <div id="quiz-screen" class="container hide">
+        <div id="progress-bar-container">
+            <div id="progress-bar"></div>
+        </div>
+        <div id="quiz-header">
+            <span id="question-counter"></span>
+            <div id="timer">
+                <svg class="timer-svg" viewBox="0 0 36 36">
+                    <path class="timer-circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path id="timer-circle-progress" class="timer-circle"
+                          stroke-dasharray="100, 100"
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                </svg>
+                <span id="timer-text"></span>
+            </div>
+        </div>
+        <div id="question-container">
+            <p id="question-text"></p>
+        </div>
+        <div id="answer-buttons">
+            <button class="answer-btn"></button>
+            <button class="answer-btn"></button>
+            <button class="answer-btn"></button>
+            <button class="answer-btn"></button>
+        </div>
+    </div>
+
+    <div id="milestone-screen" class="container hide">
+        <h1>পর্ব শেষ!</h1>
+        <p id="milestone-score"></p>
+        <button id="continue-btn" class="control-btn">পরবর্তী পর্ব</button>
+        <button id="end-quiz-btn" class="control-btn secondary">ফলাফল দেখুন</button>
+    </div>
+
+    <div id="results-screen" class="container hide">
+        <h1>ফলাফল</h1>
+        <p id="score-text"></p>
+        <h2>রিপোর্ট</h2>
+        <div id="report-container"></div>
+        <button id="play-again-btn" class="control-btn">আবার খেলুন</button>
+        <button id="next-part-btn" class="control-btn secondary hide">পরবর্তী পর্বে যান</button>
+    </div>
+
+    <footer>
+        <p>Abu Hasan, Assistant Professor,</p>
+        <p>Department of Physics,</p>
+        <p>Rangpur Government College</p>
+    </footer>
+
+    <script>
+        // DOM Elements
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const milestoneScreen = document.getElementById('milestone-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        
+        const startBtn = document.getElementById('start-btn');
+        const playAgainBtn = document.getElementById('play-again-btn');
+        const continueBtn = document.getElementById('continue-btn');
+        const endQuizBtn = document.getElementById('end-quiz-btn');
+        const nextPartBtn = document.getElementById('next-part-btn');
+        
+        const progressBar = document.getElementById('progress-bar');
+        const questionCounterEl = document.getElementById('question-counter');
+        const timerTextEl = document.getElementById('timer-text');
+        const timerCircleProgress = document.getElementById('timer-circle-progress');
+        const questionTextEl = document.getElementById('question-text');
+        const answerButtonsEl = document.getElementById('answer-buttons');
+        const milestoneScoreEl = document.getElementById('milestone-score');
+        const scoreTextEl = document.getElementById('score-text');
+        const reportContainer = document.getElementById('report-container');
+
+        // Quiz Data
+        const quizData = [
+            { question: "একটি স্কেলার ক্ষেত্র `f(x, y, z)` এর গ্রেডিয়েন্ট (gradient) হলো একটি:", options: ["স্কেলার ক্ষেত্র", "ভেক্টর ক্ষেত্র", "ধ্রুবক স্কেলার", "ধ্রুবক ভেক্টর"], answer: "ভেক্টর ক্ষেত্র", explanation: "গ্রেডিয়েন্ট অপারেটর ∇ একটি স্কেলার ক্ষেত্রকে একটি ভেক্টর ক্ষেত্রে রূপান্তরিত করে, যা স্কেলার ক্ষেত্রটির সর্বোচ্চ বৃদ্ধির দিকে নির্দেশ করে।" },
+            { question: "একটি ভেক্টর ক্ষেত্র `F` এর ডাইভারজেন্স (∇ ⋅ F) হলো একটি:", options: ["স্কেলার ক্ষেত্র", "ভেক্টর ক্ষেত্র", "ধ্রুবক স্কেলার", "শূন্য ভেক্টর"], answer: "স্কেলার ক্ষেত্র", explanation: "ডাইভারজেন্স কোনো নির্দিষ্ট বিন্দুতে একটি ভেক্টর ক্ষেত্রের উৎস (source) বা সিঙ্ক (sink) এর মাত্রা পরিমাপ করে। এর ফলাফল একটি স্কেলার রাশি।" },
+            { question: "একটি ভেক্টর ক্ষেত্র `F` এর কার্ল (∇ × F) হলো একটি:", options: ["স্কেলার ক্ষেত্র", "ভেক্টর ক্ষেত্র", "একটি ধ্রুবক", "স্কেলার শূন্য"], answer: "ভেক্টর ক্ষেত্র", explanation: "কার্ল কোনো বিন্দুতে ভেক্টর ক্ষেত্রটির ঘূর্ণন প্রবণতা পরিমাপ করে। এর ফলাফল একটি নতুন ভেক্টর ক্ষেত্র, যা ঘূর্ণনের অক্ষের দিক ও মাত্রা নির্দেশ করে।" },
+            { question: "একটি ভেক্টর ক্ষেত্র `F`-কে 'সলিনয়েডাল' (solenoidal) বলা হয় যদি:", options: ["∇ ⋅ F = 0", "∇ × F = 0", "∇F = 0", "∇²F = 0"], answer: "∇ ⋅ F = 0", explanation: "যদি কোনো ভেক্টর ক্ষেত্রের ডাইভারজেন্স শূন্য হয় (∇ ⋅ F = 0), তবে ক্ষেত্রটিকে সলিনয়েডাল বা অসংকোচনীয় (incompressible) বলা হয়। এর অর্থ হলো, ক্ষেত্রের মধ্যে কোনো উৎস বা সিঙ্ক নেই।" },
+            { question: "একটি ভেক্টর ক্ষেত্র `F`-কে 'অঘূর্ণনশীল' (irrotational) বলা হয় যদি:", options: ["∇ ⋅ F = 0", "∇ × F = <b>0</b>", "∇ ⋅ F > 0", "∇ × F একটি ধ্রুবক ভেক্টর"], answer: "∇ × F = <b>0</b>", explanation: "যদি কোনো ভেক্টর ক্ষেত্রের কার্ল শূন্য ভেক্টর হয় (∇ × F = <b>0</b>), তবে ক্ষেত্রটিকে অঘূর্ণনশীল বা সংরক্ষণশীল (conservative) বলা হয়। এর অর্থ হলো, ক্ষেত্রটির মধ্যে কোনো ঘূর্ণন নেই।" },
+            { question: "`f(x, y, z) = 2x²y + z³` স্কেলার ক্ষেত্রটির গ্রেডিয়েন্ট (∇f) (1, 1, 2) বিন্দুতে নির্ণয় করুন।", options: ["4<b>i</b> + 2<b>j</b> + 12<b>k</b>", "4<b>i</b> + 2<b>j</b> + 8<b>k</b>", "4<b>i</b> + 3<b>j</b> + 6<b>k</b>", "14"], answer: "4<b>i</b> + 2<b>j</b> + 12<b>k</b>", explanation: "ব্যাখ্যা: ∇f = (∂f/∂x)<b>i</b> + (∂f/∂y)<b>j</b> + (∂f/∂z)<b>k</b>। এখানে, ∂f/∂x = 4xy, ∂f/∂y = 2x², এবং ∂f/∂z = 3z²। (1, 1, 2) বিন্দুতে মান বসালে পাই: (4*1*1)<b>i</b> + (2*1²)<b>j</b> + (3*2²)<b>k</b> = 4<b>i</b> + 2<b>j</b> + 12<b>k</b>।" },
+            { question: "`F = (x³y)i + (yz)j + (z²x)k` ভেক্টর ক্ষেত্রটির ডাইভারজেন্স (∇ ⋅ F) গণনা করুন।", options: ["3x²y + z + 2zx", "6xy + z + 2x", "3x²y<b>i</b> + z<b>j</b> + 2zx<b>k</b>", "0"], answer: "3x²y + z + 2zx", explanation: "ব্যাখ্যা: ∇ ⋅ F = ∂(Fₓ)/∂x + ∂(Fᵧ)/∂y + ∂(F₂)/∂z = ∂(x³y)/∂x + ∂(yz)/∂y + ∂(z²x)/∂z = 3x²y + z + 2zx।" },
+            { question: "`F = yi + zj + xk` ভেক্টর ক্ষেত্রটির কার্ল (∇ × F) গণনা করুন।", options: ["<b>i</b> + <b>j</b> + <b>k</b>", "-<b>i</b> - <b>j</b> - <b>k</b>", "0", "1"], answer: "-<b>i</b> - <b>j</b> - <b>k</b>", explanation: "ব্যাখ্যা: কার্ল নির্ণয়ের জন্য নির্ণায়ক পদ্ধতি ব্যবহার করে পাই, ∇ × F = <b>i</b>(∂x/∂y - ∂z/∂z) - <b>j</b>(∂x/∂x - ∂y/∂z) + <b>k</b>(∂z/∂x - ∂y/∂y) = <b>i</b>(0-1) - <b>j</b>(1-0) + <b>k</b>(0-1) = -<b>i</b> - <b>j</b> - <b>k</b>।" },
+            { question: "`f(x, y, z) = x² + 2y² + 3z²` স্কেলার ক্ষেত্রটির ল্যাপ্লাসিয়ান (∇²f) কত?", options: ["2x + 4y + 6z", "0", "12", "2<b>i</b> + 4<b>j</b> + 6<b>k</b>"], answer: "12", explanation: "ব্যাখ্যা: ল্যাপ্লাসিয়ান ∇²f = ∇ ⋅ (∇f) = ∂²f/∂x² + ∂²f/∂y² + ∂²f/∂z²। এখানে, ∂²f/∂x²=2, ∂²f/∂y²=4, ∂²f/∂z²=6। সুতরাং, ∇²f = 2 + 4 + 6 = 12।" },
+            { question: "যেকোনো দুইবার অন্তরীকরণযোগ্য স্কেলার ক্ষেত্র `f`-এর জন্য নিচের কোনটি সর্বদা সত্য?", options: ["∇ ⋅ (∇f) = 0", "∇ × (∇f) = <b>0</b>", "∇(∇ ⋅ f) = <b>0</b>", "∇f = 0"], answer: "∇ × (∇f) = <b>0</b>", explanation: "যেকোনো স্কেলার ক্ষেত্রের গ্রেডিয়েন্টের কার্ল সর্বদা শূন্য ভেক্টর হয়। এটি একটি মৌলিক ভেক্টর অভেদ এবং এর অর্থ হলো গ্রেডিয়েন্ট ভেক্টর ক্ষেত্র সবসময় অঘূর্ণনশীল (irrotational) হয়।" },
+            { question: "যেকোনো দুইবার অন্তরীকরণযোগ্য ভেক্টর ক্ষেত্র `F`-এর জন্য নিচের কোনটি সর্বদা সত্য?", options: ["∇ ⋅ (∇ × F) = 0", "∇ × (∇ × F) = <b>0</b>", "∇ ⋅ (∇ ⋅ F) = 0", "∇(∇ ⋅ F) = 0"], answer: "∇ ⋅ (∇ × F) = 0", explanation: "যেকোনো ভেক্টর ক্ষেত্রের কার্লের ডাইভারজেন্স সর্বদা শূন্য হয়। এটি আরেকটি মৌলিক ভেক্টর অভেদ এবং এর অর্থ হলো একটি কার্ল ভেক্টর ক্ষেত্র সবসময় সলিনয়েডাল (solenoidal) হয়।" },
+            { question: "যদি কোনো প্রবাহীর গতিবেগের ভেক্টর ক্ষেত্রের ডাইভারজেন্স কোনো বিন্দুতে ধনাত্মক হয়, তবে সেই বিন্দুটি একটি:", options: ["উৎস (Source)", "সিঙ্ক (Sink)", "ঘূর্ণন বিন্দু", "শূন্য প্রবাহের বিন্দু"], answer: "উৎস (Source)", explanation: "ধনাত্মক ডাইভারজেন্স নির্দেশ করে যে ঐ বিন্দু থেকে প্রবাহী বাইরের দিকে ছড়িয়ে পড়ছে বা তৈরি হচ্ছে, যা একটি উৎস বা সোর্স (source) নির্দেশ করে।" },
+            { question: "অপারেটর ∇ (del) কে কীভাবে সংজ্ঞায়িত করা হয়?", options: ["∂/∂x + ∂/∂y + ∂/∂z", "<b>i</b>(∂/∂x) + <b>j</b>(∂/∂y) + <b>k</b>(∂/∂z)", "d/dx <b>i</b> + d/dy <b>j</b> + d/dz <b>k</b>", "x<b>i</b> + y<b>j</b> + z<b>k</b>"], answer: "<b>i</b>(∂/∂x) + <b>j</b>(∂/∂y) + <b>k</b>(∂/∂z)", explanation: "ডেল (∇) একটি ভেক্টর ডিফারেনশিয়াল অপারেটর। এর সঠিক প্রকাশ হলো <b>i</b>(∂/∂x) + <b>j</b>(∂/∂y) + <b>k</b>(∂/∂z)।" },
+            { question: "অবস্থান ভেক্টর `<b>r</b> = x<b>i</b> + y<b>j</b> + z<b>k</b>` হলে, `<b>r</b>` এর ডাইভারজেন্স (∇ ⋅ <b>r</b>) কত?", options: ["0", "1", "3", "<b>r</b> / |<b>r</b>|"], answer: "3", explanation: "ব্যাখ্যা: ∇ ⋅ <b>r</b> = ∂(x)/∂x + ∂(y)/∂y + ∂(z)/∂z = 1 + 1 + 1 = 3।" },
+            { question: "অবস্থান ভেক্টর `<b>r</b> = x<b>i</b> + y<b>j</b> + z<b>k</b>` হলে, `<b>r</b>` এর কার্ল (∇ × <b>r</b>) কত?", options: ["<b>0</b> (শূন্য ভেক্টর)", "1", "3", "3<b>r</b>"], answer: "<b>0</b> (শূন্য ভেক্টর)", explanation: "অবস্থান ভেক্টরের কার্ল সর্বদা শূন্য ভেক্টর হয়। এটি একটি অঘূর্ণনশীল (irrotational) ক্ষেত্র।" }
+        ];
+
+        // Game State
+        let currentQuestionIndex;
+        let score;
+        let userReports;
+        let timerInterval;
+        let timeLeft;
+        const TIME_PER_QUESTION = 37;
+        const QUESTIONS_PER_ROUND = 10;
+        const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 15.9155;
+
+        // Event Listeners
+        startBtn.addEventListener('click', startQuiz);
+        playAgainBtn.addEventListener('click', startQuiz);
+        continueBtn.addEventListener('click', () => {
+            milestoneScreen.classList.add('hide');
+            quizScreen.classList.remove('hide');
+            showQuestion();
+        });
+        endQuizBtn.addEventListener('click', () => {
+            milestoneScreen.classList.add('hide');
+            showResults();
+        });
+        nextPartBtn.addEventListener('click', () => {
+            resultsScreen.classList.add('hide');
+            quizScreen.classList.remove('hide');
+            showQuestion(); 
+        });
+
+        function startQuiz() {
+            startScreen.classList.add('hide');
+            resultsScreen.classList.add('hide');
+            milestoneScreen.classList.add('hide');
+            quizScreen.classList.remove('hide');
+            nextPartBtn.classList.add('hide');
+
+            currentQuestionIndex = 0;
+            score = 0;
+            userReports = [];
+            reportContainer.innerHTML = '';
+            showQuestion();
+        }
+
+        function showQuestion() {
+            resetState();
+            if (currentQuestionIndex < quizData.length) {
+                updateProgressBar();
+                const questionData = quizData[currentQuestionIndex];
+                questionCounterEl.innerText = `প্রশ্ন ${currentQuestionIndex + 1}/${quizData.length}`;
+                questionTextEl.innerHTML = questionData.question;
+                
+                questionData.options.forEach((option, index) => {
+                    const button = answerButtonsEl.children[index];
+                    const prefix = String.fromCharCode(2453 + index); // ক, খ, গ, ঘ
+                    button.innerHTML = `${prefix}. ${option}`;
+                    button.dataset.option = option;
+                    button.addEventListener('click', selectAnswer);
+                });
+                
+                startTimer();
+            } else {
+                showResults();
+            }
+        }
+        
+        function updateProgressBar() {
+            const progressPercentage = ((currentQuestionIndex) / quizData.length) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+        }
+
+        function startTimer() {
+            timeLeft = TIME_PER_QUESTION;
+            timerTextEl.innerText = timeLeft;
+            timerCircleProgress.style.strokeDashoffset = 0;
+            timerCircleProgress.classList.remove('low-time');
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerTextEl.innerText = timeLeft;
+                const timeFraction = timeLeft / TIME_PER_QUESTION;
+                const offset = CIRCLE_CIRCUMFERENCE * (1 - timeFraction);
+                timerCircleProgress.style.strokeDashoffset = offset;
+
+                if (timeLeft <= 10) {
+                    timerCircleProgress.classList.add('low-time');
+                }
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeout();
+                }
+            }, 1000);
+        }
+        
+        function handleTimeout() {
+            saveReport(null, false);
+            Array.from(answerButtonsEl.children).forEach(button => {
+                button.disabled = true;
+                if (button.dataset.option === quizData[currentQuestionIndex].answer) {
+                    button.classList.add('correct');
+                }
+            });
+            setTimeout(nextQuestion, 2000);
+        }
+
+        function resetState() {
+            clearInterval(timerInterval);
+            timerCircleProgress.style.transition = 'none';
+            timerCircleProgress.style.strokeDasharray = `${CIRCLE_CIRCUMFERENCE} ${CIRCLE_CIRCUMFERENCE}`;
+            timerCircleProgress.style.strokeDashoffset = 0;
+            setTimeout(() => { timerCircleProgress.style.transition = 'stroke-dashoffset 1s linear, stroke 0.3s'; }, 50);
+
+            Array.from(answerButtonsEl.children).forEach(button => {
+                button.className = 'answer-btn';
+                button.disabled = false;
+                button.removeEventListener('click', selectAnswer);
+            });
+        }
+        
+        function selectAnswer(e) {
+            clearInterval(timerInterval);
+            const selectedButton = e.currentTarget;
+            const selectedOption = selectedButton.dataset.option;
+            const isCorrect = selectedOption === quizData[currentQuestionIndex].answer;
+            
+            saveReport(selectedOption, isCorrect);
+            
+            if (isCorrect) {
+                score++;
+                selectedButton.classList.add('correct');
+            } else {
+                selectedButton.classList.add('incorrect');
+            }
+
+            Array.from(answerButtonsEl.children).forEach(button => {
+                button.disabled = true;
+                if (button.dataset.option === quizData[currentQuestionIndex].answer) {
+                    button.classList.add('correct');
+                }
+            });
+            
+            setTimeout(nextQuestion, 2000);
+        }
+
+        function saveReport(userAnswer, isCorrect) {
+            const currentQData = quizData[currentQuestionIndex];
+            userReports.push({
+                question: currentQData.question,
+                userAnswer: userAnswer,
+                correctAnswer: currentQData.answer,
+                isCorrect: isCorrect,
+                explanation: currentQData.explanation
+            });
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex >= quizData.length) {
+                showResults();
+            } else if (currentQuestionIndex % QUESTIONS_PER_ROUND === 0) {
+                showMilestoneScreen();
+            } else {
+                showQuestion();
+            }
+        }
+
+        function showMilestoneScreen() {
+            quizScreen.classList.add('hide');
+            milestoneScreen.classList.remove('hide');
+            milestoneScoreEl.innerText = `আপনি ${currentQuestionIndex} টি প্রশ্নের মধ্যে ${score} টি সঠিক উত্তর দিয়েছেন।`;
+        }
+        
+        function showResults() {
+            quizScreen.classList.add('hide');
+            milestoneScreen.classList.add('hide');
+            resultsScreen.classList.remove('hide');
+            
+            const progressPercentage = (userReports.length / quizData.length) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+            
+            scoreTextEl.innerText = `আপনি ${userReports.length} টির মধ্যে ${score} টি সঠিক উত্তর দিয়েছেন!`;
+            generateReport();
+
+            if (currentQuestionIndex < quizData.length) {
+                nextPartBtn.classList.remove('hide');
+            } else {
+                nextPartBtn.classList.add('hide');
+            }
+        }
+
+        function generateReport() {
+            reportContainer.innerHTML = '';
+            userReports.forEach((report, index) => {
+                const reportItem = document.createElement('div');
+                reportItem.classList.add('report-item');
+                
+                let userAnswerHTML = '';
+                if (report.userAnswer === null) {
+                    userAnswerHTML = `<p class="report-answer user-answer-incorrect"><span class="icon">✖</span>আপনার উত্তর: সময় শেষ</p>`;
+                } else if (report.isCorrect) {
+                    userAnswerHTML = `<p class="report-answer user-answer-correct"><span class="icon">✔</span>আপনার উত্তর: ${report.userAnswer}</p>`;
+                } else {
+                    userAnswerHTML = `<p class="report-answer user-answer-incorrect"><span class="icon">✖</span>আপনার উত্তর: ${report.userAnswer}</p>`;
+                }
+
+                let correctAnswerHTML = '';
+                if (!report.isCorrect) {
+                    correctAnswerHTML = `<p class="report-answer correct-answer"><span class="icon">💡</span>সঠিক উত্তর: ${report.correctAnswer}</p>`;
+                }
+
+                const explanationHTML = `<p class="report-explanation"><strong>ব্যাখ্যা:</strong> ${report.explanation}</p>`;
+
+                reportItem.innerHTML = `
+                    <p class="report-question">প্রশ্ন ${index + 1}: ${report.question}</p>
+                    ${userAnswerHTML}
+                    ${correctAnswerHTML}
+                    ${explanationHTML}
+                `;
+                reportContainer.appendChild(reportItem);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>পদার্থবিজ্ঞান কুইজ | Enhanced Physics Quiz</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --border-color: #30363d;
+            --text-color: #c9d1d9;
+            --text-secondary: #8b949e;
+            
+            --correct-color: #238636;
+            --correct-glow: rgba(35, 134, 54, 0.4);
+            --incorrect-color: #da3633;
+            --incorrect-glow: rgba(218, 54, 51, 0.4);
+            
+            --red: #f85149;
+            --blue: #388bfd;
+            --yellow: #d29922;
+            --green: #2ea043;
+            
+            --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            --font-primary: 'Poppins', sans-serif;
+            --font-secondary: 'Noto Sans Bengali', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-secondary);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            border: 1px solid var(--border-color);
+            animation: fadeIn 0.5s ease-in-out;
+            margin-bottom: 40px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hide {
+            display: none;
+        }
+
+        /* Start, Milestone and Results Screen */
+        #start-screen h1, #results-screen h1, #milestone-screen h1 {
+            font-family: var(--font-primary);
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        #results-screen p, #milestone-screen p {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+
+        .control-btn {
+            font-family: var(--font-primary);
+            font-size: 1.2rem;
+            font-weight: 700;
+            padding: 15px 40px;
+            cursor: pointer;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(90deg, var(--blue), var(--green));
+            color: white;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin: 10px;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(56, 139, 253, 0.3);
+        }
+        
+        .control-btn.secondary {
+            background: linear-gradient(90deg, #6e7681, #484f58);
+        }
+        .control-btn.secondary:hover {
+             box-shadow: 0 6px 20px rgba(110, 118, 129, 0.3);
+        }
+
+        /* Quiz Screen */
+        #progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background-color: var(--border-color);
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--blue);
+            border-radius: 4px;
+            transition: width 0.4s ease-in-out;
+        }
+        
+        #quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-family: var(--font-primary);
+            font-weight: 600;
+        }
+
+        #question-counter {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+        }
+        
+        #timer {
+            position: relative;
+            width: 70px;
+            height: 70px;
+        }
+        .timer-svg {
+            transform: rotate(-90deg);
+        }
+        .timer-circle-bg, .timer-circle {
+            fill: none;
+            stroke-width: 5;
+        }
+        .timer-circle-bg {
+            stroke: var(--border-color);
+        }
+        .timer-circle {
+            stroke: var(--blue);
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s linear, stroke 0.3s;
+        }
+        .timer-circle.low-time {
+            stroke: var(--red);
+        }
+        #timer-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        #question-container {
+            background-color: var(--bg-color);
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            min-height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid var(--border-color);
+        }
+
+        #question-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        #answer-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .answer-btn {
+            font-family: var(--font-secondary);
+            font-size: 1.1rem;
+            color: #fff;
+            border: 2px solid var(--border-color);
+            background-color: transparent;
+            padding: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            text-align: left;
+            font-weight: bold;
+        }
+        
+        .answer-btn:hover:not([disabled]) {
+            border-color: var(--blue);
+            background-color: rgba(56, 139, 253, 0.1);
+        }
+        
+        .answer-btn.correct {
+            background-color: var(--correct-color);
+            border-color: var(--correct-color);
+            box-shadow: 0 0 15px var(--correct-glow);
+            animation: pulse 0.5s;
+        }
+
+        .answer-btn.incorrect {
+            background-color: var(--incorrect-color);
+            border-color: var(--incorrect-color);
+        }
+        
+        .answer-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Report Styles */
+        #report-container {
+            margin-top: 30px;
+            text-align: left;
+        }
+        .report-item {
+            background-color: var(--bg-color);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 15px;
+        }
+        .report-question {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+        .report-answer {
+            padding: 8px;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+        .user-answer-correct {
+            background-color: rgba(35, 134, 54, 0.2);
+            border-left: 4px solid var(--correct-color);
+        }
+        .user-answer-incorrect {
+            background-color: rgba(218, 54, 51, 0.2);
+            border-left: 4px solid var(--incorrect-color);
+        }
+        .correct-answer {
+            background-color: rgba(88, 166, 255, 0.2);
+            border-left: 4px solid var(--blue);
+        }
+        .report-explanation {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+        .report-explanation strong {
+            color: var(--text-color);
+        }
+        .icon {
+            margin-right: 8px;
+            font-weight: bold;
+        }
+
+        /* Footer Style */
+        footer {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 20px 10px;
+            }
+            #answer-buttons {
+                grid-template-columns: 1fr;
+            }
+            #question-text {
+                font-size: 1.2rem;
+            }
+            .answer-btn {
+                font-size: 1rem;
+                padding: 15px;
+            }
+            #start-screen h1, #results-screen h1, #milestone-screen h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="start-screen" class="container">
+        <h1>পদার্থবিজ্ঞান কুইজ</h1>
+        <p>আপনি কি প্রস্তুত? প্রতিটি প্রশ্নের জন্য ৩৭ সেকেন্ড সময় পাবেন।</p>
+        <button id="start-btn" class="control-btn">শুরু করুন</button>
+    </div>
+
+    <div id="quiz-screen" class="container hide">
+        <div id="progress-bar-container">
+            <div id="progress-bar"></div>
+        </div>
+        <div id="quiz-header">
+            <span id="question-counter"></span>
+            <div id="timer">
+                <svg class="timer-svg" viewBox="0 0 36 36">
+                    <path class="timer-circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path id="timer-circle-progress" class="timer-circle"
+                          stroke-dasharray="100, 100"
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                </svg>
+                <span id="timer-text"></span>
+            </div>
+        </div>
+        <div id="question-container">
+            <p id="question-text"></p>
+        </div>
+        <div id="answer-buttons">
+            <button class="answer-btn"></button>
+            <button class="answer-btn"></button>
+            <button class="answer-btn"></button>
+            <button class="answer-btn"></button>
+        </div>
+    </div>
+
+    <div id="milestone-screen" class="container hide">
+        <h1>পর্ব শেষ!</h1>
+        <p id="milestone-score"></p>
+        <button id="continue-btn" class="control-btn">পরবর্তী পর্ব</button>
+        <button id="end-quiz-btn" class="control-btn secondary">ফলাফল দেখুন</button>
+    </div>
+
+    <div id="results-screen" class="container hide">
+        <h1>ফলাফল</h1>
+        <p id="score-text"></p>
+        <h2>রিপোর্ট</h2>
+        <div id="report-container"></div>
+        <button id="play-again-btn" class="control-btn">আবার খেলুন</button>
+        <button id="next-part-btn" class="control-btn secondary hide">পরবর্তী পর্বে যান</button>
+    </div>
+
+    <footer>
+        <p>Abu Hasan, Assistant Professor,</p>
+        <p>Department of Physics,</p>
+        <p>Rangpur Government College</p>
+    </footer>
+
+    <script>
+        // DOM Elements
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const milestoneScreen = document.getElementById('milestone-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        
+        const startBtn = document.getElementById('start-btn');
+        const playAgainBtn = document.getElementById('play-again-btn');
+        const continueBtn = document.getElementById('continue-btn');
+        const endQuizBtn = document.getElementById('end-quiz-btn');
+        const nextPartBtn = document.getElementById('next-part-btn'); // New button
+        
+        const progressBar = document.getElementById('progress-bar');
+        const questionCounterEl = document.getElementById('question-counter');
+        const timerTextEl = document.getElementById('timer-text');
+        const timerCircleProgress = document.getElementById('timer-circle-progress');
+        const questionTextEl = document.getElementById('question-text');
+        const answerButtonsEl = document.getElementById('answer-buttons');
+        const milestoneScoreEl = document.getElementById('milestone-score');
+        const scoreTextEl = document.getElementById('score-text');
+        const reportContainer = document.getElementById('report-container');
+
+        // Quiz Data
+        const quizData = [
+            { question: "ঘূর্ণায়মান বৈদ্যুতিক পাখার গতি ঘূর্ণন অক্ষের সাথে কত কোণে ঘোরে? [RAJ-24]", options: ["45°", "60°", "90°", "120°"], answer: "90°", explanation: "বৈদ্যুতিক পাখার ব্লেডের গতি (বেগ) সর্বদা ঘূর্ণন অক্ষের সাথে লম্বভাবে বা ৯০° কোণে থাকে। গতিটি একটি বৃত্তাকার সমতলে ঘটে এবং ঘূর্ণন অক্ষ সেই সমতলের উপর লম্ব।" },
+            { question: "দুটি ভেক্টর Ā ও B̄ এর স্কেলার গুণফল 18 এবং ভেক্টর গুণফলের মান 6√3। Ā ও B̄ এর মধ্যবর্তী কোণ কত? [RAJ-24]", options: ["120°", "90°", "60°", "30°"], answer: "30°", explanation: "আমরা জানি, Ā · B̄ = |Ā||B̄|cosθ = 18 এবং |Ā × B̄| = |Ā||B̄|sinθ = 6√3। দ্বিতীয় সমীকরণকে প্রথমটি দিয়ে ভাগ করে পাই, tanθ = (6√3)/18 = √3/3 = 1/√3। সুতরাং, θ = 30°।" },
+            { question: "এক বিন্দুতে ক্রিয়াশীল P̄ ও P̄ এর বিপরীত ভেক্টরের লব্ধির মান কত? [CHI-24]", options: ["0", "1", "√2 P", "2 P"], answer: "0", explanation: "কোনো ভেক্টর P̄ এবং তার বিপরীত ভেক্টর (-P̄) এর যোগফল বা লব্ধি হলো P̄ + (-P̄) = 0। সুতরাং লব্ধির মান শূন্য।" },
+            { question: "B̄ এর ওপর Ā এর লম্ব অভিক্ষেপ কোনটি? [CHI-24]", options: ["B cos θ", "B sin θ", "A cos θ", "A sin θ"], answer: "A sin θ", explanation: "B̄ এর ওপর Ā এর অভিক্ষেপ বা সমান্তরাল উপাংশ হলো A cos θ। B̄ এর ওপর Ā এর লম্ব অভিক্ষেপ বা লম্ব উপাংশ হলো A sin θ।" },
+            { question: "কোনটি ভেক্টর রাশি? [SYL-24]", options: ["(Ā × B̄) · Ā", "Ā × B̄", "Ā · B̄", "(Ā × B̄) × B̄"], answer: "Ā × B̄", explanation: "দুটি ভেক্টরের ডট গুণফল (Ā · B̄) একটি স্কেলার রাশি। ক্রস গুণফল (Ā × B̄) একটি ভেক্টর রাশি। (Ā × B̄) · Ā একটি স্কেলার ট্রিপল প্রোডাক্ট, যা স্কেলার। (Ā × B̄) × B̄ একটি ভেক্টর ট্রিপল প্রোডাক্ট, যা ভেক্টর। অপশনগুলোর মধ্যে B এবং D উভয়ই ভেক্টর, তবে ক্রস গুণফল ভেক্টরের মৌলিক সংজ্ঞা।" },
+            { question: "নিচের কোনটি ভেক্টরের বন্টন সূত্র? [JES-24]", options: ["P̄ + Q̄ = Q̄ + P̄", "(P̄ + Q̄) + R̄ = P̄ + (Q̄ + R̄)", "m(P̄ + Q̄) = mP̄ + mQ̄", "P̄ - Q̄ = P̄ + (-Q̄)"], answer: "m(P̄ + Q̄) = mP̄ + mQ̄", explanation: "অপশন C, m(P̄ + Q̄) = mP̄ + mQ̄, স্কেলার গুণনের ক্ষেত্রে ভেক্টর যোগের বন্টন সূত্র (Distributive Law) প্রদর্শন করে।" },
+            { question: "নিচের কোন ভেক্টরটি Ā = î + ĵ এর সমান্তরাল? [BAR-24]", options: ["î + k̂", "ĵ + k̂", "2î + 2ĵ", "2î + 2k̂"], answer: "2î + 2ĵ", explanation: "দুটি ভেক্টর সমান্তরাল হবে যদি একটিকে স্কেলার দ্বারা গুণ করে অন্যটি পাওয়া যায়। এখানে, 2î + 2ĵ = 2(î + ĵ) = 2Ā। সুতরাং এটি Ā এর সমান্তরাল।" },
+            { question: "ভেক্টর গুণনে একক ভেক্টরের দিক পাওয়া ক্ষেত্রে নিচের কোনটি সঠিক? [MYM-24]", options: ["ডান হস্তের স্ক্রু নিয়ম অনুসারে", "বামহাতি স্ক্রু নিয়ম", "ভেক্টর সমযোজীতার ক্ষেত্র উপরে দিকে", "ভেক্টর সমযোজীতার ক্ষেত্র নিচের দিকে"], answer: "ডান হস্তের স্ক্রু নিয়ম অনুসারে", explanation: "দুটি ভেক্টরের ক্রস গুণফলের ফলে প্রাপ্ত নতুন ভেক্টরের দিক ডান হস্তের স্ক্রু নিয়ম বা ডান হাতি নিয়ম (Right-Hand Rule) দ্বারা নির্ণয় করা হয়।" },
+            { question: "|Ā| = |B̄| = 3 এবং Ā ও B̄ -এর মধ্যবর্তী কোণ θ হলে |Ā × B̄| = ? [DHA-23]", options: ["9 cos θ", "9 sin θ", "1/9 sin θ", "1/9 cosθ"], answer: "9 sin θ", explanation: "ক্রস গুণফলের মানের সূত্র হলো |Ā × B̄| = |Ā||B̄|sinθ। এখানে |Ā|=3, |B̄|=3, তাই |Ā × B̄| = 3 × 3 × sinθ = 9sinθ।" },
+            { question: "î × (ĵ × k̂) = ? [RAJ-23]", options: ["0", "î", "ĵ", "k̂"], answer: "0", explanation: "প্রথমে ব্র্যাকেটের ভেতরের অংশ সমাধান করি: ĵ × k̂ = î। এখন, î × î = 0, কারণ দুটি একই ভেক্টরের মধ্যবর্তী কোণ 0° এবং sin(0°) = 0।" },
+            { question: "F̄ = 2î + 3ĵ - 4k̂ বলটির zx সমতলে মান কত? [JES-23]", options: ["√13 N", "√20 N", "√25 N", "√29 N"], answer: "√20 N", explanation: "zx-সমতলে একটি ভেক্টরের মান হলো এর x এবং z উপাংশের লব্ধি। মান = √(Fx² + Fz²) = √(2² + (-4)²) = √(4 + 16) = √20 N।" },
+            { question: "(ĵ × k̂) × (ĵ × î) = ? [JES-23]", options: ["0", "-î", "-ĵ", "ĵ"], answer: "ĵ", explanation: "প্রথমে, ĵ × k̂ = î এবং ĵ × î = -k̂। এখন, î × (-k̂) = - (î × k̂) = - (-ĵ) = ĵ।" },
+            { question: "|Ā| = 2, |B̄| = 4 এবং Ā · B̄ = 4 হলে Ā ও B̄ এর মধ্যবর্তী কোণ- [COM-23]", options: ["30°", "60°", "90°", "120°"], answer: "60°", explanation: "ডট গুণফলের সূত্র: Ā · B̄ = |Ā||B̄|cosθ। মান বসিয়ে পাই, 4 = 2 × 4 × cosθ বা 4 = 8cosθ। সুতরাং, cosθ = 4/8 = 1/2, যার অর্থ θ = 60°।" },
+            { question: "Ā = 3î - 4ĵ, B̄ = -3î + 4ĵ এবং R̄ এদের লব্ধি। নিচের কোনটি সঠিক- [DIN-23]", options: ["R̄ একটি একমাত্রিক ভেক্টর", "R̄ একটি দ্বি-মাত্রিক ভেক্টর", "R̄ একটি ত্রিমাত্রিক ভেক্টর", "R̄ একটি নাল ভেক্টর"], answer: "R̄ একটি নাল ভেক্টর", explanation: "লব্ধি R̄ = Ā + B̄ = (3î - 4ĵ) + (-3î + 4ĵ) = (3-3)î + (-4+4)ĵ = 0î + 0ĵ = 0। সুতরাং, R̄ একটি নাল বা শূন্য ভেক্টর।" },
+            { question: "B̄ এর উপর Ā এর লম্ব অভিক্ষেপ- [DIN-23]", options: ["A cos θ", "A sin θ", "B cos θ", "B sin θ"], answer: "A sin θ", explanation: "B̄ এর উপর Ā এর অভিক্ষেপ (সমান্তরাল উপাংশ) হলো A cos θ। B̄ এর উপর Ā এর লম্ব অভিক্ষেপ (লম্ব উপাংশ) হলো A sin θ।" },
+            { question: "Ā = 2î + 2√3ĵ ভেক্টরটি y-অক্ষের সাথে কত কোণে ক্রিয়াশীল? [DHA-22]", options: ["0°", "30°", "60°", "90°"], answer: "30°", explanation: "y-অক্ষের সাথে কোণ β হলে, cosβ = (y-উপাংশ) / |Ā| = (2√3) / √(2² + (2√3)²) = (2√3) / √(4+12) = (2√3)/4 = √3/2। সুতরাং, β = 30°।" },
+            { question: "(î × ĵ) × (î × k̂) = ? [RAJ-22]", options: ["î", "ĵ", "k̂", "-î"], answer: "î", explanation: "প্রথমে, î × ĵ = k̂ এবং î × k̂ = -ĵ। এখন, k̂ × (-ĵ) = - (k̂ × ĵ) = - (-î) = î।" },
+            { question: "î এবং (î + ĵ) ভেক্টরদ্বয়ের মধ্যবর্তী কোণ কত? [RAJ-22]", options: ["0°", "45°", "60°", "90°"], answer: "45°", explanation: "ধরি, Ā = î এবং B̄ = î + ĵ। Ā · B̄ = î · (î + ĵ) = 1। |Ā| = 1, |B̄| = √2। cosθ = (Ā · B̄) / (|Ā||B̄|) = 1 / (1 × √2) = 1/√2। সুতরাং, θ = 45°।" },
+            { question: "Ā = 3î + 6ĵ -এর ওপর লম্ব কোনটি? [CUM-22]", options: ["3î - 6ĵ", "3î", "8k̂", "6ĵ"], answer: "8k̂", explanation: "Ā ভেক্টরটি xy-সমতলে অবস্থিত। z-অক্ষ (k̂ বরাবর) xy-সমতলের উপর লম্ব। তাই k̂ বরাবর যেকোনো ভেক্টর (যেমন 8k̂) Ā এর উপর লম্ব হবে। এদের ডট গুণফল শূন্য: (3î+6ĵ)·(8k̂)=0।" },
+            { question: "Ā = 2î + 3ĵ এবং B̄ = mî - 2ĵ ভেক্টরদ্বয় পরস্পর লম্ব হলে m-এর মান কত? [JES-22]", options: ["-3", "-3/2", "3/2", "3"], answer: "3", explanation: "ভেক্টরদ্বয় লম্ব হলে তাদের ডট গুণফল শূন্য হবে: Ā · B̄ = 0। (2)(m) + (3)(-2) = 0 বা 2m - 6 = 0। সুতরাং, 2m = 6 এবং m = 3।" },
+            { question: "ĵ ও k̂ আয়ত একক ভেক্টরদ্বয় যে তলে অবস্থিত সেই তলের ওপর লম্ব একক ভেক্টর হলো- [CHI-22]", options: ["(ĵ × k̂)", "(î × ĵ)", "(k̂ × î)", "î"], answer: "(ĵ × k̂)", explanation: "ĵ এবং k̂ ভেক্টরদ্বয় yz-সমতলে অবস্থিত। এই তলের ওপর লম্ব ভেক্টর হলো x-অক্ষ বরাবর একক ভেক্টর, অর্থাৎ î। আমরা জানি, ĵ × k̂ = î। সুতরাং সঠিক উত্তর (ĵ × k̂)।" },
+            { question: "3 N ও 4 N মানের দুটি বল একটি বিন্দুতে পরস্পর লম্বভাবে ক্রিয়া করলে এদের লব্ধির মান হবে- [CHI-22]", options: ["0 N", "5 N", "7 N", "12 N"], answer: "5 N", explanation: "দুটি বল লম্বভাবে ক্রিয়া করলে লব্ধির মান R = √(P² + Q²) = √(3² + 4²) = √(9 + 16) = √25 = 5 N।" },
+            { question: "î এবং ĵ যে তলে অবস্থিত সে তলের লম্বদিকে একক ভেক্টর হলো- [BAR-22]", options: ["±(î × ĵ)", "±(ĵ × k̂)", "±(k̂ × î)", "î"], answer: "±(î × ĵ)", explanation: "î এবং ĵ ভেক্টরদ্বয় xy-সমতলে অবস্থিত। এই তলের লম্বদিক হলো z-অক্ষ। z-অক্ষ বরাবর একক ভেক্টর হলো k̂। আমরা জানি, î × ĵ = k̂। যেহেতু লম্বদিক ধনাত্মক বা ঋণাত্মক উভয়ই হতে পারে, তাই একক ভেক্টর হবে ±k̂ বা ±(î × ĵ)।" },
+            { question: "Ā = î, B̄ = 2î + k̂, Ā ও B̄ ভেক্টরের মধ্যবর্তী কোণ- [SYL-22]", options: ["25.12°", "26.57°", "90.67°", "180.25°"], answer: "26.57°", explanation: "Ā · B̄ = (î) · (2î + k̂) = 2। |Ā| = 1, |B̄| = √(2² + 1²) = √5। cosθ = (Ā · B̄) / (|Ā||B̄|) = 2 / (1 × √5) = 2/√5। সুতরাং, θ = arccos(2/√5) ≈ 26.57°।" },
+            { question: "ĵ × (ĵ × k̂) = ? [SYL-22]", options: ["-k̂", "0", "k̂", "î"], answer: "-k̂", explanation: "প্রথমে, ĵ × k̂ = î। এখন, ĵ × î = -k̂।" },
+            { question: "Ā ও B̄ ভেক্টর দ্বারা একটি সামান্তরিকের কর্ণদ্বয় নির্দিষ্ট হলে সামান্তরিকের ক্ষেত্রফল কোনটি? [DIN-22]", options: ["Ā · B̄", "½ |Ā × B̄|", "½ (Ā · B̄)", "|Ā × B̄|"], answer: "½ |Ā × B̄|", explanation: "যদি দুটি ভেক্টর সামান্তরিকের দুটি সন্নিহিত বাহু নির্দেশ করে, তবে ক্ষেত্রফল |Ā × B̄|। কিন্তু যদি ভেক্টর দুটি কর্ণ নির্দেশ করে, তবে ক্ষেত্রফল হয় ½ |Ā × B̄|।" },
+            { question: "P ও Q দুটি ভেক্টর রাশির মধ্যবর্তী কোণ 120° হলে তাদের লব্ধির মান- [DIN-22]", options: ["P+Q", "√(P²+Q²+PQ)", "P-Q", "√(P²+Q²-PQ)"], answer: "√(P²+Q²-PQ)", explanation: "লব্ধির সাধারণ সূত্র R = √(P²+Q²+2PQcosθ)। এখানে θ = 120°, এবং cos(120°) = -1/2। সুতরাং, R = √(P²+Q²+2PQ(-1/2)) = √(P²+Q²-PQ)।" },
+            { question: "(î - ĵ + k̂)/√3 ভেক্টরটি একটি- [DIN-22]", options: ["নাল ভেক্টর", "সমরেখ ভেক্টর", "সমতলীয় ভেক্টর", "একক ভেক্টর"], answer: "একক ভেক্টর", explanation: "একটি ভেক্টরের মান 1 হলে তা একক ভেক্টর। প্রদত্ত ভেক্টরের মান = √((1/√3)² + (-1/√3)² + (1/√3)²) = √(1/3 + 1/3 + 1/3) = √1 = 1। সুতরাং এটি একটি একক ভেক্টর।" },
+            { question: "î · (k̂ × ĵ) = ? [MYM-22]", options: ["1", "-1", "0", "k̂"], answer: "-1", explanation: "প্রথমে, k̂ × ĵ = -î। এখন, î · (-î) = - (î · î) = -1।" },
+            { question: "4 একক ও 5 এককের মানের দুটি ভেক্টর কোনো বিন্দুতে 60° কোণে ক্রিয়াশীল। তাদের স্কেলার গুণফল হবে- [DHA-21]", options: ["0 একক", "1 একক", "10 একক", "100 একক"], answer: "10 একক", explanation: "স্কেলার বা ডট গুণফল = |Ā||B̄|cosθ = 4 × 5 × cos(60°) = 20 × (1/2) = 10 একক।" },
+            { question: "P̄ = 2î + ĵ + k̂ এবং Q̄ = -î + 2ĵ - 2k̂ ভেক্টরদ্বয়ের লব্ধির মান কত? [DHA-21]", options: ["√11", "6", "9", "19"], answer: "√11", explanation: "লব্ধি R̄ = P̄ + Q̄ = (2-1)î + (1+2)ĵ + (1-2)k̂ = î + 3ĵ - k̂। লব্ধির মান |R̄| = √(1² + 3² + (-1)²) = √(1+9+1) = √11।" },
+            { question: "P̄ ও Q̄ এর লব্ধির সর্বনিম্ন মান কোনটি? [DHA-21]", options: ["|P̂| + |Q̂|", "|P̄ × Q̄|", "P̄ · Q̄", "||P̄| - |Q̄||"], answer: "||P̄| - |Q̄||", explanation: "দুটি ভেক্টরের লব্ধির মান তাদের মানের বিয়োগফলের পরম মান থেকে মানের যোগফলের মধ্যে থাকে। সর্বনিম্ন মানটি হলো ||P̄| - |Q̄||, যা ভেক্টর দুটি বিপরীত দিকে ক্রিয়া করলে পাওয়া যায়।" },
+            { question: "(ĵ + k̂) × k̂ = ? [DHA-21]", options: ["1", "î", "ĵ", "k̂"], answer: "î", explanation: "বন্টন সূত্র অনুযায়ী, (ĵ + k̂) × k̂ = (ĵ × k̂) + (k̂ × k̂)। আমরা জানি, ĵ × k̂ = î এবং k̂ × k̂ = 0। সুতরাং, ফলাফল î + 0 = î।" },
+            { question: "P̄ = î + 2ĵ - 3k̂ ভেক্টরটির YZ তলে মান কত? [RAJ-21]", options: ["√5", "√10", "√13", "√14"], answer: "√13", explanation: "YZ-তলে একটি ভেক্টরের মান হলো এর y এবং z উপাংশের লব্ধি। মান = √(Py² + Pz²) = √(2² + (-3)²) = √(4 + 9) = √13।" },
+            { question: "ĵ × (ĵ × k̂) = ? [RAJ-21, JES-15]", options: ["-k̂", "0", "k̂", "î"], answer: "-k̂", explanation: "প্রথমে, ĵ × k̂ = î। এখন, ĵ × î = -k̂।" },
+            { question: "Ā = 5î - 5ĵ + 3k̂; B̄ = 15î + mĵ + 9k̂; m এর মান কত হলে Ā ও B̄ সমান্তরাল হবে? [CHA-21]", options: ["-15", "15", "-16", "16"], answer: "-15", explanation: "দুটি ভেক্টর সমান্তরাল হলে তাদের অনুরূপ উপাংশের অনুপাত সমান হয়। অর্থাৎ, 5/15 = -5/m = 3/9। প্রথম অনুপাত থেকে পাই, 1/3 = -5/m, সুতরাং m = -15।" },
+            { question: "দুটি ভেক্টরের মান সমান। নিচের কোন অবস্থানে এদের লব্ধি একটি ভেক্টরের মানের √3 গুণ হবে? [SYL-21]", options: ["0°", "45°", "60°", "90°"], answer: "60°", explanation: "ধরি, ভেক্টরদ্বয়ের মান P। লব্ধির মান R = √3 P। R² = P² + P² + 2P·P·cosθ। (√3 P)² = 2P² + 2P²cosθ। 3P² = 2P²(1 + cosθ)। 3/2 = 1 + cosθ। cosθ = 1/2। সুতরাং, θ = 60°।" },
+            { question: "P̄ ও Q̄ দুটি সমান ভেক্টর পরস্পর বিপরীত দিকে ক্রিয়া করছে। দুটির লব্ধি R̄ ও P̄ এর মধ্যবর্তী কোণটি? [SYL-21]", options: ["0°", "45°", "60°", "90°"], answer: "0°", explanation: "যেহেতু P̄ ও Q̄ সমান ও বিপরীত, তাই Q̄ = -P̄। লব্ধি R̄ = P̄ + Q̄ = P̄ - P̄ = 0 (নাল ভেক্টর)। নাল ভেক্টরের কোনো নির্দিষ্ট দিক না থাকায় যেকোনো ভেক্টরের সাথে এর কোণ অসংজ্ঞায়িত। তবে প্রচলিতভাবে এটি 0° ধরা হয়।" },
+            { question: "একটি নাল ভেক্টরের মান কত হবে? [BAR-21]", options: ["1", "-1", "±1", "0"], answer: "0", explanation: "সংজ্ঞানুযায়ী, যে ভেক্টরের মান শূন্য, তাকে নাল ভেক্টর বা শূন্য ভেক্টর বলে।" },
+            { question: "î × ĵ = ? [BAR-21]", options: ["0", "k̂", "ĵ × k̂", "î × k̂"], answer: "k̂", explanation: "আয়ত একক ভেক্টরের ক্রস গুণনের নিয়ম অনুযায়ী, î × ĵ = k̂।" },
+            { question: "10 একক মানের একটি ভেক্টর দুটি লম্ব উপাংশে বিভক্ত করলে একটির মান 8 একক হলে অপরটির মান কত? [MYM-21]", options: ["2 একক", "4 একক", "6 একক", "8 একক"], answer: "6 একক", explanation: "যদি লব্ধি R এবং লম্ব উপাংশ দুটি P ও Q হয়, তবে R² = P² + Q²। এখানে, 10² = 8² + Q²। 100 = 64 + Q²। Q² = 36। সুতরাং, Q = 6 একক।" },
+            { question: "Ā = 3î - 4ĵ + 12k̂ ভেক্টরটির মান- [DIN-21]", options: ["9 একক", "13 একক", "18 একক", "36 একক"], answer: "13 একক", explanation: "ভেক্টরের মান |Ā| = √(Ax² + Ay² + Az²) = √(3² + (-4)² + 12²) = √(9 + 16 + 144) = √169 = 13 একক।" },
+            { question: "Ā = 3î + 2ĵ + k̂; B̄ = 6î - mĵ + 4k̂, m এর মান কত হলে ভেক্টরদ্বয় লম্ব হবে? [DIN-21]", options: ["9", "11", "12", "13"], answer: "11", explanation: "দুটি ভেক্টর পরস্পর লম্ব হলে তাদের ডট গুণফল শূন্য হয়। Ā · B̄ = 0। (3)(6) + (2)(-m) + (1)(4) = 0। 18 - 2m + 4 = 0। 22 - 2m = 0। 2m = 22। সুতরাং, m = 11।" }
+        ];
+
+        // Game State
+        let currentQuestionIndex;
+        let score;
+        let userReports;
+        let timerInterval;
+        let timeLeft;
+        const TIME_PER_QUESTION = 37;
+        const QUESTIONS_PER_ROUND = 10;
+        const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 15.9155;
+
+        // Event Listeners
+        startBtn.addEventListener('click', startQuiz);
+        playAgainBtn.addEventListener('click', startQuiz);
+        continueBtn.addEventListener('click', () => {
+            milestoneScreen.classList.add('hide');
+            quizScreen.classList.remove('hide');
+            showQuestion();
+        });
+        endQuizBtn.addEventListener('click', () => {
+            milestoneScreen.classList.add('hide');
+            showResults();
+        });
+        nextPartBtn.addEventListener('click', () => {
+            resultsScreen.classList.add('hide');
+            quizScreen.classList.remove('hide');
+            showQuestion(); // Continues from where user left off
+        });
+
+        function startQuiz() {
+            startScreen.classList.add('hide');
+            resultsScreen.classList.add('hide');
+            milestoneScreen.classList.add('hide');
+            quizScreen.classList.remove('hide');
+            nextPartBtn.classList.add('hide'); // Ensure next part button is hidden for a new game
+
+            currentQuestionIndex = 0;
+            score = 0;
+            userReports = [];
+            reportContainer.innerHTML = '';
+            showQuestion();
+        }
+
+        function showQuestion() {
+            resetState();
+            if (currentQuestionIndex < quizData.length) {
+                updateProgressBar();
+                const questionData = quizData[currentQuestionIndex];
+                questionCounterEl.innerText = `প্রশ্ন ${currentQuestionIndex + 1}/${quizData.length}`;
+                questionTextEl.innerHTML = questionData.question;
+                
+                questionData.options.forEach((option, index) => {
+                    const button = answerButtonsEl.children[index];
+                    const prefix = String.fromCharCode(65 + index);
+                    button.innerHTML = `${prefix}. ${option}`;
+                    button.dataset.option = option;
+                    button.addEventListener('click', selectAnswer);
+                });
+                
+                startTimer();
+            } else {
+                showResults();
+            }
+        }
+        
+        function updateProgressBar() {
+            const progressPercentage = ((currentQuestionIndex) / quizData.length) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+        }
+
+        function startTimer() {
+            timeLeft = TIME_PER_QUESTION;
+            timerTextEl.innerText = timeLeft;
+            timerCircleProgress.style.strokeDashoffset = 0;
+            timerCircleProgress.classList.remove('low-time');
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerTextEl.innerText = timeLeft;
+                const timeFraction = timeLeft / TIME_PER_QUESTION;
+                const offset = CIRCLE_CIRCUMFERENCE * (1 - timeFraction);
+                timerCircleProgress.style.strokeDashoffset = offset;
+
+                if (timeLeft <= 10) {
+                    timerCircleProgress.classList.add('low-time');
+                }
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeout();
+                }
+            }, 1000);
+        }
+        
+        function handleTimeout() {
+            saveReport(null, false);
+            Array.from(answerButtonsEl.children).forEach(button => {
+                button.disabled = true;
+                if (button.dataset.option === quizData[currentQuestionIndex].answer) {
+                    button.classList.add('correct');
+                }
+            });
+            setTimeout(nextQuestion, 2000);
+        }
+
+        function resetState() {
+            clearInterval(timerInterval);
+            timerCircleProgress.style.transition = 'none';
+            timerCircleProgress.style.strokeDasharray = `${CIRCLE_CIRCUMFERENCE} ${CIRCLE_CIRCUMFERENCE}`;
+            timerCircleProgress.style.strokeDashoffset = 0;
+            setTimeout(() => { timerCircleProgress.style.transition = 'stroke-dashoffset 1s linear, stroke 0.3s'; }, 50);
+
+            Array.from(answerButtonsEl.children).forEach(button => {
+                button.className = 'answer-btn';
+                button.disabled = false;
+                button.removeEventListener('click', selectAnswer);
+            });
+        }
+        
+        function selectAnswer(e) {
+            clearInterval(timerInterval);
+            const selectedButton = e.currentTarget;
+            const selectedOption = selectedButton.dataset.option;
+            const isCorrect = selectedOption === quizData[currentQuestionIndex].answer;
+            
+            saveReport(selectedOption, isCorrect);
+            
+            if (isCorrect) {
+                score++;
+                selectedButton.classList.add('correct');
+            } else {
+                selectedButton.classList.add('incorrect');
+            }
+
+            Array.from(answerButtonsEl.children).forEach(button => {
+                button.disabled = true;
+                if (button.dataset.option === quizData[currentQuestionIndex].answer) {
+                    button.classList.add('correct');
+                }
+            });
+            
+            setTimeout(nextQuestion, 2000);
+        }
+
+        function saveReport(userAnswer, isCorrect) {
+            const currentQData = quizData[currentQuestionIndex];
+            userReports.push({
+                question: currentQData.question,
+                userAnswer: userAnswer,
+                correctAnswer: currentQData.answer,
+                isCorrect: isCorrect,
+                explanation: currentQData.explanation
+            });
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex >= quizData.length) {
+                showResults();
+            } else if (currentQuestionIndex % QUESTIONS_PER_ROUND === 0) {
+                showMilestoneScreen();
+            } else {
+                showQuestion();
+            }
+        }
+
+        function showMilestoneScreen() {
+            quizScreen.classList.add('hide');
+            milestoneScreen.classList.remove('hide');
+            milestoneScoreEl.innerText = `আপনি ${currentQuestionIndex} টি প্রশ্নের মধ্যে ${score} টি সঠিক উত্তর দিয়েছেন।`;
+        }
+        
+        function showResults() {
+            quizScreen.classList.add('hide');
+            milestoneScreen.classList.add('hide');
+            resultsScreen.classList.remove('hide');
+            
+            const progressPercentage = (userReports.length / quizData.length) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+            
+            scoreTextEl.innerText = `আপনি ${userReports.length} টির মধ্যে ${score} টি সঠিক উত্তর দিয়েছেন!`;
+            generateReport();
+
+            // Show "Next Part" button only if there are more questions left
+            if (currentQuestionIndex < quizData.length) {
+                nextPartBtn.classList.remove('hide');
+            } else {
+                nextPartBtn.classList.add('hide');
+            }
+        }
+
+        function generateReport() {
+            reportContainer.innerHTML = '';
+            userReports.forEach((report, index) => {
+                const reportItem = document.createElement('div');
+                reportItem.classList.add('report-item');
+                
+                let userAnswerHTML = '';
+                if (report.userAnswer === null) {
+                    userAnswerHTML = `<p class="report-answer user-answer-incorrect"><span class="icon">✖</span>আপনার উত্তর: সময় শেষ</p>`;
+                } else if (report.isCorrect) {
+                    userAnswerHTML = `<p class="report-answer user-answer-correct"><span class="icon">✔</span>আপনার উত্তর: ${report.userAnswer}</p>`;
+                } else {
+                    userAnswerHTML = `<p class="report-answer user-answer-incorrect"><span class="icon">✖</span>আপনার উত্তর: ${report.userAnswer}</p>`;
+                }
+
+                let correctAnswerHTML = '';
+                if (!report.isCorrect) {
+                    correctAnswerHTML = `<p class="report-answer correct-answer"><span class="icon">💡</span>সঠিক উত্তর: ${report.correctAnswer}</p>`;
+                }
+
+                const explanationHTML = `<p class="report-explanation"><strong>ব্যাখ্যা:</strong> ${report.explanation}</p>`;
+
+                reportItem.innerHTML = `
+                    <p class="report-question">প্রশ্ন ${index + 1}: ${report.question}</p>
+                    ${userAnswerHTML}
+                    ${correctAnswerHTML}
+                    ${explanationHTML}
+                `;
+                reportContainer.appendChild(reportItem);
+            });
+        }
+    </script>
+</body>
+</html>
