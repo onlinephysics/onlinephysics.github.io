@@ -3,40 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Online Physics</title> <!-- The title of your page -->
+    <title>Redirecting...</title>
+
+    <!-- Fallback Method: Meta Refresh (for browsers with JavaScript disabled) -->
+    <!-- This tells the browser to redirect to the new URL after 0 seconds. -->
+    <meta http-equiv="refresh" content="0; url=https://sites.google.com/view/0nlinephysics/">
 
     <style>
-        /* Reset default browser styles */
-        html, body {
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             margin: 0;
-            padding: 0;
-            height: 100%;
-            width: 100%;
-            overflow: hidden; /* Prevents scrollbars on the main page */
+            text-align: center;
         }
-
-        /* Style the iframe to be full-screen */
-        .fullscreen-iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: 0; /* Removes the default iframe border */
+        .container {
+            padding: 2rem;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        p {
+            margin-bottom: 0;
         }
     </style>
+
+    <!-- Primary Method: Instant JavaScript Redirect -->
+    <script type="text/javascript">
+        // This is the fastest and most reliable method.
+        // It replaces the current page in history, so the back button works as expected.
+        window.location.replace("https://sites.google.com/view/0nlinephysics/");
+    </script>
 </head>
 <body>
-
-    <!-- 
-      The iframe will load and display the content from the src URL.
-      The 'title' attribute is important for accessibility (screen readers).
-    -->
-    <iframe 
-        class="fullscreen-iframe"
-        src="https://sites.google.com/view/0nlinephysics/"
-        title="Online Physics Website Content">
-    </iframe>
-
+    <!-- This content is a fallback in case both redirect methods fail -->
+    <noscript>
+        <meta http-equiv="refresh" content="0; url=https://sites.google.com/view/0nlinephysics/">
+    </noscript>
+    <div class="container">
+        <h1>Redirecting...</h1>
+        <p>
+            You are being automatically redirected to our website.
+        </p>
+        <p>
+            If the page does not change in a few seconds, please 
+            <a href="https://sites.google.com/view/0nlinephysics/">click here</a>.
+        </p>
+    </div>
 </body>
 </html>
