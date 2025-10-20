@@ -3,64 +3,462 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirecting...</title>
+    <title>Online Physics - Welcome</title>
+    
+    <!-- Google Fonts for a modern look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Fallback Method: Meta Refresh (for browsers with JavaScript disabled) -->
-    <!-- This tells the browser to redirect to the new URL after 0 seconds. -->
-    <meta http-equiv="refresh" content="0; url=https://sites.google.com/view/0nlinephysics/">
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
     <style>
+        /* General Styling & Mobile First Design */
+        :root {
+            --primary-color: #007BFF;
+            --primary-hover: #0056b3;
+            --background-color: #f0f2f5;
+            --form-background: #ffffff;
+            --text-color: #333;
+            --input-border: #ced4da;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f0f2f5;
-            color: #333;
+            font-family: 'Poppins', sans-serif;
+            background: var(--background-color);
+            color: var(--text-color);
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            text-align: center;
+            min-height: 100vh;
+            padding: 20px;
         }
-        .container {
-            padding: 2rem;
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        a {
-            color: #007bff;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-        p {
-            margin-bottom: 0;
-        }
-    </style>
 
-    <!-- Primary Method: Instant JavaScript Redirect -->
-    <script type="text/javascript">
-        // This is the fastest and most reliable method.
-        // It replaces the current page in history, so the back button works as expected.
-        window.location.replace("https://sites.google.com/view/0nlinephysics/");
-    </script>
+        .auth-container {
+            background: var(--form-background);
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
+            overflow: hidden;
+        }
+
+        .toggle-links {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 25px;
+            background: #e9ecef;
+            border-radius: 8px;
+            padding: 5px;
+        }
+
+        .toggle-links button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            color: #6c757d;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 6px;
+        }
+
+        .toggle-links button.active {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 2px 5px rgba(0, 123, 255, 0.3);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Poppins', sans-serif;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+        }
+        
+        .other-input {
+            margin-top: 10px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background: var(--primary-hover);
+        }
+        
+        #message {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: 500;
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        #message.success {
+            color: var(--success-color);
+            background-color: rgba(40, 167, 69, 0.1);
+        }
+
+        #message.error {
+            color: var(--error-color);
+            background-color: rgba(220, 53, 69, 0.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+    </style>
 </head>
 <body>
-    <!-- This content is a fallback in case both redirect methods fail -->
-    <noscript>
-        <meta http-equiv="refresh" content="0; url=https://sites.google.com/view/0nlinephysics/">
-    </noscript>
-    <div class="container">
-        <h1>Redirecting...</h1>
-        <p>
-            You are being automatically redirected to our website.
-        </p>
-        <p>
-            If the page does not change in a few seconds, please 
-            <a href="https://sites.google.com/view/0nlinephysics/">click here</a>.
-        </p>
+
+    <div class="auth-container">
+        <div class="toggle-links">
+            <button id="showSignIn" class="active">Sign In</button>
+            <button id="showSignUp">Sign Up</button>
+        </div>
+
+        <!-- Sign In Form -->
+        <form id="signInForm">
+            <h2>Sign In</h2>
+            <div id="signInMessage" class="hidden"></div>
+            <div class="form-group">
+                <label for="signInIdentifier">Username, Email, or Mobile</label>
+                <input type="text" id="signInIdentifier" placeholder="Enter your identifier" required>
+            </div>
+            <div class="form-group">
+                <label for="signInPassword">Password</label>
+                <input type="password" id="signInPassword" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" class="submit-btn">Sign In</button>
+        </form>
+
+        <!-- Sign Up Form -->
+        <form id="signUpForm" class="hidden">
+            <h2>Create Account</h2>
+            <div id="signUpMessage" class="hidden"></div>
+            <div class="form-group">
+                <label for="signUpUsername">Username</label>
+                <input type="text" id="signUpUsername" placeholder="Choose a unique username" required>
+            </div>
+            <div class="form-group">
+                <label for="signUpPassword">Password</label>
+                <input type="password" id="signUpPassword" placeholder="Create a strong password" required>
+            </div>
+            <div class="form-group">
+                <label for="signUpFullName">Full Name</label>
+                <input type="text" id="signUpFullName" placeholder="Enter your full name" required>
+            </div>
+             <div class="form-group">
+                <label for="signUpEmail">Email Address</label>
+                <input type="email" id="signUpEmail" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group">
+                <label for="signUpMobile">Mobile Number</label>
+                <input type="tel" id="signUpMobile" placeholder="e.g., 01712345678" required>
+            </div>
+            <div class="form-group">
+                <label for="signUpWhatsapp">Whatsapp Mobile Number</label>
+                <input type="tel" id="signUpWhatsapp" placeholder="Same as mobile if applicable" required>
+            </div>
+            <div class="form-group">
+                <label for="signUpCollege">College</label>
+                <input type="text" id="signUpCollege" placeholder="Enter your college name" required>
+            </div>
+            <div class="form-group">
+                <label for="signUpBatch">Batch</label>
+                <select id="signUpBatch" required>
+                    <option value="" disabled selected>Select your batch</option>
+                    <option value="HSC 27">HSC 27</option>
+                    <option value="HSC 26">HSC 26</option>
+                    <option value="Other">Other</option>
+                </select>
+                <input type="text" id="signUpBatchOther" class="other-input hidden" placeholder="Please specify your batch">
+            </div>
+            <div class="form-group">
+                <label for="signUpAim">Aim in Life</label>
+                <select id="signUpAim" required>
+                    <option value="" disabled selected>Select your aim</option>
+                    <option>Doctor</option>
+                    <option>Engineer</option>
+                    <option>Teacher</option>
+                    <option>Programmer</option>
+                    <option>Business</option>
+                    <option>Bureaucrat</option>
+                    <option value="Other">Other</option>
+                </select>
+                <input type="text" id="signUpAimOther" class="other-input hidden" placeholder="Please specify your aim">
+            </div>
+            <div class="form-group">
+                <label for="signUpDestination">Future Destination</label>
+                <select id="signUpDestination" required>
+                    <option value="" disabled selected>Select your desired institution type</option>
+                    <option>Engineering University</option>
+                    <option>Medical College</option>
+                    <option>General University</option>
+                    <option>Agri University</option>
+                    <option>GST</option>
+                    <option>Private University</option>
+                    <option value="Other">Other</option>
+                </select>
+                <input type="text" id="signUpDestinationOther" class="other-input hidden" placeholder="Please specify your destination">
+            </div>
+            <button type="submit" class="submit-btn">Sign Up</button>
+        </form>
     </div>
+
+    <script>
+        // --- FIREBASE CONFIGURATION ---
+        // IMPORTANT: In a real app, you should restrict your database rules.
+        // For this demo, it's public.
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY", // This can be left blank for Realtime DB if rules are public
+            authDomain: "onlinephysics-1.firebaseapp.com",
+            databaseURL: "https://onlinephysics-1-default-rtdb.asia-southeast1.firebasedatabase.app/",
+            projectId: "onlinephysics-1",
+            storageBucket: "onlinephysics-1.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // --- DOM ELEMENT REFERENCES ---
+        const showSignInBtn = document.getElementById('showSignIn');
+        const showSignUpBtn = document.getElementById('showSignUp');
+        const signInForm = document.getElementById('signInForm');
+        const signUpForm = document.getElementById('signUpForm');
+        const signInMessage = document.getElementById('signInMessage');
+        const signUpMessage = document.getElementById('signUpMessage');
+
+        // --- UI TOGGLE LOGIC ---
+        showSignInBtn.addEventListener('click', () => {
+            signInForm.classList.remove('hidden');
+            signUpForm.classList.add('hidden');
+            showSignInBtn.classList.add('active');
+            showSignUpBtn.classList.remove('active');
+        });
+
+        showSignUpBtn.addEventListener('click', () => {
+            signUpForm.classList.remove('hidden');
+            signInForm.classList.add('hidden');
+            showSignUpBtn.classList.add('active');
+            showSignInBtn.classList.remove('active');
+        });
+
+        // --- "OTHER" FIELD VISIBILITY LOGIC ---
+        function setupOtherField(selectId, otherInputId) {
+            const selectElement = document.getElementById(selectId);
+            const otherInputElement = document.getElementById(otherInputId);
+            selectElement.addEventListener('change', (e) => {
+                if (e.target.value === 'Other') {
+                    otherInputElement.classList.remove('hidden');
+                    otherInputElement.required = true;
+                } else {
+                    otherInputElement.classList.add('hidden');
+                    otherInputElement.required = false;
+                }
+            });
+        }
+        setupOtherField('signUpBatch', 'signUpBatchOther');
+        setupOtherField('signUpAim', 'signUpAimOther');
+        setupOtherField('signUpDestination', 'signUpDestinationOther');
+
+        // --- MESSAGE DISPLAY UTILITY ---
+        function showMessage(element, message, type) {
+            element.textContent = message;
+            element.className = type; // 'success' or 'error'
+            element.classList.remove('hidden');
+            setTimeout(() => {
+                element.classList.add('hidden');
+            }, 5000);
+        }
+
+        // --- SIGN UP LOGIC ---
+        signUpForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('signUpUsername').value.trim().toLowerCase();
+            const password = document.getElementById('signUpPassword').value;
+            const fullName = document.getElementById('signUpFullName').value.trim();
+            const email = document.getElementById('signUpEmail').value.trim().toLowerCase();
+            const mobile = document.getElementById('signUpMobile').value.trim();
+            const whatsapp = document.getElementById('signUpWhatsapp').value.trim();
+            const college = document.getElementById('signUpCollege').value.trim();
+
+            const getSelectValue = (selectId, otherId) => {
+                const select = document.getElementById(selectId);
+                if (select.value === 'Other') {
+                    return document.getElementById(otherId).value.trim();
+                }
+                return select.value;
+            };
+
+            const batch = getSelectValue('signUpBatch', 'signUpBatchOther');
+            const aim = getSelectValue('signUpAim', 'signUpAimOther');
+            const destination = getSelectValue('signUpDestination', 'signUpDestinationOther');
+
+            if (!username || !password || !fullName || !email || !mobile || !whatsapp || !college || !batch || !aim || !destination) {
+                showMessage(signUpMessage, 'Please fill out all fields.', 'error');
+                return;
+            }
+
+            try {
+                // Check if username already exists
+                const userSnapshot = await database.ref('users/' + username).once('value');
+                if (userSnapshot.exists()) {
+                    showMessage(signUpMessage, 'This username is already taken. Please choose another.', 'error');
+                    return;
+                }
+                
+                // Check if email already exists
+                const emailSnapshot = await database.ref('users').orderByChild('email').equalTo(email).once('value');
+                 if (emailSnapshot.exists()) {
+                    showMessage(signUpMessage, 'This email is already registered.', 'error');
+                    return;
+                }
+
+                const userData = {
+                    username,
+                    password, // WARNING: Storing password in plaintext is INSECURE!
+                    fullName,
+                    email,
+                    mobile,
+                    whatsapp,
+                    college,
+                    batch,
+                    aim,
+                    destination,
+                    signUpDate: new Date().toISOString()
+                };
+
+                await database.ref('users/' + username).set(userData);
+                
+                showMessage(signUpMessage, 'Account created successfully! You can now sign in.', 'success');
+                signUpForm.reset();
+                // Hide 'other' fields after reset
+                document.getElementById('signUpBatchOther').classList.add('hidden');
+                document.getElementById('signUpAimOther').classList.add('hidden');
+                document.getElementById('signUpDestinationOther').classList.add('hidden');
+
+            } catch (error) {
+                console.error("Sign Up Error:", error);
+                showMessage(signUpMessage, 'An error occurred. Please try again.', 'error');
+            }
+        });
+
+
+        // --- SIGN IN LOGIC ---
+        signInForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const identifier = document.getElementById('signInIdentifier').value.trim().toLowerCase();
+            const password = document.getElementById('signInPassword').value;
+
+            if (!identifier || !password) {
+                showMessage(signInMessage, 'Please enter your credentials.', 'error');
+                return;
+            }
+
+            try {
+                let userSnapshot = null;
+                
+                // 1. Try to find user by username
+                const usernameSnapshot = await database.ref('users/' + identifier).once('value');
+                if (usernameSnapshot.exists()) {
+                    userSnapshot = usernameSnapshot;
+                } else {
+                    // 2. If not found by username, try by email
+                    const emailQuery = await database.ref('users').orderByChild('email').equalTo(identifier).limitToFirst(1).once('value');
+                    if(emailQuery.exists()) {
+                        // Firebase returns an object of matches, so we get the first one
+                        const userId = Object.keys(emailQuery.val())[0];
+                        userSnapshot = await database.ref('users/' + userId).once('value');
+                    } else {
+                        // 3. If not found by email, try by mobile
+                         const mobileQuery = await database.ref('users').orderByChild('mobile').equalTo(identifier).limitToFirst(1).once('value');
+                         if(mobileQuery.exists()) {
+                            const userId = Object.keys(mobileQuery.val())[0];
+                            userSnapshot = await database.ref('users/' + userId).once('value');
+                         }
+                    }
+                }
+                
+                if (userSnapshot && userSnapshot.exists()) {
+                    const userData = userSnapshot.val();
+                    // WARNING: Comparing plaintext passwords is INSECURE!
+                    if (userData.password === password) {
+                        showMessage(signInMessage, 'Sign in successful! Redirecting...', 'success');
+                        setTimeout(() => {
+                            window.location.href = 'https://sites.google.com/view/0nlinephysics/';
+                        }, 1500);
+                    } else {
+                        showMessage(signInMessage, 'Incorrect password. Please try again.', 'error');
+                    }
+                } else {
+                    showMessage(signInMessage, 'User not found. Please check your details or sign up.', 'error');
+                }
+
+            } catch (error) {
+                console.error("Sign In Error:", error);
+                showMessage(signInMessage, 'An error occurred during sign in.', 'error');
+            }
+        });
+    </script>
+
 </body>
 </html>
