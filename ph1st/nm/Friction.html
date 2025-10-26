@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ঘর্ষণ কুইজ</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;700&family=Poppins:wght@600&display=swap');
+
+        :root {
+            --primary-bg: #5614B0; /* A different color scheme */
+            --secondary-bg: #22c1c3;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-color: #333;
+            --accent-color: #FF8008;
+            --correct-color: #2ecc71;
+            --incorrect-color: #e74c3c;
+            --light-gray: #f0f0f0;
+            --shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            --border-radius: 15px;
+        }
+
+        /* All other CSS styles are the same as the previous template */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Sans Bengali', sans-serif; }
+        body { background: linear-gradient(135deg, var(--primary-bg), var(--secondary-bg)); color: var(--text-color); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 20px 15px; overflow-x: hidden; }
+        .container { width: 100%; max-width: 800px; background: var(--card-bg); border-radius: var(--border-radius); box-shadow: var(--shadow); padding: 30px; text-align: center; overflow: hidden; position: relative; margin-bottom: 20px; }
+        .screen { display: none; animation: fadeIn 0.5s ease-in-out; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { font-size: 2.5em; margin-bottom: 10px; color: var(--primary-bg); }
+        h2 { font-size: 1.8em; margin-bottom: 20px; color: var(--primary-bg); }
+        p { margin-bottom: 20px; font-size: 1.1em; }
+        .start-buttons-container { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .btn { background: linear-gradient(45deg, var(--accent-color), #FFC837); color: white; border: none; padding: 15px 30px; font-size: 1.2em; font-weight: 700; border-radius: 50px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(255, 128, 8, 0.4); display: inline-block; }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 7px 20px rgba(255, 128, 8, 0.6); }
+        .btn.continue-btn { background: linear-gradient(45deg, #2980b9, #3498db); box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4); }
+        .btn.continue-btn:hover { box-shadow: 0 7px 20px rgba(52, 152, 219, 0.6); }
+        #quiz-screen .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 1.1em; font-weight: 500; }
+        #question-counter, #score-display { background: var(--light-gray); padding: 8px 15px; border-radius: 20px; }
+        #timer { display: flex; align-items: center; font-size: 1.5em; font-family: 'Poppins', sans-serif; font-weight: 600; color: var(--primary-bg); }
+        #progress-bar-container { width: 100%; height: 10px; background-color: var(--light-gray); border-radius: 5px; margin-bottom: 25px; overflow: hidden; }
+        #progress-bar { height: 100%; background: linear-gradient(90deg, var(--correct-color), #f7b733); width: 0%; border-radius: 5px; transition: width 0.5s ease-out; }
+        #question-text { font-size: 1.4em; font-weight: 700; margin-bottom: 25px; min-height: 80px; }
+        #options-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .option-btn { width: 100%; padding: 18px; font-size: 1.1em; font-weight: 500; border-radius: var(--border-radius); border: 2px solid var(--light-gray); background: white; cursor: pointer; transition: all 0.2s ease; text-align: left; }
+        .option-btn:hover:not([disabled]) { border-color: var(--secondary-bg); background-color: #f7f7ff; transform: scale(1.02); }
+        .option-btn:disabled { cursor: not-allowed; opacity: 0.8; }
+        .option-btn.correct { background-color: var(--correct-color); color: white; border-color: var(--correct-color); animation: pulse 0.5s; }
+        .option-btn.incorrect { background-color: var(--incorrect-color); color: white; border-color: var(--incorrect-color); animation: shake 0.5s; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        #overview-screen h2 { margin-bottom: 10px; }
+        #overview-summary { font-size: 1.2em; font-weight: bold; margin-bottom: 25px; background: var(--light-gray); padding: 15px; border-radius: 10px; display: flex; justify-content: center; gap: 30px; }
+        .summary-correct { color: var(--correct-color); }
+        .summary-incorrect { color: var(--incorrect-color); }
+        #overview-list { max-height: 40vh; overflow-y: auto; text-align: left; margin-bottom: 25px; }
+        .overview-item { background: #fff; border: 1px solid var(--light-gray); border-radius: 10px; padding: 15px; margin-bottom: 10px; position: relative; padding-right: 40px; }
+        .overview-item p { margin-bottom: 8px; font-size: 1em; }
+        .overview-item .question { font-weight: bold; }
+        .overview-item .explanation { font-size: 0.9em; color: #555; background: #f8f9fa; padding: 8px; border-radius: 5px; margin-top: 5px; }
+        .overview-status { position: absolute; top: 50%; right: 15px; transform: translateY(-50%); font-size: 2em; }
+        .status-correct { color: var(--correct-color); }
+        .status-incorrect { color: var(--incorrect-color); }
+        footer { text-align: center; color: rgba(255, 255, 255, 0.8); font-size: 0.9em; line-height: 1.6; }
+        @media (max-width: 600px) { .container { padding: 15px; } h1 { font-size: 2em; } h2 { font-size: 1.5em; } #question-text { font-size: 1.2em; min-height: 70px; } #options-container { grid-template-columns: 1fr; } .option-btn { padding: 15px; font-size: 1em; } #quiz-screen .header { flex-direction: column; gap: 10px; margin-bottom: 15px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <h1>ঘর্ষণ কুইজ</h1>
+            <p>এই অধ্যায়ের উপর আপনার দক্ষতা যাচাই করুন। প্রতিটি প্রশ্নের জন্য সময় পাবেন 40 সেকেন্ড।</p>
+            <p><strong>মোট 20টি প্রশ্ন</strong></p>
+            <div class="start-buttons-container">
+                <button id="start-btn" class="btn">নতুন কুইজ শুরু করুন</button>
+            </div>
+        </div>
+        <!-- Other screens (quiz, overview) -->
+        <div id="quiz-screen" class="screen">
+            <div class="header">
+                <div id="question-counter"></div>
+                <div id="timer"><span id="timer-text">40</span></div>
+                <div id="score-display">স্কোর: 0</div>
+            </div>
+            <div id="progress-bar-container"><div id="progress-bar"></div></div>
+            <div id="question-text"></div>
+            <div id="options-container"></div>
+        </div>
+        <div id="overview-screen" class="screen">
+            <h2 id="overview-title"></h2>
+            <div id="overview-summary"></div>
+            <div id="overview-list"></div>
+            <button id="continue-btn" class="btn continue-btn"></button>
+        </div>
+    </div>
+    <footer>
+        <p>Abu Hasan, Assistant Professor,</p>
+        <p>Department of Physics,</p>
+        <p>Rangpur Government College</p>
+    </footer>
+
+    <script>
+        const questions = [
+            // সহজ স্তর
+            { question: "ঘর্ষণ বল সর্বদা বস্তুর গতির কোন দিকে ক্রিয়া করে?", options: ["একই দিকে", "বিপরীত দিকে", "লম্ব দিকে", "যেকোনো দিকে"], answer: "বিপরীত দিকে", explanation: "ঘর্ষণ বল একটি বাধাদানকারী বল, যা সর্বদা দুটি তলের আপেক্ষিক গতির বিরুদ্ধে বা গতির চেষ্টার বিরুদ্ধে ক্রিয়া করে।" },
+            { question: "কোন ধরনের ঘর্ষণের মান সবচেয়ে বেশি?", options: ["স্থিতি ঘর্ষণ", "গতিয় ঘর্ষণ", "আবর্ত ঘর্ষণ", "প্রবাহী ঘর্ষণ"], answer: "স্থিতি ঘর্ষণ", explanation: "একটি বস্তুকে গতিশীল করার আগ পর্যন্ত যে ঘর্ষণ বল কাজ করে (স্থিতি ঘর্ষণ), তার সর্বোচ্চ মান (সীমাস্ত ঘর্ষণ) গতিয় ঘর্ষণের চেয়ে বেশি।" },
+            { question: "গাড়ির টায়ারে খাঁজ কাটা থাকে কেন?", options: ["বাতাস চলাচলের জন্য", "গাড়ি সুন্দর দেখানোর জন্য", "ঘর্ষণ বাড়ানোর জন্য", "ঘর্ষণ কমানোর জন্য"], answer: "ঘর্ষণ বাড়ানোর জন্য", explanation: "টায়ারে খাঁজ বা ট্রেড থাকার কারণে রাস্তা ও টায়ারের মধ্যে ঘর্ষণ বল বৃদ্ধি পায়, যা গাড়িকে ভেজা রাস্তায় পিছলে যাওয়া থেকে রক্ষা করে এবং ব্রেক করতে সাহায্য করে।" },
+            { question: "ঘর্ষণ বল কিসের উপর নির্ভর করে না?", options: ["তলের প্রকৃতি", "অভিলম্ব প্রতিক্রিয়া", "স্পর্শতলের ক্ষেত্রফল", "বস্তুর ওজন"], answer: "স্পর্শতলের ক্ষেত্রফল", explanation: "ঘর্ষণ বল সাধারণত স্পর্শতলের ক্ষেত্রফলের উপর নির্ভর করে না, এটি তলের প্রকৃতি (মসৃণ না অমসৃণ) এবং অভিলম্ব প্রতিক্রিয়ার উপর নির্ভর করে।" },
+
+            // মাঝারি স্তর
+            { question: "একটি 10 kg ভরের ব্লক একটি মেঝের উপর রাখা আছে। স্থিতি ঘর্ষণ গুণাঙ্ক 0.5 হলে, ব্লকটিকে গতিশীল করতে সর্বনিম্ন কত বল প্রয়োজন? (g=10 m/s²)", options: ["10 N", "5 N", "100 N", "50 N"], answer: "50 N", explanation: "সীমাস্ত ঘর্ষণ বল fₛ(max) = µₛR = µₛmg = 0.5 × 10 kg × 10 m/s² = 50 N। ব্লকটিকে গতিশীল করতে ন্যূনতম 50 N বল প্রয়োগ করতে হবে।" },
+            { question: "পিচ্ছিল রাস্তায় হাঁটা কঠিন কেন?", options: ["অভিকর্ষ বল কম থাকায়", "বায়ুর বাধা বেশি থাকায়", "ঘর্ষণ বল খুব কম থাকায়", "অভিলম্ব প্রতিক্রিয়া শূন্য হওয়ায়"], answer: "ঘর্ষণ বল খুব কম থাকায়", explanation: "হাঁটার জন্য পা ও রাস্তার মধ্যে ঘর্ষণ বল প্রয়োজন। পিচ্ছিল রাস্তায় ঘর্ষণ গুণাঙ্ক খুব কম হওয়ায় প্রয়োজনীয় ঘর্ষণ বল পাওয়া যায় না, তাই হাঁটা কঠিন হয়।" },
+            { question: "কোন ঘর্ষণের মান সবচেয়ে কম?", options: ["স্থিতি ঘর্ষণ", "বিসর্প ঘর্ষণ", "আবর্ত ঘর্ষণ", "প্রবাহী ঘর্ষণ"], answer: "আবর্ত ঘর্ষণ", explanation: "যখন একটি বস্তু অন্য একটি তলের উপর দিয়ে গড়িয়ে চলে, তখন আবর্ত ঘর্ষণ সৃষ্টি হয়। এর মান বিসর্প (sliding) ঘর্ষণের চেয়ে অনেক কম।" },
+            { question: "ঘর্ষণ কোণ (λ) এবং স্থিতি ঘর্ষণ গুণাঙ্ক (µₛ) এর মধ্যে সম্পর্ক কী?", options: ["µₛ = sinλ", "µₛ = cosλ", "µₛ = tanλ", "µₛ = cotλ"], answer: "µₛ = tanλ", explanation: "সীমাস্ত ঘর্ষণ বল এবং অভিলম্ব প্রতিক্রিয়ার লব্ধি বল অভিলম্ব প্রতিক্রিয়ার সাথে যে কোণ উৎপন্ন করে, তাকে ঘর্ষণ কোণ বলে। এদের সম্পর্কটি হলো µₛ = tanλ।" },
+            { question: "একটি বস্তু অমসৃণ নততল বরাবর নিচের দিকে নামার সময় এর ত্বরণ কত হবে? (নতি কোণ θ, গতিয় ঘর্ষণ গুণাঙ্ক µₖ)", options: ["g sinθ", "g(sinθ + µₖcosθ)", "g(sinθ - µₖcosθ)", "g µₖcosθ"], answer: "g(sinθ - µₖcosθ)", explanation: "নততল বরাবর নিচের দিকে ক্রিয়াশীল বল mgsinθ এবং উপরের দিকে ঘর্ষণ বল fₖ = µₖR = µₖmgcosθ। সুতরাং, নিট বল = mgsinθ - µₖmgcosθ। ত্বরণ a = নিট বল / m = g(sinθ - µₖcosθ)।" },
+            { question: "মেশিনে 'বল বিয়ারিং' ব্যবহার করা হয় কেন?", options: ["বিসর্প ঘর্ষণকে স্থিতি ঘর্ষণে রূপান্তর করতে", "আবর্ত ঘর্ষণকে বিসর্প ঘর্ষণে রূপান্তর করতে", "বিসর্প ঘর্ষণকে আবর্ত ঘর্ষণে রূপান্তর করতে", "ঘর্ষণ বাড়ানোর জন্য"], answer: "বিসর্প ঘর্ষণকে আবর্ত ঘর্ষণে রূপান্তর করতে", explanation: "বল বিয়ারিং ব্যবহারের ফলে যন্ত্রাংশের মধ্যে সরাসরি ঘষা লাগার (বিসর্প ঘর্ষণ) পরিবর্তে বলগুলো গড়িয়ে চলে (আবর্ত ঘর্ষণ)। যেহেতু আবর্ত ঘর্ষণের মান অনেক কম, তাই যন্ত্রের কর্মদক্ষতা বাড়ে।" },
+            
+            // কঠিন স্তর
+            { question: "একটি আনুভূমিক রাস্তায় একটি গাড়ির সর্বোচ্চ নিরাপদ বাঁকের বেগ কিসের উপর নির্ভর করে না?", options: ["রাস্তার ব্যাসার্ধ", "ঘর্ষণ গুণাঙ্ক", "অভিকর্ষজ ত্বরণ", "গাড়ির ভর"], answer: "গাড়ির ভর", explanation: "নিরাপদ বাঁকের সর্বোচ্চ বেগ v = √(µrg)। এই সমীকরণে গাড়ির ভর (m) অনুপস্থিত। তাই এটি ভরের উপর নির্ভর করে না।" },
+            { question: "30° কোণে আনত একটি তলে 2 kg ভরের একটি ব্লক রাখা আছে। ব্লকটি ঠিক পিছলে পড়ার উপক্রম হলে, স্থিতি ঘর্ষণ গুণাঙ্ক কত? (g=10 m/s²)", options: ["0.5", "0.866", "0.577", "1.732"], answer: "0.577", explanation: "যখন বস্তু ঠিক পিছলে পড়ার উপক্রম হয়, তখন স্থিতি কোণ (θ) এবং ঘর্ষণ কোণ (λ) সমান হয়। স্থিতি ঘর্ষণ গুণাঙ্ক µₛ = tanθ = tan(30°) ≈ 0.577।" },
+            { question: "একটি সাইকেল আরোহী সমবেগে চলার সময় প্যাডেল করা বন্ধ করে দিলে কিছুদূর গিয়ে থেমে যায়। এক্ষেত্রে কোন শক্তি কোন শক্তিতে রূপান্তরিত হয়?", options: ["গতিশক্তি স্থিতিশক্তিতে", "গতিশক্তি তাপ ও শব্দ শক্তিতে", "স্থিতিশক্তি গতিশক্তিতে", "তাপশক্তি গতিশক্তিতে"], answer: "গতিশক্তি তাপ ও শব্দ শক্তিতে", explanation: "ঘর্ষণ বল একটি অসংরক্ষণশীল বল। এর বিরুদ্ধে কাজ করার ফলে সাইকেলের গতিশক্তি তাপ (টায়ার ও রাস্তা গরম হয়) এবং শব্দ শক্তিতে রূপান্তরিত হয়ে হারিয়ে যায়, ফলে সাইকেল থেমে যায়।" },
+            { question: "যদি কোনো তলের ঘর্ষণ গুণাঙ্ক 1 হয়, তবে এর স্থিতি কোণ কত?", options: ["30°", "45°", "60°", "90°"], answer: "45°", explanation: "আমরা জানি, µₛ = tanθ। যদি µₛ = 1 হয়, তবে tanθ = 1। সুতরাং, θ = tan⁻¹(1) = 45°।" },
+            { question: "একটি ব্লককে দেয়ালের সাথে চেপে ধরে স্থির রাখতে হলে প্রযুক্ত বল (F) এবং ঘর্ষণ বল (f) এর সম্পর্ক কী? (ব্লকের ওজন W)", options: ["F = W", "f = F", "f = W", "F = f + W"], answer: "f = W", explanation: "এক্ষেত্রে, প্রযুক্ত বল F দেয়ালের উপর অভিলম্ব প্রতিক্রিয়ার (R) যোগান দেয় (R=F)। ব্লকের ওজন W নিচের দিকে ক্রিয়া করে। একে স্থির রাখতে ঘর্ষণ বল f উপরের দিকে ক্রিয়া করে এবং ওজনকে প্রশমিত করে। তাই f = W।" },
+            { question: "একটি প্যারাশুট নিয়ে কোনো ব্যক্তি লাফ দিলে কিছু সময় পর ধ্রুব বেগে নিচে নামে। কেন?", options: ["তার ওজন শূন্য হয়ে যায়", "বায়ুর ঊর্ধ্বমুখী বাধা তার ওজনের সমান হয়", "অভিকর্ষজ ত্বরণ শূন্য হয়ে যায়", "প্যারাশুট কাজ করা বন্ধ করে দেয়"], answer: "বায়ুর ঊর্ধ্বমুখী বাধা তার ওজনের সমান হয়", explanation: "যখন বায়ুর ঊর্ধ্বমুখী বাধা (প্রবাহী ঘর্ষণ) ব্যক্তির ওজনের সমান ও বিপরীতমুখী হয়, তখন তার উপর নিট বল শূন্য হয়ে যায়। ফলে, তার ত্বরণ শূন্য হয় এবং সে একটি ধ্রুব অন্ত্যবেগ বা প্রান্তিক বেগ (terminal velocity) প্রাপ্ত হয়।" },
+            { question: "একটি 5 kg ভরের ব্লক 30 N আনুভূমিক বলে টানা হচ্ছে। গতিয় ঘর্ষণ গুণাঙ্ক 0.4 হলে ব্লকটির ত্বরণ কত? (g=10 m/s²)", options: ["2 m/s²", "6 m/s²", "4 m/s²", "5 m/s²"], answer: "2 m/s²", explanation: "গতিয় ঘর্ষণ বল fₖ = µₖmg = 0.4 × 5 × 10 = 20 N। নিট বল F_net = প্রযুক্ত বল - ঘর্ষণ বল = 30 N - 20 N = 10 N। ত্বরণ a = F_net / m = 10 N / 5 kg = 2 m/s²।" },
+            { question: "একটি কাঠের ব্লককে টেনে নেওয়ার চেয়ে গড়িয়ে নেওয়া সহজ কেন?", options: ["কারণ গড়িয়ে নিলে ওজন কমে যায়", "কারণ গতিয় ঘর্ষণ আবর্ত ঘর্ষণ অপেক্ষা বেশি", "কারণ স্থিতি ঘর্ষণ আবর্ত ঘর্ষণ অপেক্ষা কম", "কারণ গড়িয়ে নিলে অভিলম্ব প্রতিক্রিয়া কমে যায়"], answer: "কারণ গতিয় ঘর্ষণ আবর্ত ঘর্ষণ অপেক্ষা বেশি", explanation: "টেনে নেওয়ার সময় গতিয় বা বিসর্প ঘর্ষণ কাজ করে, আর গড়িয়ে নেওয়ার সময় আবর্ত ঘর্ষণ কাজ করে। আবর্ত ঘর্ষণের মান গতিয় ঘর্ষণের চেয়ে অনেক কম, তাই গড়িয়ে নেওয়া সহজ।" },
+            { question: "ঘর্ষণ বল কি সর্বদা গতির পরিমাণ কমায়?", options: ["হ্যাঁ, সর্বদা", "না, এটি গতির কারণও হতে পারে", "শুধুমাত্র বৃত্তাকার পথে কমায়", "শুধুমাত্র সরল পথে কমায়"], answer: "না, এটি গতির কারণও হতে পারে", explanation: "সাধারণত ঘর্ষণ গতিকে বাধা দেয়। কিন্তু হাঁটার সময়, পা মাটিতে পিছনের দিকে বল প্রয়োগ করলে ঘর্ষণ বল সামনের দিকে ক্রিয়া করে, যা আমাদের এগিয়ে যেতে সাহায্য করে। এক্ষেত্রে ঘর্ষণই গতির কারণ।" },
+            { question: "কোনো তলের উপর দিয়ে একটি বস্তুকে গতিশীল রাখতে যে বল লাগে, তা সীমাস্ত ঘর্ষণ অপেক্ষা কম কেন?", options: ["কারণ গতিশীল অবস্থায় তলের অণুগুলো স্থির হতে পারে না", "কারণ গতিশীল অবস্থায় বস্তুর ভর কমে যায়", "কারণ গতিশীল অবস্থায় অভিলম্ব প্রতিক্রিয়া কমে যায়", "কারণ গতিশীল অবস্থায় ঘর্ষণ গুণাঙ্ক বেড়ে যায়"], answer: "কারণ গতিশীল অবস্থায় তলের অণুগুলো স্থির হতে পারে না", explanation: "গতিশীল অবস্থায় দুটি তলের অণু-পরমাণুগুলো একে অপরের সাথে ভালোভাবে আবদ্ধ (interlocking) হওয়ার সুযোগ পায় না। ফলে, গতিয় ঘর্ষণের মান সীমাস্ত ঘর্ষণের চেয়ে কম হয়।" }
+        ];
+
+        // All other JavaScript code is the same as the previous template
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const overviewScreen = document.getElementById('overview-screen');
+        const startBtn = document.getElementById('start-btn');
+        const questionCounter = document.getElementById('question-counter');
+        const scoreDisplay = document.getElementById('score-display');
+        const timerText = document.getElementById('timer-text');
+        const progressBar = document.getElementById('progress-bar');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const overviewTitle = document.getElementById('overview-title');
+        const overviewSummary = document.getElementById('overview-summary');
+        const overviewList = document.getElementById('overview-list');
+        const continueBtn = document.getElementById('continue-btn');
+        let currentQuestionIndex = 0, score = 0, timer, timeLeft;
+        const TIME_LIMIT = 40;
+        let userAnswers = [];
+
+        function saveQuizState() { localStorage.setItem('frictionQuizProgress', JSON.stringify({ currentQuestionIndex, score, userAnswers })); }
+        function loadQuizState() { const state = JSON.parse(localStorage.getItem('frictionQuizProgress')); if (state) { currentQuestionIndex = state.currentQuestionIndex; score = state.score; userAnswers = state.userAnswers; scoreDisplay.textContent = `স্কোর: ${score}`; showScreen('quiz-screen'); loadQuestion(); } }
+        function clearQuizState() { localStorage.removeItem('frictionQuizProgress'); }
+
+        window.addEventListener('load', () => { if (localStorage.getItem('frictionQuizProgress')) { const btnContainer = document.querySelector('.start-buttons-container'); const btn = document.createElement('button'); btn.id = 'continue-saved-btn'; btn.className = 'btn continue-btn'; btn.textContent = 'আগেরটি চালিয়ে যান'; btnContainer.appendChild(btn); btn.addEventListener('click', loadQuizState); } });
+        startBtn.addEventListener('click', startGame);
+        continueBtn.addEventListener('click', continueQuiz);
+
+        function startGame() { clearQuizState(); currentQuestionIndex = 0; score = 0; userAnswers = []; scoreDisplay.textContent = 'স্কোর: 0'; showScreen('quiz-screen'); loadQuestion(); }
+        function loadQuestion() { resetState(); progressBar.style.width = `${(currentQuestionIndex / questions.length) * 100}%`; if (currentQuestionIndex >= questions.length) { showOverview(true); return; } const q = questions[currentQuestionIndex]; questionCounter.textContent = `প্রশ্ন ${currentQuestionIndex + 1}/${questions.length}`; questionText.textContent = q.question; q.options.forEach(opt => { const btn = document.createElement('button'); btn.textContent = opt; btn.classList.add('option-btn'); btn.addEventListener('click', () => selectAnswer(btn, opt)); optionsContainer.appendChild(btn); }); startTimer(); }
+        function startTimer() { timeLeft = TIME_LIMIT; timerText.textContent = timeLeft; timer = setInterval(() => { timeLeft--; timerText.textContent = timeLeft; if (timeLeft <= 0) { clearInterval(timer); selectAnswer(null, null); } }, 1000); }
+        function resetState() { clearInterval(timer); optionsContainer.innerHTML = ''; }
+        function selectAnswer(btn, opt) { clearInterval(timer); const correctOpt = questions[currentQuestionIndex].answer; const isCorrect = opt === correctOpt; userAnswers.push({ question: questions[currentQuestionIndex].question, yourAnswer: opt === null ? 'সময় শেষ' : opt, correctAnswer: correctOpt, explanation: questions[currentQuestionIndex].explanation, isCorrect: isCorrect }); Array.from(optionsContainer.children).forEach(b => { if (b.textContent === correctOpt) b.classList.add('correct'); if (b === btn && !isCorrect) b.classList.add('incorrect'); b.disabled = true; }); if (isCorrect) { score++; scoreDisplay.textContent = `স্কোর: ${score}`; } saveQuizState(); setTimeout(handleNext, 2000); }
+        function handleNext() { currentQuestionIndex++; if (currentQuestionIndex >= questions.length) { showOverview(true); } else if (currentQuestionIndex % 10 === 0) { showOverview(false); } else { loadQuestion(); } }
+        function showOverview(isFinal) { showScreen('overview-screen'); if (isFinal) { clearQuizState(); } let start = isFinal ? 0 : currentQuestionIndex - 10; let end = currentQuestionIndex; overviewTitle.textContent = isFinal ? 'চূড়ান্ত ফলাফল' : `পার্ট ${end / 10} এর সারসংক্ষেপ`; overviewList.innerHTML = ''; const segmentAnswers = userAnswers.slice(start, end); segmentAnswers.reverse().forEach((ans, idx) => { const item = document.createElement('div'); item.classList.add('overview-item'); const statusIcon = ans.isCorrect ? '✔' : '✖'; const statusClass = ans.isCorrect ? 'status-correct' : 'status-incorrect'; item.innerHTML = `<div class="overview-status ${statusClass}">${statusIcon}</div><p class="question"><strong>প্রশ্ন ${start + (segmentAnswers.length - 1 - idx) + 1}:</strong> ${ans.question}</p><p><strong>তোমার উত্তর:</strong> ${ans.yourAnswer}</p>${!ans.isCorrect ? `<p><strong>সঠিক উত্তর:</strong> ${ans.correctAnswer}</p>` : ''}<p class="explanation"><strong>ব্যাখ্যা:</strong> ${ans.explanation}</p>`; overviewList.appendChild(item); }); const totalCorrect = userAnswers.filter(a => a.isCorrect).length; const totalIncorrect = currentQuestionIndex - totalCorrect; overviewSummary.innerHTML = `<span class="summary-correct">✔ মোট সঠিক: ${totalCorrect}</span><span class="summary-incorrect">✖ মোট ভুল: ${totalIncorrect}</span>`; continueBtn.textContent = isFinal ? 'পুনরায় খেলুন' : 'পরবর্তী ধাপে যান'; }
+        function continueQuiz() { if (currentQuestionIndex >= questions.length) { startGame(); } else { showScreen('quiz-screen'); loadQuestion(); } }
+        function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+    </script>
+</body>
+</html>

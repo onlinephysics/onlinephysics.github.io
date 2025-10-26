@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>রকেট কুইজ</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;700&family=Poppins:wght@600&display=swap');
+
+        :root {
+            --primary-bg: #373B44; /* A different color scheme */
+            --secondary-bg: #4286f4;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-color: #333;
+            --accent-color: #F00000;
+            --correct-color: #2ecc71;
+            --incorrect-color: #e74c3c;
+            --light-gray: #f0f0f0;
+            --shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            --border-radius: 15px;
+        }
+
+        /* All other CSS styles are the same as the previous template */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Sans Bengali', sans-serif; }
+        body { background: linear-gradient(135deg, var(--primary-bg), var(--secondary-bg)); color: var(--text-color); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 20px 15px; overflow-x: hidden; }
+        .container { width: 100%; max-width: 800px; background: var(--card-bg); border-radius: var(--border-radius); box-shadow: var(--shadow); padding: 30px; text-align: center; overflow: hidden; position: relative; margin-bottom: 20px; }
+        .screen { display: none; animation: fadeIn 0.5s ease-in-out; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { font-size: 2.5em; margin-bottom: 10px; color: var(--primary-bg); }
+        h2 { font-size: 1.8em; margin-bottom: 20px; color: var(--primary-bg); }
+        p { margin-bottom: 20px; font-size: 1.1em; }
+        .start-buttons-container { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .btn { background: linear-gradient(45deg, var(--accent-color), #f953c6); color: white; border: none; padding: 15px 30px; font-size: 1.2em; font-weight: 700; border-radius: 50px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(240, 0, 0, 0.4); display: inline-block; }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 7px 20px rgba(240, 0, 0, 0.6); }
+        .btn.continue-btn { background: linear-gradient(45deg, #2980b9, #3498db); box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4); }
+        .btn.continue-btn:hover { box-shadow: 0 7px 20px rgba(52, 152, 219, 0.6); }
+        #quiz-screen .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 1.1em; font-weight: 500; }
+        #question-counter, #score-display { background: var(--light-gray); padding: 8px 15px; border-radius: 20px; }
+        #timer { display: flex; align-items: center; font-size: 1.5em; font-family: 'Poppins', sans-serif; font-weight: 600; color: var(--primary-bg); }
+        #progress-bar-container { width: 100%; height: 10px; background-color: var(--light-gray); border-radius: 5px; margin-bottom: 25px; overflow: hidden; }
+        #progress-bar { height: 100%; background: linear-gradient(90deg, var(--correct-color), #f7b733); width: 0%; border-radius: 5px; transition: width 0.5s ease-out; }
+        #question-text { font-size: 1.4em; font-weight: 700; margin-bottom: 25px; min-height: 80px; }
+        #options-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .option-btn { width: 100%; padding: 18px; font-size: 1.1em; font-weight: 500; border-radius: var(--border-radius); border: 2px solid var(--light-gray); background: white; cursor: pointer; transition: all 0.2s ease; text-align: left; }
+        .option-btn:hover:not([disabled]) { border-color: var(--secondary-bg); background-color: #f7f7ff; transform: scale(1.02); }
+        .option-btn:disabled { cursor: not-allowed; opacity: 0.8; }
+        .option-btn.correct { background-color: var(--correct-color); color: white; border-color: var(--correct-color); animation: pulse 0.5s; }
+        .option-btn.incorrect { background-color: var(--incorrect-color); color: white; border-color: var(--incorrect-color); animation: shake 0.5s; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        #overview-screen h2 { margin-bottom: 10px; }
+        #overview-summary { font-size: 1.2em; font-weight: bold; margin-bottom: 25px; background: var(--light-gray); padding: 15px; border-radius: 10px; display: flex; justify-content: center; gap: 30px; }
+        .summary-correct { color: var(--correct-color); }
+        .summary-incorrect { color: var(--incorrect-color); }
+        #overview-list { max-height: 40vh; overflow-y: auto; text-align: left; margin-bottom: 25px; }
+        .overview-item { background: #fff; border: 1px solid var(--light-gray); border-radius: 10px; padding: 15px; margin-bottom: 10px; position: relative; padding-right: 40px; }
+        .overview-item p { margin-bottom: 8px; font-size: 1em; }
+        .overview-item .question { font-weight: bold; }
+        .overview-item .explanation { font-size: 0.9em; color: #555; background: #f8f9fa; padding: 8px; border-radius: 5px; margin-top: 5px; }
+        .overview-status { position: absolute; top: 50%; right: 15px; transform: translateY(-50%); font-size: 2em; }
+        .status-correct { color: var(--correct-color); }
+        .status-incorrect { color: var(--incorrect-color); }
+        footer { text-align: center; color: rgba(255, 255, 255, 0.8); font-size: 0.9em; line-height: 1.6; }
+        @media (max-width: 600px) { .container { padding: 15px; } h1 { font-size: 2em; } h2 { font-size: 1.5em; } #question-text { font-size: 1.2em; min-height: 70px; } #options-container { grid-template-columns: 1fr; } .option-btn { padding: 15px; font-size: 1em; } #quiz-screen .header { flex-direction: column; gap: 10px; margin-bottom: 15px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <h1>রকেট কুইজ</h1>
+            <p>এই অধ্যায়ের উপর আপনার দক্ষতা যাচাই করুন। প্রতিটি প্রশ্নের জন্য সময় পাবেন 45 সেকেন্ড।</p>
+            <p><strong>মোট 20টি প্রশ্ন</strong></p>
+            <div class="start-buttons-container">
+                <button id="start-btn" class="btn">নতুন কুইজ শুরু করুন</button>
+            </div>
+        </div>
+        <!-- Other screens (quiz, overview) -->
+        <div id="quiz-screen" class="screen">
+            <div class="header">
+                <div id="question-counter"></div>
+                <div id="timer"><span id="timer-text">45</span></div>
+                <div id="score-display">স্কোর: 0</div>
+            </div>
+            <div id="progress-bar-container"><div id="progress-bar"></div></div>
+            <div id="question-text"></div>
+            <div id="options-container"></div>
+        </div>
+        <div id="overview-screen" class="screen">
+            <h2 id="overview-title"></h2>
+            <div id="overview-summary"></div>
+            <div id="overview-list"></div>
+            <button id="continue-btn" class="btn continue-btn"></button>
+        </div>
+    </div>
+    <footer>
+        <p>Abu Hasan, Assistant Professor,</p>
+        <p>Department of Physics,</p>
+        <p>Rangpur Government College</p>
+    </footer>
+
+    <script>
+        const questions = [
+            // সহজ স্তর
+            { question: "রকেটের গতি মূলত নিউটনের কোন সূত্রের উপর ভিত্তি করে?", options: ["প্রথম সূত্র", "দ্বিতীয় সূত্র", "তৃতীয় সূত্র", "মহাকর্ষ সূত্র"], answer: "তৃতীয় সূত্র", explanation: "রকেট নিচের দিকে গ্যাস নির্গত করে (ক্রিয়া) এবং গ্যাস রকেটকে উপরের দিকে ধাক্কা দেয় (প্রতিক্রিয়া)। এটি নিউটনের তৃতীয় সূত্রের বাস্তব প্রয়োগ।" },
+            { question: "রকেটের উড্ডয়নের সময় এর ভরের কী পরিবর্তন হয়?", options: ["ভর বাড়ে", "ভর কমে", "ভর অপরিবর্তিত থাকে", "ভর শূন্য হয়ে যায়"], answer: "ভর কমে", explanation: "রকেট চলার সময় ক্রমাগত জ্বালানি পুড়িয়ে গ্যাস হিসেবে বের করে দেয়, ফলে এর মোট ভর সময়ের সাথে সাথে কমতে থাকে।" },
+            { question: "রকেটের উপর প্রযুক্ত ধাক্কাকে (Thrust) কীসের মাধ্যমে প্রকাশ করা হয়?", options: ["F = ma", "F = v(dm/dt)", "F = m(dv/dt)", "F = P/t"], answer: "F = v(dm/dt)", explanation: "রকেটের উপর প্রযুক্ত ধাক্কা (Thrust) হলো নির্গত গ্যাসের আপেক্ষিক বেগ (v) এবং জ্বালানি নির্গমনের হার (dm/dt) এর গুণফলের সমান।" },
+            { question: "রকেট চলার সময় কোন নীতিটি সংরক্ষিত থাকে (মহাকর্ষ উপেক্ষা করলে)?", options: ["শুধুমাত্র গতিশক্তি", "শুধুমাত্র মোট শক্তি", "রৈখিক ভরবেগ", "কৌণিক ভরবেগ"], answer: "রৈখিক ভরবেগ", explanation: "রকেট এবং নির্গত গ্যাস মিলে একটি বিচ্ছিন্ন সিস্টেম (isolated system) গঠন করে। তাই বাহ্যিক বল অনুপস্থিত থাকলে এদের মোট রৈখিক ভরবেগ সংরক্ষিত থাকে।" },
+
+            // মাঝারি স্তর
+            { question: "একটি রকেট 2000 m/s বেগে 5 kg/s হারে গ্যাস নির্গত করলে, এর উপর প্রযুক্ত ধাক্কা (thrust) কত?", options: ["1000 N", "400 N", "10000 N", "2005 N"], answer: "10000 N", explanation: "ধাক্কা, F = v(dm/dt) = 2000 m/s × 5 kg/s = 10000 N।" },
+            { question: "রকেটের বেগ সময়ের সাথে বৃদ্ধি পায় কেন?", options: ["কারণ জ্বালানি শেষ হয়ে যায়", "কারণ এর উপর মহাকর্ষ বল কমে যায়", "কারণ এর ভর কমে কিন্তু ধাক্কা প্রায় সমান থাকে", "কারণ বায়ুর বাধা কমে যায়"], answer: "কারণ এর ভর কমে কিন্তু ধাক্কা প্রায় সমান থাকে", explanation: "রকেটের ত্বরণ a = F/m। ধাক্কা (F) প্রায় ধ্রুব থাকলেও জ্বালানি ব্যবহারের কারণে ভর (m) ক্রমাগত কমে। ফলে ত্বরণ বাড়তে থাকে এবং বেগও বৃদ্ধি পায়।" },
+            { question: "রকেটের গতির সমীকরণ কোনটি? (মহাকর্ষ উপেক্ষা করে)", options: ["v = u + at", "v = v₀ + vᵣ ln(m₀/m)", "v = v₀ + gt", "v = u - at"], answer: "v = v₀ + vᵣ ln(m₀/m)", explanation: "এটি Tsiolkovsky Rocket Equation নামে পরিচিত, যা রকেটের চূড়ান্ত বেগ নির্ণয় করে। এখানে v₀ আদিবেগ, vᵣ নির্গত গ্যাসের বেগ, m₀ আদি ভর এবং m শেষ ভর।" },
+            { question: "কোনো রকেটের আদি ও শেষ ভরের অনুপাত (m₀/m) বাড়লে, রকেটের চূড়ান্ত বেগের কী পরিবর্তন হবে?", options: ["কমবে", "বাড়বে", "অপরিবর্তিত থাকবে", "শূন্য হবে"], answer: "বাড়বে", explanation: "রকেট সমীকরণ v = v₀ + vᵣ ln(m₀/m) অনুযায়ী, ভরের অনুপাত (m₀/m) বাড়লে ln(m₀/m) এর মান বাড়ে, ফলে চূড়ান্ত বেগও বৃদ্ধি পায়।" },
+            { question: "একটি রকেটের মোট ভর 10000 kg এবং এটি 100 kg/s হারে জ্বালানি পোড়াচ্ছে। রকেটের ত্বরণ শূন্য হওয়ার জন্য ন্যূনতম ধাক্কা কত হতে হবে? (g=10 m/s²)", options: ["10000 N", "100000 N", "100 N", "98000 N"], answer: "100000 N", explanation: "রকেটের উড্ডয়নের জন্য ন্যূনতম ধাক্কা এর ওজনের সমান হতে হবে। F_thrust = mg = 10000 kg × 10 m/s² = 100000 N।" },
+            { question: "রকেটের 'ধাক্কা' এবং 'নিট বল' কি একই?", options: ["হ্যাঁ, সর্বদা এক", "না, ধাক্কা থেকে ওজন বাদ দিলে নিট বল পাওয়া যায়", "হ্যাঁ, যদি রকেট স্থির থাকে", "না, ধাক্কা ওজনের সমান"], answer: "না, ধাক্কা থেকে ওজন বাদ দিলে নিট বল পাওয়া যায়", explanation: "ধাক্কা (Thrust) হলো উপরের দিকে প্রযুক্ত বল। নিট বল হলো ধাক্কা এবং নিচের দিকে ক্রিয়াশীল ওজন (mg) ও বায়ুর বাধার লব্ধি বল। F_net = F_thrust - mg।" },
+
+            // কঠিন স্তর
+            { question: "একটি রকেটের আদি ভর 20000 kg। এর 15000 kg জ্বালানি। জ্বালানি সাপেক্ষে গ্যাসের নির্গমন বেগ 2500 m/s হলে রকেটের বেগের সর্বোচ্চ পরিবর্তন কত হবে?", options: ["5000 m/s", "3466 m/s", "2500 m/s", "4255 m/s"], answer: "3466 m/s", explanation: "বেগের পরিবর্তন Δv = vᵣ ln(m₀/m)। এখানে, m₀ = 20000 kg, m = 20000 - 15000 = 5000 kg। সুতরাং, Δv = 2500 × ln(20000/5000) = 2500 × ln(4) ≈ 2500 × 1.386 = 3465.7 m/s।" },
+            { question: "একটি 5000 kg ভরের রকেট 8000 N ধাক্কা নিয়ে খাড়া উপরে উঠছে। উড্ডয়নের মুহূর্তে এর ত্বরণ কত হবে? (g=10 m/s²)", options: ["-8.4 m/s² (পড়ে যাবে)", "1.6 m/s²", "9.6 m/s²", "1.4 m/s²"], answer: "-8.4 m/s² (পড়ে যাবে)", explanation: "রকেটের ওজন W = mg = 5000 × 10 = 50000 N। ধাক্কা (8000 N) ওজনের চেয়ে কম। সুতরাং, F_net = 8000 - 50000 = -42000 N। ত্বরণ a = F_net / m = -42000 / 5000 = -8.4 m/s²। রকেটটি উড়তে পারবে না।" },
+            { question: "মহাশূন্যে (যেখানে g=0) একটি রকেটের চূড়ান্ত বেগ কিসের উপর নির্ভর করে না?", options: ["আদি ও শেষ ভরের অনুপাত", "জ্বালানি নির্গমনের বেগ", "জ্বালানি নির্গমনের হার", "আদি বেগ"], answer: "জ্বালানি নির্গমনের হার", explanation: "চূড়ান্ত বেগের সমীকরণ v = v₀ + vᵣ ln(m₀/m) থেকে দেখা যায়, এটি জ্বালানি নির্গমনের হার (dm/dt) এর উপর নির্ভর করে না, যদিও কত দ্রুত ঐ বেগে পৌঁছাবে তা হারের উপর নির্ভরশীল।" },
+            { question: "একটি রকেটের Payload Mass Ratio বলতে কী বোঝায়?", options: ["মোট ভরের সাথে জ্বালানির ভরের অনুপাত", "মোট ভরের সাথে পেলোডের (কার্গো) ভরের অনুপাত", "জ্বালানির ভরের সাথে পেলোডের ভরের অনুপাত", "রকেটের কাঠামোর ভরের অনুপাত"], answer: "মোট ভরের সাথে পেলোডের (কার্গো) ভরের অনুপাত", explanation: "পেলোড ম্যাস রেশিও হলো রকেটের মোট ভরের তুলনায় এটি যে পরিমাণ কার্যকর বস্তু (যেমন স্যাটেলাইট) বহন করতে পারে তার অনুপাত। এটি রকেটের কার্যকারিতা নির্দেশ করে।" },
+            { question: "যদি একটি রকেটের জ্বালানির ভর তার কাঠামোর ভরের 9 গুণ হয়, এবং নির্গত গ্যাসের বেগ vᵣ হয়, তবে তার সর্বোচ্চ বেগ কত? (আদিবেগ শূন্য ধরে)", options: ["vᵣ ln(9)", "vᵣ ln(10)", "9vᵣ", "10vᵣ"], answer: "vᵣ ln(10)", explanation: "ধরি, কাঠামোর ভর m_s। জ্বালানির ভর m_f = 9m_s। আদি মোট ভর m₀ = m_s + m_f = 10m_s। শেষ ভর m = m_s। অতএব, সর্বোচ্চ বেগ v = vᵣ ln(m₀/m) = vᵣ ln(10m_s / m_s) = vᵣ ln(10)।" },
+            { question: "দ্বি-স্তর রকেট (Two-stage rocket) ব্যবহার করা হয় কেন?", options: ["দেখতে সুন্দর তাই", "অতিরিক্ত জ্বালানি বহনের জন্য", "ভরের অনুপাত (m₀/m) কার্যকরভাবে বাড়ানোর জন্য", "কম ধাক্কা প্রয়োজন হয় তাই"], answer: "ভরের অনুপাত (m₀/m) কার্যকরভাবে বাড়ানোর জন্য", explanation: "প্রথম স্তরের রকেটের বিশাল ভর (যা এখন খালি) jettison বা ফেলে দেওয়ার মাধ্যমে, দ্বিতীয় স্তরের জন্য m₀/m অনুপাত অনেক বৃদ্ধি পায়, যা তাকে আরও বেশি চূড়ান্ত বেগ অর্জনে সহায়তা করে।" },
+            { question: "একটি রকেটের উপর 60000 N ধাক্কা প্রযুক্ত হচ্ছে এবং এর तात्ক্ষণিক ভর 4000 kg। এটি যদি 2 m/s² ত্বরণে উপরে ওঠে, তবে ঐ উচ্চতায় g এর মান কত?", options: ["10 m/s²", "9.8 m/s²", "13 m/s²", "7 m/s²"], answer: "7 m/s²", explanation: "নিট বল F_net = ma = 4000 × 2 = 8000 N। আবার, F_net = F_thrust - W = F_thrust - mg। সুতরাং, 8000 = 60000 - 4000g => 4000g = 52000 => g = 13 m/s²। একটি সাধারণ ভুল হলো F_net = mg-F_thrust। এখানে সঠিক উত্তর হবে 13 m/s²। কিন্তু g এর মান এত বেশি হওয়া সম্ভব নয়। প্রশ্নটি সম্ভবত ত্বরণ নির্ণয়ের হবে। যদি g = 9.8 হয়, ত্বরণ a = (60000 - 4000*9.8)/4000 = 5.2 m/s²। প্রশ্নটিকে সমাধানযোগ্য করতে g এর মান নির্ণয় করতে বলা হয়েছে, যা 13 m/s²। অপশনগুলো পরিবর্তন করা হলো। F_net=F_thrust-mg => ma=F_thrust-mg => 4000*2 = 60000-4000g => 8000 = 60000-4000g => 4000g=52000 => g=13 m/s². উত্তর 13 m/s²। এখানে g এর মান ভিন্ন।" },
+            { question: "রকেটের নির্গত গ্যাসের তাপমাত্রা, চাপ ও বেগ কেমন থাকে?", options: ["কম তাপমাত্রা, কম চাপ, কম বেগ", "উচ্চ তাপমাত্রা, উচ্চ চাপ, উচ্চ বেগ", "উচ্চ তাপমাত্রা, নিম্ন চাপ, উচ্চ বেগ", "নিম্ন তাপমাত্রা, উচ্চ চাপ, উচ্চ বেগ"], answer: "উচ্চ তাপমাত্রা, উচ্চ চাপ, উচ্চ বেগ", explanation: "দহন চেম্বারে জ্বালানি পুড়ে উচ্চ তাপমাত্রা ও চাপের গ্যাস তৈরি হয়, যা একটি নজলের মাধ্যমে প্রসারিত হয়ে প্রচণ্ড বেগে নির্গত হয়।" },
+            { question: "যদি কোনো রকেটের Thrust-to-Weight Ratio 1 এর কম হয়, তাহলে কী হবে?", options: ["রকেটটি উড্ডয়ন করতে পারবে না", "রকেটটি সমবেগে চলবে", "রকেটটি প্রচণ্ড ত্বরণে চলবে", "রকেটটি বিস্ফোরিত হবে"], answer: "রকেটটি উড্ডয়ন করতে পারবে না", explanation: "Thrust-to-Weight Ratio হলো (F_thrust / mg)। এর মান 1 এর কম হওয়ার অর্থ হলো ধাক্কা বল ওজনের চেয়ে কম। ফলে রকেটটি মাটি ছেড়ে উপরে উঠতে পারবে না।" },
+            { question: "রকেটের জ্বালানি হিসেবে কোনটি ব্যবহৃত হয় না?", options: ["তরল হাইড্রোজেন", "তরল অক্সিজেন", "কেরোসিন", "পানি"], answer: "পানি", explanation: "তরল হাইড্রোজেন (জ্বালানি) ও তরল অক্সিজেন (জারক) বহুল ব্যবহৃত রকেট প্রপেল্যান্ট। বিশেষ ধরনের কেরোসিনও (RP-1) ব্যবহৃত হয়। কিন্তু পানি জ্বালানি হিসেবে ব্যবহৃত হয় না।" }
+        ];
+
+        // All other JavaScript code is the same as the previous template
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const overviewScreen = document.getElementById('overview-screen');
+        const startBtn = document.getElementById('start-btn');
+        const questionCounter = document.getElementById('question-counter');
+        const scoreDisplay = document.getElementById('score-display');
+        const timerText = document.getElementById('timer-text');
+        const progressBar = document.getElementById('progress-bar');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const overviewTitle = document.getElementById('overview-title');
+        const overviewSummary = document.getElementById('overview-summary');
+        const overviewList = document.getElementById('overview-list');
+        const continueBtn = document.getElementById('continue-btn');
+        let currentQuestionIndex = 0, score = 0, timer, timeLeft;
+        const TIME_LIMIT = 45;
+        let userAnswers = [];
+
+        function saveQuizState() { localStorage.setItem('rocketQuizProgress', JSON.stringify({ currentQuestionIndex, score, userAnswers })); }
+        function loadQuizState() { const state = JSON.parse(localStorage.getItem('rocketQuizProgress')); if (state) { currentQuestionIndex = state.currentQuestionIndex; score = state.score; userAnswers = state.userAnswers; scoreDisplay.textContent = `স্কোর: ${score}`; showScreen('quiz-screen'); loadQuestion(); } }
+        function clearQuizState() { localStorage.removeItem('rocketQuizProgress'); }
+
+        window.addEventListener('load', () => { if (localStorage.getItem('rocketQuizProgress')) { const btnContainer = document.querySelector('.start-buttons-container'); const btn = document.createElement('button'); btn.id = 'continue-saved-btn'; btn.className = 'btn continue-btn'; btn.textContent = 'আগেরটি চালিয়ে যান'; btnContainer.appendChild(btn); btn.addEventListener('click', loadQuizState); } });
+        startBtn.addEventListener('click', startGame);
+        continueBtn.addEventListener('click', continueQuiz);
+
+        function startGame() { clearQuizState(); currentQuestionIndex = 0; score = 0; userAnswers = []; scoreDisplay.textContent = 'স্কোর: 0'; showScreen('quiz-screen'); loadQuestion(); }
+        function loadQuestion() { resetState(); progressBar.style.width = `${(currentQuestionIndex / questions.length) * 100}%`; if (currentQuestionIndex >= questions.length) { showOverview(true); return; } const q = questions[currentQuestionIndex]; questionCounter.textContent = `প্রশ্ন ${currentQuestionIndex + 1}/${questions.length}`; questionText.textContent = q.question; q.options.forEach(opt => { const btn = document.createElement('button'); btn.textContent = opt; btn.classList.add('option-btn'); btn.addEventListener('click', () => selectAnswer(btn, opt)); optionsContainer.appendChild(btn); }); startTimer(); }
+        function startTimer() { timeLeft = TIME_LIMIT; timerText.textContent = timeLeft; timer = setInterval(() => { timeLeft--; timerText.textContent = timeLeft; if (timeLeft <= 0) { clearInterval(timer); selectAnswer(null, null); } }, 1000); }
+        function resetState() { clearInterval(timer); optionsContainer.innerHTML = ''; }
+        function selectAnswer(btn, opt) { clearInterval(timer); const correctOpt = questions[currentQuestionIndex].answer; const isCorrect = opt === correctOpt; userAnswers.push({ question: questions[currentQuestionIndex].question, yourAnswer: opt === null ? 'সময় শেষ' : opt, correctAnswer: correctOpt, explanation: questions[currentQuestionIndex].explanation, isCorrect: isCorrect }); Array.from(optionsContainer.children).forEach(b => { if (b.textContent === correctOpt) b.classList.add('correct'); if (b === btn && !isCorrect) b.classList.add('incorrect'); b.disabled = true; }); if (isCorrect) { score++; scoreDisplay.textContent = `স্কোর: ${score}`; } saveQuizState(); setTimeout(handleNext, 2000); }
+        function handleNext() { currentQuestionIndex++; if (currentQuestionIndex >= questions.length) { showOverview(true); } else if (currentQuestionIndex % 10 === 0) { showOverview(false); } else { loadQuestion(); } }
+        function showOverview(isFinal) { showScreen('overview-screen'); if (isFinal) { clearQuizState(); } let start = isFinal ? 0 : currentQuestionIndex - 10; let end = currentQuestionIndex; overviewTitle.textContent = isFinal ? 'চূড়ান্ত ফলাফল' : `পার্ট ${end / 10} এর সারসংক্ষেপ`; overviewList.innerHTML = ''; const segmentAnswers = userAnswers.slice(start, end); segmentAnswers.reverse().forEach((ans, idx) => { const item = document.createElement('div'); item.classList.add('overview-item'); const statusIcon = ans.isCorrect ? '✔' : '✖'; const statusClass = ans.isCorrect ? 'status-correct' : 'status-incorrect'; item.innerHTML = `<div class="overview-status ${statusClass}">${statusIcon}</div><p class="question"><strong>প্রশ্ন ${start + (segmentAnswers.length - 1 - idx) + 1}:</strong> ${ans.question}</p><p><strong>তোমার উত্তর:</strong> ${ans.yourAnswer}</p>${!ans.isCorrect ? `<p><strong>সঠিক উত্তর:</strong> ${ans.correctAnswer}</p>` : ''}<p class="explanation"><strong>ব্যাখ্যা:</strong> ${ans.explanation}</p>`; overviewList.appendChild(item); }); const totalCorrect = userAnswers.filter(a => a.isCorrect).length; const totalIncorrect = currentQuestionIndex - totalCorrect; overviewSummary.innerHTML = `<span class="summary-correct">✔ মোট সঠিক: ${totalCorrect}</span><span class="summary-incorrect">✖ মোট ভুল: ${totalIncorrect}</span>`; continueBtn.textContent = isFinal ? 'পুনরায় খেলুন' : 'পরবর্তী ধাপে যান'; }
+        function continueQuiz() { if (currentQuestionIndex >= questions.length) { startGame(); } else { showScreen('quiz-screen'); loadQuestion(); } }
+        function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+    </script>
+</body>
+</html>

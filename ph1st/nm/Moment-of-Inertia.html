@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>জড়তার ভ্রামক কুইজ</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;700&family=Poppins:wght@600&display=swap');
+
+        :root {
+            --primary-bg: #434343; /* A different color scheme */
+            --secondary-bg: #000000;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-color: #333;
+            --accent-color: #DD5E89;
+            --correct-color: #2ecc71;
+            --incorrect-color: #e74c3c;
+            --light-gray: #f0f0f0;
+            --shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            --border-radius: 15px;
+        }
+
+        /* All other CSS styles are the same as the previous template */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Sans Bengali', sans-serif; }
+        body { background: linear-gradient(135deg, var(--primary-bg), var(--secondary-bg)); color: var(--text-color); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 20px 15px; overflow-x: hidden; }
+        .container { width: 100%; max-width: 800px; background: var(--card-bg); border-radius: var(--border-radius); box-shadow: var(--shadow); padding: 30px; text-align: center; overflow: hidden; position: relative; margin-bottom: 20px; }
+        .screen { display: none; animation: fadeIn 0.5s ease-in-out; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { font-size: 2.5em; margin-bottom: 10px; color: var(--primary-bg); }
+        h2 { font-size: 1.8em; margin-bottom: 20px; color: var(--primary-bg); }
+        p { margin-bottom: 20px; font-size: 1.1em; }
+        .start-buttons-container { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .btn { background: linear-gradient(45deg, var(--accent-color), #F7BB97); color: white; border: none; padding: 15px 30px; font-size: 1.2em; font-weight: 700; border-radius: 50px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(221, 94, 137, 0.4); display: inline-block; }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 7px 20px rgba(221, 94, 137, 0.6); }
+        .btn.continue-btn { background: linear-gradient(45deg, #2980b9, #3498db); box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4); }
+        .btn.continue-btn:hover { box-shadow: 0 7px 20px rgba(52, 152, 219, 0.6); }
+        #quiz-screen .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 1.1em; font-weight: 500; }
+        #question-counter, #score-display { background: var(--light-gray); padding: 8px 15px; border-radius: 20px; }
+        #timer { display: flex; align-items: center; font-size: 1.5em; font-family: 'Poppins', sans-serif; font-weight: 600; color: var(--primary-bg); }
+        #progress-bar-container { width: 100%; height: 10px; background-color: var(--light-gray); border-radius: 5px; margin-bottom: 25px; overflow: hidden; }
+        #progress-bar { height: 100%; background: linear-gradient(90deg, var(--correct-color), #f7b733); width: 0%; border-radius: 5px; transition: width 0.5s ease-out; }
+        #question-text { font-size: 1.4em; font-weight: 700; margin-bottom: 25px; min-height: 80px; }
+        #options-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .option-btn { width: 100%; padding: 18px; font-size: 1.1em; font-weight: 500; border-radius: var(--border-radius); border: 2px solid var(--light-gray); background: white; cursor: pointer; transition: all 0.2s ease; text-align: left; }
+        .option-btn:hover:not([disabled]) { border-color: var(--secondary-bg); background-color: #f7f7ff; transform: scale(1.02); }
+        .option-btn:disabled { cursor: not-allowed; opacity: 0.8; }
+        .option-btn.correct { background-color: var(--correct-color); color: white; border-color: var(--correct-color); animation: pulse 0.5s; }
+        .option-btn.incorrect { background-color: var(--incorrect-color); color: white; border-color: var(--incorrect-color); animation: shake 0.5s; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        #overview-screen h2 { margin-bottom: 10px; }
+        #overview-summary { font-size: 1.2em; font-weight: bold; margin-bottom: 25px; background: var(--light-gray); padding: 15px; border-radius: 10px; display: flex; justify-content: center; gap: 30px; }
+        .summary-correct { color: var(--correct-color); }
+        .summary-incorrect { color: var(--incorrect-color); }
+        #overview-list { max-height: 40vh; overflow-y: auto; text-align: left; margin-bottom: 25px; }
+        .overview-item { background: #fff; border: 1px solid var(--light-gray); border-radius: 10px; padding: 15px; margin-bottom: 10px; position: relative; padding-right: 40px; }
+        .overview-item p { margin-bottom: 8px; font-size: 1em; }
+        .overview-item .question { font-weight: bold; }
+        .overview-item .explanation { font-size: 0.9em; color: #555; background: #f8f9fa; padding: 8px; border-radius: 5px; margin-top: 5px; }
+        .overview-status { position: absolute; top: 50%; right: 15px; transform: translateY(-50%); font-size: 2em; }
+        .status-correct { color: var(--correct-color); }
+        .status-incorrect { color: var(--incorrect-color); }
+        footer { text-align: center; color: rgba(255, 255, 255, 0.8); font-size: 0.9em; line-height: 1.6; }
+        @media (max-width: 600px) { .container { padding: 15px; } h1 { font-size: 2em; } h2 { font-size: 1.5em; } #question-text { font-size: 1.2em; min-height: 70px; } #options-container { grid-template-columns: 1fr; } .option-btn { padding: 15px; font-size: 1em; } #quiz-screen .header { flex-direction: column; gap: 10px; margin-bottom: 15px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <h1>জড়তার ভ্রামক কুইজ</h1>
+            <p>এই অধ্যায়ের উপর আপনার দক্ষতা যাচাই করুন। প্রতিটি প্রশ্নের জন্য সময় পাবেন 45 সেকেন্ড।</p>
+            <p><strong>মোট 20টি প্রশ্ন</strong></p>
+            <div class="start-buttons-container">
+                <button id="start-btn" class="btn">নতুন কুইজ শুরু করুন</button>
+            </div>
+        </div>
+        <!-- Other screens (quiz, overview) -->
+        <div id="quiz-screen" class="screen">
+            <div class="header">
+                <div id="question-counter"></div>
+                <div id="timer"><span id="timer-text">45</span></div>
+                <div id="score-display">স্কোর: 0</div>
+            </div>
+            <div id="progress-bar-container"><div id="progress-bar"></div></div>
+            <div id="question-text"></div>
+            <div id="options-container"></div>
+        </div>
+        <div id="overview-screen" class="screen">
+            <h2 id="overview-title"></h2>
+            <div id="overview-summary"></div>
+            <div id="overview-list"></div>
+            <button id="continue-btn" class="btn continue-btn"></button>
+        </div>
+    </div>
+    <footer>
+        <p>Abu Hasan, Assistant Professor,</p>
+        <p>Department of Physics,</p>
+        <p>Rangpur Government College</p>
+    </footer>
+
+    <script>
+        const questions = [
+            // সহজ স্তর
+            { question: "রৈখিক গতিতে যা ভর, কৌণিক গতিতে তা কী?", options: ["টর্ক", "কৌণিক ভরবেগ", "জড়তার ভ্রামক", "চক্রগতির ব্যাসার্ধ"], answer: "জড়তার ভ্রামক", explanation: "রৈখিক গতিতে ভর (m) যেমন গতির পরিবর্তনে বাধা দেয়, কৌণিক গতিতে জড়তার ভ্রামক (I) তেমনি ঘূর্ণন গতির পরিবর্তনে বাধা দেয়।" },
+            { question: "জড়তার ভ্রামকের একক কী?", options: ["kg/m²", "kg m", "kg m²", "kg/m"], answer: "kg m²", explanation: "জড়তার ভ্রামক, I = Σmr²। সুতরাং এর একক হলো kg m²।" },
+            { question: "জড়তার ভ্রামক কিসের উপর নির্ভর করে?", options: ["শুধুমাত্র বস্তুর ভর", "শুধুমাত্র ঘূর্ণন অক্ষ", "ভর, ঘূর্ণন অক্ষ এবং ভরের বণ্টন", "শুধুমাত্র বস্তুর আকার"], answer: "ভর, ঘূর্ণন অক্ষ এবং ভরের বণ্টন", explanation: "জড়তার ভ্রামক বস্তুর মোট ভর, ঘূর্ণন অক্ষের অবস্থান এবং অক্ষের সাপেক্ষে ভরের বণ্টনের উপর নির্ভর করে।" },
+            { question: "একই ভর ও ব্যাসার্ধের একটি রিং এবং একটি চাকতির মধ্যে কার জড়তার ভ্রামক বেশি? (কেন্দ্রগামী লম্ব অক্ষ সাপেক্ষে)", options: ["রিংয়ের", "চাকতির", "দুটির সমান", "বলা সম্ভব নয়"], answer: "রিংয়ের", explanation: "রিংয়ের ক্ষেত্রে সমস্ত ভর পরিধিতে থাকে (I = MR²), আর চাকতির ক্ষেত্রে ভর কেন্দ্র থেকে পরিধি পর্যন্ত সুষমভাবে বণ্টিত থাকে (I = ½MR²)। তাই রিংয়ের জড়তার ভ্রামক বেশি।" },
+
+            // মাঝারি স্তর
+            { question: "2 kg ভরের একটি বস্তু ঘূর্ণন অক্ষ থেকে 3 m দূরে অবস্থিত। কণাটির জড়তার ভ্রামক কত?", options: ["6 kg m²", "18 kg m²", "12 kg m²", "9 kg m²"], answer: "18 kg m²", explanation: "একটি কণার জড়তার ভ্রামক I = mr² = 2 kg × (3 m)² = 2 × 9 = 18 kg m²।" },
+            { question: "চক্রগতির ব্যাসার্ধ (K) এবং জড়তার ভ্রামকের (I) মধ্যে সম্পর্ক কী? (M=বস্তুর ভর)", options: ["I = M/K²", "I = MK", "I = M²K", "I = MK²"], answer: "I = MK²", explanation: "চক্রগতির ব্যাসার্ধ হলো এমন একটি দূরত্ব, যেখানে বস্তুর সমস্ত ভরকে কেন্দ্রীভূত করলে ঘূর্ণন অক্ষের সাপেক্ষে জড়তার ভ্রামক অপরিবর্তিত থাকে। I = MK²।" },
+            { question: "একটি পাতলা দণ্ডের মধ্যবিন্দু দিয়ে যাওয়া লম্ব অক্ষের সাপেক্ষে জড়তার ভ্রামক কত? (M=ভর, L=দৈর্ঘ্য)", options: ["ML²/3", "ML²/12", "MR²", "2/5 MR²"], answer: "ML²/12", explanation: "একটি সুষম পাতলা দণ্ডের ভরকেন্দ্রগামী এবং দৈর্ঘ্যের উপর লম্ব অক্ষের সাপেক্ষে জড়তার ভ্রামক হলো I = ML²/12।" },
+            { question: "সমান্তরাল অক্ষ উপপাদ্যটি কী?", options: ["I = I_g + Ma²", "I_g = I + Ma²", "I = I_g - Ma²", "I = I_g × Ma²"], answer: "I = I_g + Ma²", explanation: "যেকোনো অক্ষের সাপেক্ষে জড়তার ভ্রামক (I) হলো ভরকেন্দ্রগামী সমান্তরাল অক্ষের সাপেক্ষে জড়তার ভ্রামক (I_g) এবং বস্তুর ভর (M) ও অক্ষদ্বয়ের মধ্যবর্তী দূরত্বের (a) বর্গের গুণফলের সমষ্টি।" },
+            { question: "একটি বস্তুর জড়তার ভ্রামক 25 kg m² এবং চক্রগতির ব্যাসার্ধ 5 m হলে, বস্তুর ভর কত?", options: ["5 kg", "1 kg", "125 kg", "0.2 kg"], answer: "1 kg", explanation: "I = MK² থেকে পাই, M = I/K² = 25 kg m² / (5 m)² = 25 / 25 = 1 kg।" },
+            { question: "লম্ব অক্ষ উপপাদ্য কোন ধরনের বস্তুর জন্য প্রযোজ্য?", options: ["যেকোনো ত্রিমাত্রিক বস্তু", "শুধুমাত্র গোলক", "যেকোনো পাতলা সমতল বস্তু", "শুধুমাত্র দণ্ড"], answer: "যেকোনো পাতলা সমতল বস্তু", explanation: "লম্ব অক্ষ উপপাদ্য শুধুমাত্র পাতলা সমতল পাতের (lamina) ক্ষেত্রে প্রযোজ্য, যেখানে তলের উপর লম্ব অক্ষের সাপেক্ষে জড়তার ভ্রামক ঐ তলে থাকা দুটি পরস্পর লম্ব অক্ষের সাপেক্ষে জড়তার ভ্রামকের যোগফলের সমান।" },
+            
+            // কঠিন স্তর
+            { question: "একটি নিরেট গোলকের ব্যাস বরাবর অক্ষের সাপেক্ষে জড়তার ভ্রামক কত?", options: ["MR²", "½MR²", "²/₅ MR²", "²/₃ MR²"], answer: "²/₅ MR²", explanation: "একটি সুষম নিরেট গোলকের কেন্দ্রগামী যেকোনো অক্ষ বা ব্যাস বরাবর জড়তার ভ্রামক হলো I = ²/₅ MR²।" },
+            { question: "M ভর ও L দৈর্ঘ্যের একটি দণ্ডের এক প্রান্ত দিয়ে যাওয়া লম্ব অক্ষের সাপেক্ষে জড়তার ভ্রামক কত?", options: ["ML²/12", "ML²/3", "ML²/2", "ML²"], answer: "ML²/3", explanation: "সমান্তরাল অক্ষ উপপাদ্য ব্যবহার করে: I = I_g + Ma²। এখানে I_g = ML²/12 এবং a = L/2। সুতরাং, I = ML²/12 + M(L/2)² = ML²/12 + ML²/4 = (ML²+3ML²)/12 = 4ML²/12 = ML²/3।" },
+            { question: "একটি বস্তুকে ঘোরানো কঠিন হবে যদি—", options: ["এর ভর কম হয়", "এর জড়তার ভ্রামক বেশি হয়", "এর কৌণিক বেগ বেশি হয়", "এর জড়তার ভ্রামক কম হয়"], answer: "এর জড়তার ভ্রামক বেশি হয়", explanation: "জড়তার ভ্রামক ঘূর্ণন গতির পরিবর্তনে বাধা প্রদান করে। তাই যার জড়তার ভ্রামক বেশি, তাকে ঘোরানো বা তার ঘূর্ণন থামানো তত কঠিন।" },
+            { question: "একটি ফাঁপা সিলিন্ডার এবং একটি নিরেট সিলিন্ডারের ভর ও ব্যাসার্ধ সমান। একই নততল থেকে গড়িয়ে পড়তে দিলে কোনটি আগে নিচে পৌঁছাবে?", options: ["ফাঁপা সিলিন্ডার", "নিরেট সিলিন্ডার", "দুটিই একসাথে", "ভর না জানলে বলা যাবে না"], answer: "নিরেট সিলিন্ডার", explanation: "নিরেট সিলিন্ডারের জড়তার ভ্রামক (I=½MR²) ফাঁপা সিলিন্ডারের (I=MR²) চেয়ে কম। যার জড়তার ভ্রামক কম, তার ত্বরণ বেশি হয় এবং সে আগে নিচে পৌঁছায়।" },
+            { question: "একটি বস্তুর জড়তার ভ্রামক কোন বিষয়ের উপর নির্ভর করে না?", options: ["বস্তুর কৌণিক বেগ", "বস্তুর ভর", "ঘূর্ণন অক্ষের অবস্থান", "বস্তুর আকৃতি"], answer: "বস্তুর কৌণিক বেগ", explanation: "জড়তার ভ্রামক বস্তুর একটি ذاتی বৈশিষ্ট্য, যা তার ভর, আকৃতি এবং অক্ষের সাপেক্ষে ভরের বণ্টনের উপর নির্ভর করে। এটি বস্তুটি ঘুরছে কি না বা কত বেগে ঘুরছে তার উপর নির্ভর করে না।" },
+            { question: "পৃথিবীর ঘূর্ণন অক্ষের সাপেক্ষে জড়তার ভ্রামক সবচেয়ে বেশি হবে কোন আকৃতি কল্পনা করলে? (ভর ও আয়তন সমান)", options: ["নিরেট গোলক", "ফাঁপা গোলক", "নিরেট সিলিন্ডার", "রিং"], answer: "রিং", explanation: "রিং-এর ক্ষেত্রে সমস্ত ভর ঘূর্ণন অক্ষ থেকে সর্বাধিক দূরে (পরিধিতে) অবস্থান করে, তাই এর জড়তার ভ্রামক (MR²) প্রদত্ত বিকল্পগুলোর মধ্যে সর্বোচ্চ হবে।" },
+            { question: "একটি বৃত্তাকার চাকতির জড়তার ভ্রামক এর কেন্দ্রগামী লম্ব অক্ষের সাপেক্ষে 5 kg m²। এর তলে অবস্থিত একটি স্পর্শক বরাবর অক্ষের সাপেক্ষে জড়তার ভ্রামক কত হবে?", options: ["7.5 kg m²", "12.5 kg m²", "15 kg m²", "10 kg m²"], answer: "12.5 kg m²", explanation: "ব্যাসের সাপেক্ষে ভ্রামক I_d = I_z/2 = 5/2 = 2.5 kg m²। সমান্তরাল অক্ষ উপপাদ্য অনুযায়ী, স্পর্শকের সাপেক্ষে ভ্রামক I_t = I_d + MR²। আবার I_z = ½MR² = 5, সুতরাং MR² = 10। অতএব, I_t = 2.5 + 10 = 12.5 kg m²।" },
+            { question: "জড়তার ভ্রামকের মাত্রা কোনটি?", options: ["[ML]", "[MLT⁻¹]", "[ML²]", "[ML²T⁻²]"], answer: "[ML²]", explanation: "জড়তার ভ্রামকের সংজ্ঞা I = mr² থেকে এর মাত্রা হলো [M][L²] = [ML²]।" },
+            { question: "একটি বস্তুর ঘূর্ণন গতিশক্তি 50 J এবং জড়তার ভ্রামক 4 kg m² হলে, এর কৌণিক বেগ কত?", options: ["5 rad/s", "25 rad/s", "12.5 rad/s", "2 rad/s"], answer: "5 rad/s", explanation: "ঘূর্ণন গতিশক্তি K = ½Iω²। সুতরাং, 50 = ½ × 4 × ω² => 50 = 2ω² => ω² = 25 => ω = 5 rad/s।" },
+            { question: "কোন উপপাদ্যটি একটি ত্রিমাত্রিক বস্তুর ক্ষেত্রেও প্রযোজ্য?", options: ["লম্ব অক্ষ উপপাদ্য", "সমান্তরাল অক্ষ উপপাদ্য", "উভয়ই", "কোনোটিই নয়"], answer: "সমান্তরাল অক্ষ উপপাদ্য", explanation: "লম্ব অক্ষ উপপাদ্য শুধুমাত্র পাতলা সমতল বস্তুর জন্য প্রযোজ্য, কিন্তু সমান্তরাল অক্ষ উপপাদ্য যেকোনো আকৃতির (দ্বিমাত্রিক বা ত্রিমাত্রিক) দৃঢ় বস্তুর জন্য প্রযোজ্য।" }
+        ];
+
+        // All other JavaScript code is the same as the previous template
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const overviewScreen = document.getElementById('overview-screen');
+        const startBtn = document.getElementById('start-btn');
+        const questionCounter = document.getElementById('question-counter');
+        const scoreDisplay = document.getElementById('score-display');
+        const timerText = document.getElementById('timer-text');
+        const progressBar = document.getElementById('progress-bar');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const overviewTitle = document.getElementById('overview-title');
+        const overviewSummary = document.getElementById('overview-summary');
+        const overviewList = document.getElementById('overview-list');
+        const continueBtn = document.getElementById('continue-btn');
+        let currentQuestionIndex = 0, score = 0, timer, timeLeft;
+        const TIME_LIMIT = 45;
+        let userAnswers = [];
+
+        function saveQuizState() { localStorage.setItem('inertiaQuizProgress', JSON.stringify({ currentQuestionIndex, score, userAnswers })); }
+        function loadQuizState() { const state = JSON.parse(localStorage.getItem('inertiaQuizProgress')); if (state) { currentQuestionIndex = state.currentQuestionIndex; score = state.score; userAnswers = state.userAnswers; scoreDisplay.textContent = `স্কোর: ${score}`; showScreen('quiz-screen'); loadQuestion(); } }
+        function clearQuizState() { localStorage.removeItem('inertiaQuizProgress'); }
+
+        window.addEventListener('load', () => { if (localStorage.getItem('inertiaQuizProgress')) { const btnContainer = document.querySelector('.start-buttons-container'); const btn = document.createElement('button'); btn.id = 'continue-saved-btn'; btn.className = 'btn continue-btn'; btn.textContent = 'আগেরটি চালিয়ে যান'; btnContainer.appendChild(btn); btn.addEventListener('click', loadQuizState); } });
+        startBtn.addEventListener('click', startGame);
+        continueBtn.addEventListener('click', continueQuiz);
+
+        function startGame() { clearQuizState(); currentQuestionIndex = 0; score = 0; userAnswers = []; scoreDisplay.textContent = 'স্কোর: 0'; showScreen('quiz-screen'); loadQuestion(); }
+        function loadQuestion() { resetState(); progressBar.style.width = `${(currentQuestionIndex / questions.length) * 100}%`; if (currentQuestionIndex >= questions.length) { showOverview(true); return; } const q = questions[currentQuestionIndex]; questionCounter.textContent = `প্রশ্ন ${currentQuestionIndex + 1}/${questions.length}`; questionText.textContent = q.question; q.options.forEach(opt => { const btn = document.createElement('button'); btn.textContent = opt; btn.classList.add('option-btn'); btn.addEventListener('click', () => selectAnswer(btn, opt)); optionsContainer.appendChild(btn); }); startTimer(); }
+        function startTimer() { timeLeft = TIME_LIMIT; timerText.textContent = timeLeft; timer = setInterval(() => { timeLeft--; timerText.textContent = timeLeft; if (timeLeft <= 0) { clearInterval(timer); selectAnswer(null, null); } }, 1000); }
+        function resetState() { clearInterval(timer); optionsContainer.innerHTML = ''; }
+        function selectAnswer(btn, opt) { clearInterval(timer); const correctOpt = questions[currentQuestionIndex].answer; const isCorrect = opt === correctOpt; userAnswers.push({ question: questions[currentQuestionIndex].question, yourAnswer: opt === null ? 'সময় শেষ' : opt, correctAnswer: correctOpt, explanation: questions[currentQuestionIndex].explanation, isCorrect: isCorrect }); Array.from(optionsContainer.children).forEach(b => { if (b.textContent === correctOpt) b.classList.add('correct'); if (b === btn && !isCorrect) b.classList.add('incorrect'); b.disabled = true; }); if (isCorrect) { score++; scoreDisplay.textContent = `স্কোর: ${score}`; } saveQuizState(); setTimeout(handleNext, 2000); }
+        function handleNext() { currentQuestionIndex++; if (currentQuestionIndex >= questions.length) { showOverview(true); } else if (currentQuestionIndex % 10 === 0) { showOverview(false); } else { loadQuestion(); } }
+        function showOverview(isFinal) { showScreen('overview-screen'); if (isFinal) { clearQuizState(); } let start = isFinal ? 0 : currentQuestionIndex - 10; let end = currentQuestionIndex; overviewTitle.textContent = isFinal ? 'চূড়ান্ত ফলাফল' : `পার্ট ${end / 10} এর সারসংক্ষেপ`; overviewList.innerHTML = ''; const segmentAnswers = userAnswers.slice(start, end); segmentAnswers.reverse().forEach((ans, idx) => { const item = document.createElement('div'); item.classList.add('overview-item'); const statusIcon = ans.isCorrect ? '✔' : '✖'; const statusClass = ans.isCorrect ? 'status-correct' : 'status-incorrect'; item.innerHTML = `<div class="overview-status ${statusClass}">${statusIcon}</div><p class="question"><strong>প্রশ্ন ${start + (segmentAnswers.length - 1 - idx) + 1}:</strong> ${ans.question}</p><p><strong>তোমার উত্তর:</strong> ${ans.yourAnswer}</p>${!ans.isCorrect ? `<p><strong>সঠিক উত্তর:</strong> ${ans.correctAnswer}</p>` : ''}<p class="explanation"><strong>ব্যাখ্যা:</strong> ${ans.explanation}</p>`; overviewList.appendChild(item); }); const totalCorrect = userAnswers.filter(a => a.isCorrect).length; const totalIncorrect = currentQuestionIndex - totalCorrect; overviewSummary.innerHTML = `<span class="summary-correct">✔ মোট সঠিক: ${totalCorrect}</span><span class="summary-incorrect">✖ মোট ভুল: ${totalIncorrect}</span>`; continueBtn.textContent = isFinal ? 'পুনরায় খেলুন' : 'পরবর্তী ধাপে যান'; }
+        function continueQuiz() { if (currentQuestionIndex >= questions.length) { startGame(); } else { showScreen('quiz-screen'); loadQuestion(); } }
+        function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+    </script>
+</body>
+</html>

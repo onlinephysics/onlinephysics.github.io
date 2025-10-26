@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>বল ও নিউটনের গতিসূত্র কুইজ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --border-color: #30363d;
+            --text-color: #c9d1d9;
+            --text-secondary: #8b949e;
+            
+            --correct-color: #238636;
+            --correct-glow: rgba(35, 134, 54, 0.4);
+            --incorrect-color: #da3633;
+            --incorrect-glow: rgba(218, 54, 51, 0.4);
+            
+            --red: #f85149;
+            --blue: #388bfd;
+            --yellow: #d29922;
+            --green: #2ea043;
+            
+            --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            --font-primary: 'Poppins', sans-serif;
+            --font-secondary: 'Noto Sans Bengali', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-secondary);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            border: 1px solid var(--border-color);
+            animation: fadeIn 0.5s ease-in-out;
+            margin-bottom: 40px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hide {
+            display: none;
+        }
+
+        /* Start, Milestone and Results Screen */
+        #start-screen h1, #results-screen h1, #milestone-screen h1 {
+            font-family: var(--font-primary);
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        #results-screen p, #milestone-screen p {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+
+        .control-btn {
+            font-family: var(--font-primary);
+            font-size: 1.2rem;
+            font-weight: 700;
+            padding: 15px 40px;
+            cursor: pointer;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(90deg, var(--blue), var(--green));
+            color: white;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin: 10px;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(56, 139, 253, 0.3);
+        }
+        
+        .control-btn.secondary {
+            background: linear-gradient(90deg, #6e7681, #484f58);
+        }
+        .control-btn.secondary:hover {
+             box-shadow: 0 6px 20px rgba(110, 118, 129, 0.3);
+        }
+
+        /* Quiz Screen */
+        #progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background-color: var(--border-color);
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--blue);
+            border-radius: 4px;
+            transition: width 0.4s ease-in-out;
+        }
+        
+        #quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-family: var(--font-primary);
+            font-weight: 600;
+        }
+
+        #question-counter {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+        }
+        
+        #timer {
+            position: relative;
+            width: 70px;
+            height: 70px;
+        }
+        .timer-svg {
+            transform: rotate(-90deg);
+        }
+        .timer-circle-bg, .timer-circle {
+            fill: none;
+            stroke-width: 5;
+        }
+        .timer-circle-bg {
+            stroke: var(--border-color);
+        }
+        .timer-circle {
+            stroke: var(--blue);
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s linear, stroke 0.3s;
+        }
+        .timer-circle.low-time {
+            stroke: var(--red);
+        }
+        #timer-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        #question-container {
+            background-color: var(--bg-color);
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            min-height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid var(--border-color);
+        }
+
+        #question-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        #answer-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .answer-btn {
+            font-family: var(--font-secondary);
+            font-size: 1.1rem;
+            color: #fff;
+            border: 2px solid var(--border-color);
+            background-color: transparent;
+            padding: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            text-align: left;
+            font-weight: bold;
+        }
+        
+        .answer-btn:hover:not([disabled]) {
+            border-color: var(--blue);
+            background-color: rgba(56, 139, 253, 0.1);
+        }
+        
+        .answer-btn.correct {
+            background-color: var(--correct-color);
+            border-color: var(--correct-color);
+            box-shadow: 0 0 15px var(--correct-glow);
+            animation: pulse 0.5s;
+        }
+
+        .answer-btn.incorrect {
+            background-color: var(--incorrect-color);
+            border-color: var(--incorrect-color);
+        }
+        
+        .answer-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Report Styles */
+        #report-container {
+            margin-top: 30px;
+            text-align: left;
+        }
+        .report-item {
+            background-color: var(--bg-color);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 15px;
+        }
+        .report-question {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+        .report-answer {
+            padding: 8px;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+        .user-answer-correct {
+            background-color: rgba(35, 134, 54, 0.2);
+            border-left: 4px solid var(--correct-color);
+        }
+        .user-answer-incorrect {
+            background-color: rgba(218, 54, 51, 0.2);
+            border-left: 4px solid var(--incorrect-color);
+        }
+        .correct-answer {
+            background-color: rgba(88, 166, 255, 0.2);
+            border-left: 4px solid var(--blue);
+        }
+        .report-explanation {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+        .report-explanation strong {
+            color: var(--text-color);
+        }
+        .icon {
+            margin-right: 8px;
+            font-weight: bold;
+        }
+
+        /* Footer Style */
+        footer {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 20px 10px;
+            }
+            #answer-buttons {
+                grid-template-columns: 1fr;
+            }
+            #question-text {
+                font-size: 1.2rem;
+            }
+            .answer-btn {
+                font-size: 1rem;
+                padding: 15px;
+            }
+            #start-screen h1, #results-screen h1, #milestone-screen h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="start-screen" class="container">
+        <h1>বল ও নিউটনের গতিসূত্র কুইজ</h1>
+        <p>আপনি কি প্রস্তুত? প্রতিটি প্রশ্নের জন্য 37 সেকেন্ড সময় পাবেন।</p>
+        <button id="start-btn" class="control-btn">শুরু করুন</button>
+    </div>
+
+    <div id="quiz-screen" class="container hide">
+        <div id="progress-bar-container">
+            <div id="progress-bar"></div>
+        </div>
+        <div id="quiz-header">
+            <span id="question-counter"></span>
+            <div id="timer">
+                <svg class="timer-svg" viewBox="0 0 36 36">
+                    <path class="timer-circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path id="timer-circle-progress" class="timer-circle"
+                          stroke-dasharray="100, 100"
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                </svg>
+                <span id="timer-text"></span>
+            </div>
+        </div>
+        <div id="question-container">
+            <p id="question-text"></p>
+        </div>
+        <div id="answer-buttons">
+            <button class="answer-btn"></button>
+            <button class="answer-btn"></button>
+            <button class="answer-btn"></button>
+            <button class="answer-btn"></button>
+        </div>
+    </div>
+
+    <div id="milestone-screen" class="container hide">
+        <h1>পর্ব শেষ!</h1>
+        <p id="milestone-score"></p>
+        <button id="continue-btn" class="control-btn">পরবর্তী পর্ব</button>
+        <button id="end-quiz-btn" class="control-btn secondary">ফলাফল দেখুন</button>
+    </div>
+
+    <div id="results-screen" class="container hide">
+        <h1>ফলাফল</h1>
+        <p id="score-text"></p>
+        <h2>রিপোর্ট</h2>
+        <div id="report-container"></div>
+        <button id="play-again-btn" class="control-btn">আবার খেলুন</button>
+        <button id="next-part-btn" class="control-btn secondary hide">পরবর্তী পর্বে যান</button>
+    </div>
+
+    <footer>
+        <p>Abu Hasan, Assistant Professor,</p>
+        <p>Department of Physics,</p>
+        <p>Rangpur Government College</p>
+    </footer>
+
+    <script>
+        // DOM Elements
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const milestoneScreen = document.getElementById('milestone-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        
+        const startBtn = document.getElementById('start-btn');
+        const playAgainBtn = document.getElementById('play-again-btn');
+        const continueBtn = document.getElementById('continue-btn');
+        const endQuizBtn = document.getElementById('end-quiz-btn');
+        const nextPartBtn = document.getElementById('next-part-btn');
+        
+        const progressBar = document.getElementById('progress-bar');
+        const questionCounterEl = document.getElementById('question-counter');
+        const timerTextEl = document.getElementById('timer-text');
+        const timerCircleProgress = document.getElementById('timer-circle-progress');
+        const questionTextEl = document.getElementById('question-text');
+        const answerButtonsEl = document.getElementById('answer-buttons');
+        const milestoneScoreEl = document.getElementById('milestone-score');
+        const scoreTextEl = document.getElementById('score-text');
+        const reportContainer = document.getElementById('report-container');
+
+        // Quiz Data
+        const quizData = [
+            { question: "নিউটনের 1ম গতিসূত্র কী নামে পরিচিত?", options: ["বলের সূত্র", "জড়তার সূত্র", "ক্রিয়া-প্রতিক্রিয়ার সূত্র", "ভরবেগের সূত্র"], answer: "জড়তার সূত্র", explanation: "নিউটনের 1ম গতিসূত্র বস্তুর জড়তা ব্যাখ্যা করে, তাই এটি জড়তার সূত্র নামে পরিচিত।" },
+            { question: "নিচের কোনটি বলের একক?", options: ["পাস্কাল", "জুল", "নিউটন", "ওয়াট"], answer: "নিউটন", explanation: "বলের আন্তর্জাতিক একক হলো নিউটন (N)।" },
+            { question: "নিউটনের 2য় গতিসূত্র থেকে কীসের ধারণা পাওয়া যায়?", options: ["বল", "ভরবেগ", "ত্বরণ", "কার্য"], answer: "বল", explanation: "নিউটনের 2য় গতিসূত্র (F=ma) থেকে বলের পরিমাপগত ধারণা পাওয়া যায়।" },
+            { question: "একটি বস্তুর উপর যখন কোনো বাহ্যিক বল প্রযুক্ত হয়, তখন তার কীসের পরিবর্তন ঘটে?", options: ["ভর", "আয়তন", "গতির অবস্থার", "ঘনত্ব"], answer: "গতির অবস্থার", explanation: "বাহ্যিক বল প্রয়োগের ফলে বস্তুর স্থির বা গতিশীল অবস্থার পরিবর্তন হয়।" },
+            { question: "ক্রিয়া-প্রতিক্রিয়া বল সর্বদা _________।", options: ["সমান ও একই দিকে", "অসমান ও বিপরীত দিকে", "সমান ও বিপরীত দিকে", "অসমান ও একই দিকে"], answer: "সমান ও বিপরীত দিকে", explanation: "নিউটনের 3য় গতিসূত্র অনুযায়ী, প্রতিটি ক্রিয়ার একটি সমান ও বিপরীত প্রতিক্রিয়া আছে।" },
+            { question: "নিউটনের কোন সূত্র থেকে জড়তার ধারণা পাওয়া যায়?", options: ["1ম সূত্র", "2য় সূত্র", "3য় সূত্র", "কোনোটিই নয়"], answer: "1ম সূত্র", explanation: "নিউটনের 1ম গতিসূত্র বস্তুর জড়তা সম্পর্কিত ধারণা দেয়।" },
+            { question: "বলের মাত্রা কোনটি?", options: ["[MLT⁻¹]", "[MLT⁻²]", "[ML²T⁻²]", "[ML²T⁻³]"], answer: "[MLT⁻²]", explanation: "বল (F=ma) এর মাত্রা হলো ভর (M) × ত্বরণ (LT⁻²) = [MLT⁻²]।" },
+            { question: "একটি বস্তুর উপর 2 N বল প্রয়োগ করায় যদি 0.5 m/s² ত্বরণ সৃষ্টি হয়, তাহলে বস্তুর ভর কত?", options: ["1 kg", "2 kg", "3 kg", "4 kg"], answer: "4 kg", explanation: "F=ma সূত্রানুযায়ী, m = F/a = 2 N / 0.5 m/s² = 4 kg।" },
+            { question: "নিউটনের 3য় গতিসূত্র কোথায় প্রযোজ্য?", options: ["কেবল স্থির বস্তুর ক্ষেত্রে", "কেবল গতিশীল বস্তুর ক্ষেত্রে", "সব ক্ষেত্রেই", "কেবল সরলরৈখিক গতিতে"], answer: "সব ক্ষেত্রেই", explanation: "ক্রিয়া-প্রতিক্রিয়া বল স্থির বা গতিশীল সকল বস্তুর মিথস্ক্রিয়ায় প্রযোজ্য।" },
+            { question: "জড়তা কিসের পরিমাপ?", options: ["বলের", "ভরবেগের", "ভরের", "ত্বরণের"], answer: "ভরের", explanation: "একটি বস্তুর ভর যত বেশি হয়, তার জড়তাও তত বেশি হয়।" },
+            { question: "নিউটনের 1ম সূত্রটি ____-এর একটি বিশেষ রূপ।", options: ["শক্তির নিত্যতা সূত্র", "ভরবেগের নিত্যতা সূত্র", "কৌণিক ভরবেগের নিত্যতা সূত্র", "কোনোটিই নয়"], answer: "ভরবেগের নিত্যতা সূত্র", explanation: "নিউটনের 1ম সূত্রকে ভরবেগের নিত্যতা সূত্রের একটি বিশেষ রূপ হিসেবেও দেখা যেতে পারে, যেখানে বাহ্যিক বল শূন্য হলে ভরবেগ অপরিবর্তিত থাকে।" },
+            { question: "একটি বলের ক্রিয়ায় 0.25 kg ভরের একটি বস্তুর ত্বরণ 4 m/s² হলে, বলের মান কত?", options: ["1 N", "2 N", "3 N", "4 N"], answer: "1 N", explanation: "F=ma সূত্রানুযায়ী, F = 0.25 kg * 4 m/s² = 1 N।" },
+            { question: "একটি চলন্ত গাড়ির হঠাৎ ব্রেক কষলে আরোহীরা সামনের দিকে ঝুঁকে পড়ে। এটি নিউটনের কোন সূত্রের উদাহরণ?", options: ["1ম সূত্র", "2য় সূত্র", "3য় সূত্র", "মহাকর্ষ সূত্র"], answer: "1ম সূত্র", explanation: "এটি গতি জড়তার উদাহরণ, যা নিউটনের 1ম সূত্র দ্বারা ব্যাখ্যা করা হয়।" },
+            { question: "কোন বস্তুর উপর ক্রিয়াশীল নিট বল শূন্য হলে তার ত্বরণ কত হবে?", options: ["সর্বদা শূন্য", "সর্বদা ধনাত্মক", "সর্বদা ঋণাত্মক", "শূন্য বা অসীম"], answer: "সর্বদা শূন্য", explanation: "নিউটনের 2য় সূত্র F=ma অনুযায়ী, যদি F=0 হয়, তবে a=0 হবে।" },
+            { question: "নিউটনের 2য় সূত্রকে কীভাবে প্রকাশ করা হয়?", options: ["F = mv", "F = ma", "F = mg", "F = m/a"], answer: "F = ma", explanation: "নিউটনের 2য় গতিসূত্র গাণিতিকভাবে F=ma দ্বারা প্রকাশ করা হয়।" },
+            { question: "1 নিউটন বল বলতে কী বোঝায়?", options: ["1 কেজি ভরের বস্তুর 1 মি/সে ত্বরণ সৃষ্টি করে", "1 কেজি ভরের বস্তুর 9.8 মি/সে ত্বরণ সৃষ্টি করে", "1 গ্রাম ভরের বস্তুর 1 মি/সে ত্বরণ সৃষ্টি করে", "1 পাউন্ড ভরের বস্তুর 1 ফুট/সে ত্বরণ সৃষ্টি করে"], answer: "1 কেজি ভরের বস্তুর 1 মি/সে ত্বরণ সৃষ্টি করে", explanation: "এক নিউটন বল হলো সেই পরিমাণ বল যা 1 কেজি ভরের কোনো বস্তুতে 1 m/s² ত্বরণ সৃষ্টি করে।" },
+            { question: "নিচের কোনটি অস্পর্শী বলের উদাহরণ?", options: ["ঘর্ষণ বল", "মহাকর্ষ বল", "টান বল", "পেশী বল"], answer: "মহাকর্ষ বল", explanation: "মহাকর্ষ বল বস্তুর সংস্পর্শ ছাড়া কাজ করে, তাই এটি অস্পর্শী বল।" },
+            { question: "একটি রকেট কোন নীতির উপর ভিত্তি করে কাজ করে?", options: ["নিউটনের 1ম সূত্র", "নিউটনের 2য় সূত্র", "নিউটনের 3য় সূত্র", "আর্কিমিডিসের নীতি"], answer: "নিউটনের 3য় সূত্র", explanation: "রকেট তার নির্গত গ্যাসের উপর বল প্রয়োগ করে এবং গ্যাস রকেটের উপর সমান ও বিপরীত প্রতিক্রিয়া বল প্রয়োগ করে, যা রকেটকে এগিয়ে নিয়ে যায়।" },
+            { question: "ভরবেগের পরিবর্তন হার কিসের সমানুপাতিক?", options: ["বল", "ত্বরণ", "বেগ", "ভর"], answer: "বল", explanation: "নিউটনের 2য় গতিসূত্র অনুযায়ী, কোনো বস্তুর ভরবেগের পরিবর্তনের হার তার উপর প্রযুক্ত বলের সমানুপাতিক।" },
+            { question: "নিউটনের গতিসূত্রগুলো কোন ধরনের রেফারেন্স ফ্রেমে প্রযোজ্য?", options: ["অজড় প্রসঙ্গ কাঠামোতে", "জড় প্রসঙ্গ কাঠামোতে", "ঘূর্ণায়মান কাঠামোতে", "ত্বরিত কাঠামোতে"], answer: "জড় প্রসঙ্গ কাঠামোতে", explanation: "নিউটনের গতিসূত্রগুলো কেবল জড় প্রসঙ্গ কাঠামোতে (Inertial Frame of Reference) সরাসরি প্রযোজ্য।" }
+        ];
+
+        // Game State
+        let currentQuestionIndex;
+        let score;
+        let userReports;
+        let timerInterval;
+        let timeLeft;
+        const TIME_PER_QUESTION = 37;
+        const QUESTIONS_PER_ROUND = 5; // Updated to show milestone after every 5 questions
+        const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 15.9155;
+
+        // Event Listeners
+        startBtn.addEventListener('click', startQuiz);
+        playAgainBtn.addEventListener('click', startQuiz);
+        continueBtn.addEventListener('click', () => {
+            milestoneScreen.classList.add('hide');
+            quizScreen.classList.remove('hide');
+            showQuestion();
+        });
+        endQuizBtn.addEventListener('click', () => {
+            milestoneScreen.classList.add('hide');
+            showResults();
+        });
+        nextPartBtn.addEventListener('click', () => { // This might not be used for single topic quizzes
+            resultsScreen.classList.add('hide');
+            quizScreen.classList.remove('hide');
+            showQuestion(); 
+        });
+
+        function startQuiz() {
+            startScreen.classList.add('hide');
+            resultsScreen.classList.add('hide');
+            milestoneScreen.classList.add('hide');
+            quizScreen.classList.remove('hide');
+            nextPartBtn.classList.add('hide');
+
+            currentQuestionIndex = 0;
+            score = 0;
+            userReports = [];
+            reportContainer.innerHTML = '';
+            showQuestion();
+        }
+
+        function showQuestion() {
+            resetState();
+            if (currentQuestionIndex < quizData.length) {
+                updateProgressBar();
+                const questionData = quizData[currentQuestionIndex];
+                questionCounterEl.innerText = `প্রশ্ন ${currentQuestionIndex + 1}/${quizData.length}`;
+                questionTextEl.innerHTML = questionData.question;
+                
+                questionData.options.forEach((option, index) => {
+                    const button = answerButtonsEl.children[index];
+                    const prefix = String.fromCharCode(2453 + index); // ক, খ, গ, ঘ
+                    button.innerHTML = `${prefix}. ${option}`;
+                    button.dataset.option = option;
+                    button.addEventListener('click', selectAnswer);
+                });
+                
+                startTimer();
+            } else {
+                showResults();
+            }
+        }
+        
+        function updateProgressBar() {
+            const progressPercentage = ((currentQuestionIndex) / quizData.length) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+        }
+
+        function startTimer() {
+            timeLeft = TIME_PER_QUESTION;
+            timerTextEl.innerText = timeLeft;
+            timerCircleProgress.style.strokeDashoffset = 0;
+            timerCircleProgress.classList.remove('low-time');
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerTextEl.innerText = timeLeft;
+                const timeFraction = timeLeft / TIME_PER_QUESTION;
+                const offset = CIRCLE_CIRCUMFERENCE * (1 - timeFraction);
+                timerCircleProgress.style.strokeDashoffset = offset;
+
+                if (timeLeft <= 10) {
+                    timerCircleProgress.classList.add('low-time');
+                }
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeout();
+                }
+            }, 1000);
+        }
+        
+        function handleTimeout() {
+            saveReport(null, false);
+            Array.from(answerButtonsEl.children).forEach(button => {
+                button.disabled = true;
+                if (button.dataset.option === quizData[currentQuestionIndex].answer) {
+                    button.classList.add('correct');
+                }
+            });
+            setTimeout(nextQuestion, 2000);
+        }
+
+        function resetState() {
+            clearInterval(timerInterval);
+            timerCircleProgress.style.transition = 'none';
+            timerCircleProgress.style.strokeDasharray = `${CIRCLE_CIRCUMFERENCE} ${CIRCLE_CIRCUMFERENCE}`;
+            timerCircleProgress.style.strokeDashoffset = 0;
+            setTimeout(() => { timerCircleProgress.style.transition = 'stroke-dashoffset 1s linear, stroke 0.3s'; }, 50);
+
+            Array.from(answerButtonsEl.children).forEach(button => {
+                button.className = 'answer-btn';
+                button.disabled = false;
+                button.removeEventListener('click', selectAnswer);
+            });
+        }
+        
+        function selectAnswer(e) {
+            clearInterval(timerInterval);
+            const selectedButton = e.currentTarget;
+            const selectedOption = selectedButton.dataset.option;
+            const isCorrect = selectedOption === quizData[currentQuestionIndex].answer;
+            
+            saveReport(selectedOption, isCorrect);
+            
+            if (isCorrect) {
+                score++;
+                selectedButton.classList.add('correct');
+            } else {
+                selectedButton.classList.add('incorrect');
+            }
+
+            Array.from(answerButtonsEl.children).forEach(button => {
+                button.disabled = true;
+                if (button.dataset.option === quizData[currentQuestionIndex].answer) {
+                    button.classList.add('correct');
+                }
+            });
+            
+            setTimeout(nextQuestion, 2000);
+        }
+
+        function saveReport(userAnswer, isCorrect) {
+            const currentQData = quizData[currentQuestionIndex];
+            userReports.push({
+                question: currentQData.question,
+                userAnswer: userAnswer,
+                correctAnswer: currentQData.answer,
+                isCorrect: isCorrect,
+                explanation: currentQData.explanation
+            });
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex >= quizData.length) { // All questions finished
+                showResults();
+            } else if (currentQuestionIndex % QUESTIONS_PER_ROUND === 0) { // Every 5 questions
+                showMilestoneScreen();
+            } else {
+                showQuestion();
+            }
+        }
+
+        function showMilestoneScreen() {
+            quizScreen.classList.add('hide');
+            milestoneScreen.classList.remove('hide');
+            const totalAnswered = currentQuestionIndex; // Number of questions attempted so far
+            const correctCount = userReports.filter(report => report.isCorrect).length; // Correct answers so far
+            milestoneScoreEl.innerText = `আপনি ${totalAnswered} টি প্রশ্নের মধ্যে ${correctCount} টি সঠিক উত্তর দিয়েছেন।`;
+        }
+        
+        function showResults() {
+            quizScreen.classList.add('hide');
+            milestoneScreen.classList.add('hide');
+            resultsScreen.classList.remove('hide');
+            
+            const progressPercentage = (userReports.length / quizData.length) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+            
+            scoreTextEl.innerText = `আপনি ${userReports.length} টির মধ্যে ${score} টি সঠিক উত্তর দিয়েছেন!`;
+            generateReport();
+
+            // nextPartBtn is typically for multi-part quizzes, hide it for single topic
+            nextPartBtn.classList.add('hide'); 
+        }
+
+        function generateReport() {
+            reportContainer.innerHTML = '';
+            userReports.forEach((report, index) => {
+                const reportItem = document.createElement('div');
+                reportItem.classList.add('report-item');
+                
+                let userAnswerHTML = '';
+                if (report.userAnswer === null) {
+                    userAnswerHTML = `<p class="report-answer user-answer-incorrect"><span class="icon">✖</span>আপনার উত্তর: সময় শেষ</p>`;
+                } else if (report.isCorrect) {
+                    userAnswerHTML = `<p class="report-answer user-answer-correct"><span class="icon">✔</span>আপনার উত্তর: ${report.userAnswer}</p>`;
+                } else {
+                    userAnswerHTML = `<p class="report-answer user-answer-incorrect"><span class="icon">✖</span>আপনার উত্তর: ${report.userAnswer}</p>`;
+                }
+
+                let correctAnswerHTML = '';
+                if (!report.isCorrect) {
+                    correctAnswerHTML = `<p class="report-answer correct-answer"><span class="icon">💡</span>সঠিক উত্তর: ${report.correctAnswer}</p>`;
+                }
+
+                const explanationHTML = `<p class="report-explanation"><strong>ব্যাখ্যা:</strong> ${report.explanation}</p>`;
+
+                reportItem.innerHTML = `
+                    <p class="report-question">প্রশ্ন ${index + 1}: ${report.question}</p>
+                    ${userAnswerHTML}
+                    ${correctAnswerHTML}
+                    ${explanationHTML}
+                `;
+                reportContainer.appendChild(reportItem);
+            });
+        }
+    </script>
+</body>
+</html>
