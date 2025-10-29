@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>আদর্শ গ্যাস ও গ্যাসের গতিতত্ত্ব কুইজ</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;700&family=Poppins:wght@600&display=swap');
+
+        :root {
+            --primary-bg: #0f2027;
+            --secondary-bg: #203a43;
+            --tertiary-bg: #2c5364;
+            --card-bg: rgba(255, 255, 255, 0.98);
+            --text-color: #333;
+            --accent-color: #1abc9c;
+            --correct-color: #2ecc71;
+            --incorrect-color: #e74c3c;
+            --light-gray: #f0f0f0;
+            --shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            --border-radius: 15px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Noto Sans Bengali', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-bg), var(--secondary-bg), var(--tertiary-bg));
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 30px;
+            text-align: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: var(--primary-bg);
+        }
+        
+        h2 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: var(--primary-bg);
+        }
+
+        p {
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+        
+        .start-buttons-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, var(--accent-color), #16a085);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(26, 188, 156, 0.4);
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(26, 188, 156, 0.6);
+        }
+        
+        .btn.continue-btn {
+            background: linear-gradient(45deg, #2980b9, #3498db);
+             box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+        }
+        .btn.continue-btn:hover {
+             box-shadow: 0 7px 20px rgba(52, 152, 219, 0.6);
+        }
+
+        #quiz-screen .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+        
+        #question-counter, #score-display {
+             background: var(--light-gray);
+             padding: 8px 15px;
+             border-radius: 20px;
+        }
+
+        #timer {
+            display: flex;
+            align-items: center;
+            font-size: 1.5em;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            color: var(--tertiary-bg);
+        }
+        
+        #progress-bar-container {
+            width: 100%;
+            height: 10px;
+            background-color: var(--light-gray);
+            border-radius: 5px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        #progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--correct-color), var(--accent-color));
+            width: 0%;
+            border-radius: 5px;
+            transition: width 0.5s ease-out;
+        }
+        
+        #question-text {
+            font-size: 1.4em;
+            font-weight: 700;
+            margin-bottom: 25px;
+            min-height: 80px;
+        }
+        
+        #options-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .option-btn {
+            width: 100%;
+            padding: 18px;
+            font-size: 1.1em;
+            font-weight: 500;
+            border-radius: var(--border-radius);
+            border: 2px solid var(--light-gray);
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .option-btn:hover:not([disabled]) {
+            border-color: var(--secondary-bg);
+            background-color: #f7faff;
+            transform: scale(1.02);
+        }
+        
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        .option-btn.correct {
+            background-color: var(--correct-color);
+            color: white;
+            border-color: var(--correct-color);
+            animation: pulse 0.5s;
+        }
+
+        .option-btn.incorrect {
+            background-color: var(--incorrect-color);
+            color: white;
+            border-color: var(--incorrect-color);
+            animation: shake 0.5s;
+        }
+        
+        @keyframes pulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+          100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          75% { transform: translateX(5px); }
+        }
+
+        #overview-screen h2 { margin-bottom: 10px; }
+        #overview-summary { font-size: 1.2em; font-weight: bold; margin-bottom: 25px; background: var(--light-gray); padding: 15px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; gap: 15px;}
+        #overview-summary-stats { display: flex; justify-content: center; gap: 30px;}
+        .summary-correct { color: var(--correct-color); }
+        .summary-incorrect { color: var(--incorrect-color); }
+        #overview-list { max-height: 40vh; overflow-y: auto; text-align: left; margin-bottom: 25px; padding-right: 10px; }
+        .overview-item { background: #fff; border: 1px solid var(--light-gray); border-radius: 10px; padding: 15px; margin-bottom: 10px; position: relative; padding-right: 40px; }
+        .overview-item p { margin-bottom: 8px; font-size: 1em; }
+        .overview-item .question { font-weight: bold; }
+        .overview-item .explanation { font-size: 0.9em; color: #555; background: #f8f9fa; padding: 8px; border-radius: 5px; margin-top: 5px; }
+        .overview-status { position: absolute; top: 50%; right: 15px; transform: translateY(-50%); font-size: 2em; }
+        .status-correct { color: var(--correct-color); }
+        .status-incorrect { color: var(--incorrect-color); }
+
+        footer {
+            margin-top: 25px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1em;
+        }
+
+        footer p {
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            h1 { font-size: 1.8em; }
+            h2 { font-size: 1.5em; }
+            #question-text { font-size: 1.2em; min-height: 70px; }
+            #options-container { grid-template-columns: 1fr; }
+            .option-btn { padding: 15px; font-size: 1em; }
+            #quiz-screen .header { flex-direction: column; gap: 10px; margin-bottom: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <h1>আদর্শ গ্যাস ও গ্যাসের সূত্রাবলী</h1>
+            <p>এই নির্দিষ্ট টপিকের উপর আপনার দক্ষতা যাচাই করুন। প্রতিটি প্রশ্নের জন্য সময় পাবেন 40 সেকেন্ড।</p>
+            <p><strong>মোট 40টি প্রশ্ন</strong></p>
+            <div class="start-buttons-container">
+                <button id="start-btn" class="btn">নতুন কুইজ শুরু করুন</button>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="screen">
+            <div class="header">
+                <div id="question-counter"></div>
+                <div id="timer">
+                    <span id="timer-text">40</span>
+                </div>
+                <div id="score-display">স্কোর: 0</div>
+            </div>
+            <div id="progress-bar-container">
+                <div id="progress-bar"></div>
+            </div>
+            <div id="question-text"></div>
+            <div id="options-container"></div>
+        </div>
+        
+        <!-- Overview Screen -->
+        <div id="overview-screen" class="screen">
+            <h2 id="overview-title"></h2>
+            <div id="overview-summary"></div>
+            <div id="overview-list"></div>
+            <button id="continue-btn" class="btn continue-btn"></button>
+        </div>
+    </div>
+
+    <footer>
+        <p>Abu Hasan, Assistant Professor</p>
+        <p>Department of Physics</p>
+        <p>Rangpur Government College, Rangpur.</p>
+    </footer>
+
+    <script>
+        const allMcqs = {
+            hsc_board_exam: [
+                { question: "বয়েলের সূত্রে কোন দুটি রাশি স্থির থাকে?", options: { a: "চাপ ও আয়তন", b: "তাপমাত্রা ও ভর", c: "আয়তন ও তাপমাত্রা", d: "চাপ ও ভর" }, answer: "b", explanation: "বয়েলের সূত্রটি নির্দিষ্ট ভরের গ্যাসের জন্য স্থির তাপমাত্রায় প্রযোজ্য (P ∝ 1/V)।" },
+                { question: "চার্লসের সূত্রের V বনাম T লেখচিত্রের প্রকৃতি কী (T কেলভিন এককে)?", options: { a: "অধিবৃত্তাকার", b: "মূলবিন্দুগামী সরলরেখা", c: "পরাবৃত্তাকার", d: "তাপমাত্রার অক্ষের সমান্তরাল" }, answer: "b", explanation: "স্থির চাপে, গ্যাসের আয়তন তার পরম তাপমাত্রার সমানুপাতিক (V ∝ T), যা মূলবিন্দুগামী সরলরেখার সমীকরণ।" },
+                { question: "আদর্শ গ্যাস সমীকরণ কোনটি?", options: { a: "P/V = nRT", b: "PV = nRT", c: "PT = nRV", d: "V/T = nRP" }, answer: "b", explanation: "আদর্শ গ্যাস সমীকরণ হলো PV = nRT, যেখানে P=চাপ, V=আয়তন, n=মোল সংখ্যা, R=গ্যাস ধ্রুবক এবং T=তাপমাত্রা।" },
+                { question: "SI এককে মোলার গ্যাস ধ্রুবক R-এর মান কত?", options: { a: "8.314 J/mol·K", b: "0.0821 L·atm/mol·K", c: "8.314 cal/mol·K", d: "9.8 J/mol·K" }, answer: "a", explanation: "আন্তর্জাতিক বা SI পদ্ধতিতে মোলার গ্যাস ধ্রুবক R-এর মান হলো 8.314 J/mol·K।" },
+                { question: "STP (Standard Temperature and Pressure) বলতে কী বোঝায়?", options: { a: "25°C ও 1 atm", b: "0 K ও 1 atm", c: "0°C ও 760 mm Hg", d: "273 K ও 1 Pa" }, answer: "c", explanation: "STP বা প্রমাণ তাপমাত্রা ও চাপ হলো 0°C (273.15 K) তাপমাত্রা এবং 1 atm (760 mm Hg) চাপ।" },
+                { question: "ডাল্টনের আংশিক চাপ সূত্র অনুযায়ী, মিশ্রণের মোট চাপ—", options: { a: "উপাদান গ্যাসগুলোর চাপের গুণফলের সমান", b: "উপাদান গ্যাসগুলোর চাপের যোগফলের সমান", c: "উপাদান গ্যাসগুলোর চাপের গড় মানের সমান", d: "সবচেয়ে সক্রিয় গ্যাসের চাপের সমান" }, answer: "b", explanation: "কোনো গ্যাস মিশ্রণের মোট চাপ এর উপাদান গ্যাসগুলোর নিজ নিজ আংশিক চাপের যোগফলের সমান (P = P₁ + P₂ + ...)।" },
+                { question: "গ্রাহামের ব্যাপন সূত্রানুযায়ী, গ্যাসের ব্যাপন হার (r) এর ঘনত্বের (ρ) সাথে কীভাবে সম্পর্কিত?", options: { a: "r ∝ ρ", b: "r ∝ 1/ρ", c: "r ∝ √ρ", d: "r ∝ 1/√ρ" }, answer: "d", explanation: "কোনো গ্যাসের ব্যাপন হার তার ঘনত্বের বর্গমূলের ব্যস্তানুপাতিক (r ∝ 1/√ρ)।" },
+                { question: "স্থির চাপে নির্দিষ্ট ভরের গ্যাসের তাপমাত্রা 27°C থেকে দ্বিগুণ করলে এর আয়তন কত হবে?", options: { a: "দ্বিগুণ হবে", b: "অর্ধেক হবে", c: "একই থাকবে", d: "327°C তাপমাত্রার সমান আয়তন হবে" }, answer: "d", explanation: "চার্লসের সূত্র V∝T (কেলভিন)। T₁=300K, দ্বিগুণ তাপমাত্রা=600K=327°C। তাপমাত্রা দ্বিগুণ হওয়ায় আয়তন দ্বিগুণ হবে।" },
+                { question: "গ্যাসীয় পদার্থের চাপীয় সূত্রে স্থির থাকে কোনটি?", options: { a: "তাপমাত্রা", b: "চাপ", c: "ভর", d: "আয়তন ও ভর" }, answer: "d", explanation: "চাপীয় সূত্রটি (P ∝ T) নির্দিষ্ট ভরের গ্যাসের জন্য স্থির আয়তনে প্রযোজ্য।" },
+                { question: "বোল্টজম্যান ধ্রুবক (k) এবং সার্বজনীন গ্যাস ধ্রুবক (R) এর সম্পর্ক কী?", options: { a: "k = R / N_A", b: "R = k / N_A", c: "R = k", d: "R + k = N_A" }, answer: "a", explanation: "এক মোল গ্যাসে অ্যাভোগাড্রো সংখ্যক (N_A) অণু থাকে। তাই অণু প্রতি গ্যাস ধ্রুবক k = R / N_A।" },
+            ],
+            medical_admission: [
+                { question: "স্থির তাপমাত্রায় কোনো গ্যাসের P বনাম 1/V লেখচিত্রটি কেমন হবে?", options: { a: "অধিবৃত্তাকার", b: "Y-অক্ষের সমান্তরাল", c: "মূলবিন্দুগামী সরলরেখা", d: "X-অক্ষের সমান্তরাল" }, answer: "c", explanation: "বয়েলের সূত্রানুসারে, P ∝ 1/V বা P = k(1/V)। এটি y = mx আকারের সমীকরণ, তাই লেখচিত্রটি মূলবিন্দুগামী সরলরেখা হবে।" },
+                { question: "চার্লসের সূত্রানুযায়ী, পরম শূন্য তাপমাত্রায় কোনো আদর্শ গ্যাসের আয়তন তাত্ত্বিকভাবে কত হবে?", options: { a: "অসীম", b: "সর্বোচ্চ", c: "শূন্য", d: "পরিবর্তনশীল" }, answer: "c", explanation: "চার্লসের সূত্র V∝T থেকে দেখা যায়, তাপমাত্রা পরম শূন্য (0 K) হলে গ্যাসের আয়তনও তাত্ত্বিকভাবে শূন্যে পৌঁছায়।" },
+                { question: "নিচের কোনটি মোলার গ্যাস ধ্রুবক R এর একক নয়?", options: { a: "L·atm·mol⁻¹·K⁻¹", b: "Pa·m³·mol⁻¹·K⁻¹", c: "J·mol⁻¹·K⁻¹", d: "N·m⁻²" }, answer: "d", explanation: "N·m⁻² বা پاسکال (Pa) হলো চাপের একক, মোলার গ্যাস ধ্রুবকের একক নয়। R এর একক হলো (কাজ/মোল·তাপমাত্রা)।" },
+                { question: "ডাল্টনের আংশিক চাপের সূত্র কোন ধরনের গ্যাস মিশ্রণের জন্য সবচেয়ে ভালোভাবে প্রযোজ্য?", options: { a: "রাসায়নিকভাবে বিক্রিয়াশীল", b: "পরস্পর বিক্রিয়া করে না এমন", c: "উভধর্মী", d: "সকল গ্যাস মিশ্রণ" }, answer: "b", explanation: "ডাল্টনের সূত্রটি কেবল সেইসব গ্যাস মিশ্রণের জন্য প্রযোজ্য যাদের উপাদানসমূহ পরস্পরের সাথে রাসায়নিকভাবে বিক্রিয়া করে না।" },
+                { question: "কোন গ্যাসটির ব্যাপন হার সবচেয়ে বেশি হবে?", options: { a: "অক্সিজেন (O₂)", b: "কার্বন ডাইঅক্সাইড (CO₂)", c: "হিলিয়াম (He)", d: "নাইট্রোজেন (N₂)" }, answer: "c", explanation: "গ্রাহামের সূত্রানুযায়ী, যার আণবিক ভর সবচেয়ে কম, তার ব্যাপন হার সবচেয়ে বেশি। হিলিয়ামের আণবিক ভর (4) সবচেয়ে কম।" },
+                { question: "PV = nRT সমীকরণে কোনটি সার্বজনীন ধ্রুবক?", options: { a: "P", b: "V", c: "n", d: "R" }, answer: "d", explanation: "P, V, n এবং T হলো গ্যাসের অবস্থা নির্দেশক চলরাশি, কিন্তু R হলো একটি সার্বজনীন ধ্রুবক যার মান সকল আদর্শ গ্যাসের জন্য একই।" },
+                { question: "স্থির তাপমাত্রায় একটি আবদ্ধ পাত্রে গ্যাসের চাপ বাড়ালে এর ঘনত্বের কী পরিবর্তন হবে?", options: { a: "কমবে", b: "বাড়বে", c: "অপরিবর্তিত থাকবে", d: "শূন্য হবে" }, answer: "b", explanation: "স্থির তাপমাত্রায়, চাপ বাড়ালে আয়তন কমে যায় (বয়েলের সূত্র)। ঘনত্ব (ρ=m/V) আয়তনের ব্যস্তানুপাতিক হওয়ায় ঘনত্ব বাড়বে।" },
+                { question: "আদর্শ গ্যাস সমীকরণে বোল্টজম্যান ধ্রুবক (k) ব্যবহৃত হয় যখন গ্যাসের পরিমাণ কোন এককে প্রকাশ করা হয়?", options: { a: "মোল সংখ্যায়", b: "অণুর সংখ্যায়", c: "গ্রামে", d: "লিটারে" }, answer: "b", explanation: "যখন গ্যাসের পরিমাণ মোল (n) এর পরিবর্তে অণুর সংখ্যায় (N) প্রকাশ করা হয়, তখন PV=NkT সমীকরণ ব্যবহৃত হয়।" },
+                { question: "P₁V₁/T₁ = P₂V₂/T₂ সমীকরণটি কোন সূত্রের সমন্বিত রূপ?", options: { a: "বয়েল ও গ্রাহাম", b: "বয়েল, চার্লস ও চাপীয় সূত্র", c: "চার্লস ও ডাল্টন", d: "শুধুমাত্র বয়েল ও চার্লস" }, answer: "b", explanation: "এই সমীকরণটি বয়েল, চার্লস এবং গেলুসাকের চাপীয় সূত্রের সমন্বয়ের ফল, যা গ্যাসের সমন্বয় সূত্র নামে পরিচিত।" },
+                { question: "দুটি ভিন্ন গ্যাসের ব্যাপন হার সমান হতে পারে যদি—", options: { a: "তাদের আণবিক ভর সমান হয়", b: "তাদের তাপমাত্রা ভিন্ন হয়", c: "তাদের চাপ সমান হয়", d: "তাদের আয়তন সমান হয়" }, answer: "a", explanation: "গ্রাহামের সূত্র অনুযায়ী, ব্যাপন হার শুধুমাত্র আণবিক ভরের উপর নির্ভর করে (স্থির T ও P তে)। তাই আণবিক ভর সমান হলেই ব্যাপন হার সমান হবে।" },
+            ],
+            university_admission: [
+                { question: "প্রমাণ তাপমাত্রা ও চাপে (STP) নাইট্রোজেন (N₂) গ্যাসের ঘনত্ব কত? (M=28 g/mol)", options: { a: "1.25 g/L", b: "0.8 g/L", c: "2.5 g/L", d: "1.4 g/L" }, answer: "a", explanation: "STP তে, ρ = M/22.4L = 28 g / 22.4 L ≈ 1.25 g/L. অথবা, PM = ρRT থেকে ρ = PM/RT ব্যবহার করে।" },
+                { question: "একটি অজানা গ্যাসের ব্যাপন হার হাইড্রোজেন (H₂) গ্যাসের ব্যাপন হারের 1/4 গুণ। অজানা গ্যাসটির আণবিক ভর কত?", options: { a: "8 g/mol", b: "16 g/mol", c: "32 g/mol", d: "64 g/mol" }, answer: "c", explanation: "r₁/r₂ = √(M₂/M₁)। ধরি, r_gas/r_H₂ = 1/4। (1/4)² = M_H₂ / M_gas ⇒ 1/16 = 2 / M_gas ⇒ M_gas = 32 g/mol।" },
+                { question: "2 L আয়তনের একটি গ্যাসকে 27°C ও 1 atm চাপে থেকে 127°C ও 2 atm চাপে নিলে এর চূড়ান্ত আয়তন কত হবে?", options: { a: "1.33 L", b: "1.5 L", c: "2.66 L", d: "3.0 L" }, answer: "a", explanation: "V₂ = V₁(P₁/P₂)(T₂/T₁) = 2L * (1/2) * (400K/300K) = 1 * (4/3) = 1.33 L।" },
+                { question: "একটি পাত্রে 2 mol O₂ ও 3 mol N₂ আছে। মিশ্রণের মোট চাপ 10 atm হলে, O₂-এর আংশিক চাপ কত?", options: { a: "2 atm", b: "3 atm", c: "4 atm", d: "6 atm" }, answer: "c", explanation: "O₂ এর মোল ভগ্নাংশ, x = 2/(2+3) = 0.4। O₂ এর আংশিক চাপ P = x * P_total = 0.4 * 10 atm = 4 atm।" },
+                { question: "স্থির আয়তনের একটি পাত্রে গ্যাসের তাপমাত্রা 27°C থেকে 327°C করা হলে এর চাপ কতগুণ বৃদ্ধি পাবে?", options: { a: "2 গুণ", b: "3 গুণ", c: "4 গুণ", d: "1 গুণ" }, answer: "a", explanation: "P∝T (কেলভিন)। T₁=300K, T₂=600K। তাপমাত্রা দ্বিগুণ হওয়ায় চাপ দ্বিগুণ হবে।" },
+                { question: "P বনাম T লেখচিত্রে (স্থির আয়তনে) দুটি ভিন্ন গ্যাসের জন্য দুটি সরলরেখা আঁকা হলো। যে রেখার ঢাল বেশি, তা নির্দেশ করে—", options: { a: "বেশি আয়তন", b: "কম আয়তন", c: "বেশি ভর", d: "কম ভর" }, answer: "b", explanation: "P = (nR/V)T। y=mx সমীকরণের সাথে তুলনা করলে ঢাল m = nR/V। ঢাল বেশি হলে আয়তন (V) কম হবে।" },
+                { question: "একই তাপমাত্রা ও চাপে সম-আয়তনের দুটি পাত্রের একটিতে হাইড্রোজেন ও অন্যটিতে কার্বন ডাইঅক্সাইড আছে। কোন পাত্রের গ্যাসের ভর বেশি?", options: { a: "হাইড্রোজেন", b: "কার্বন ডাইঅক্সাইড", c: "উভয়ের ভর সমান", d: "বলা সম্ভব নয়" }, answer: "b", explanation: "অ্যাভোগাড্রোর সূত্রানুযায়ী, মোল সংখ্যা (n) সমান। ভর m = nM। যার আণবিক ভর M বেশি (CO₂, M=44), তার ভরও বেশি হবে।" },
+                { question: "স্থির তাপমাত্রায় একটি গ্যাসের আয়তন 20% কমানো হলে, এর চাপ শতকরা কত বৃদ্ধি পাবে?", options: { a: "20%", b: "25%", c: "16.67%", d: "40%" }, answer: "b", explanation: "V₂ = 0.8V₁। P₁V₁=P₂V₂ ⇒ P₂=P₁V₁/0.8V₁ = 1.25P₁। চাপ বৃদ্ধি = 0.25P₁, যা শতকরা 25%।" },
+                { question: "27°C তাপমাত্রা ও 2 atm চাপে 8.21 L পাত্রে কত মোল গ্যাস আছে? (R=0.0821 L·atm/mol·K)", options: { a: "2/3 mol", b: "3/2 mol", c: "1 mol", d: "2 mol" }, answer: "a", explanation: "n = PV/RT = (2 * 8.21) / (0.0821 * 300) = 16.42 / 24.63 ≈ 2/3 mol।" },
+                { question: "দুটি ভিন্ন গ্যাসের ঘনত্ব ρ₁ ও ρ₂ এবং তাদের আণবিক ভর M₁ ও M₂। একই চাপ ও তাপমাত্রায় এদের মধ্যে সম্পর্ক কী?", options: { a: "M₁ρ₁ = M₂ρ₂", b: "M₁/ρ₁ = M₂/ρ₂", c: "M₁ρ₂ = M₂ρ₁", d: "M₁M₂ = ρ₁ρ₂" }, answer: "b", explanation: "PM=ρRT ⇒ M/ρ = RT/P = ধ্রুবক। সুতরাং, M₁/ρ₁ = M₂/ρ₂।" },
+            ],
+            engineering_admission: [
+                { question: "একটি গ্যাস সিলিন্ডারে 27°C ও 20 atm চাপে গ্যাস আছে। অর্ধেক গ্যাস বের হয়ে গেলে এবং তাপমাত্রা 127°C হলে চূড়ান্ত চাপ কত?", options: { a: "10 atm", b: "13.33 atm", c: "15 atm", d: "26.67 atm" }, answer: "b", explanation: "P₁/n₁T₁ = P₂/n₂T₂ ⇒ P₂ = P₁(n₂/n₁) (T₂/T₁) = 20 atm * (0.5/1) * (400K/300K) = 10 * (4/3) ≈ 13.33 atm।" },
+                { question: "1 atm চাপে 3L N₂ গ্যাসকে 2 atm চাপে 2L O₂ গ্যাসের সাথে 5L এর একটি পাত্রে মেশানো হলো। মিশ্রণের চূড়ান্ত চাপ কত হবে?", options: { a: "1.0 atm", b: "1.4 atm", c: "1.5 atm", d: "3.0 atm" }, answer: "b", explanation: "P_final = (P₁V₁+P₂V₂)/V_final = (1*3 + 2*2)/5 = (3+4)/5 = 7/5 = 1.4 atm।" },
+                { question: "একটি ছিদ্রপথে কিছু পরিমাণ হিলিয়াম (He) গ্যাস নিঃসরণে 10 সেকেন্ড সময় লাগে। একই পরিমাণ সালফার ডাইঅক্সাইড (SO₂) নিঃসরণে কত সময় লাগবে?", options: { a: "20 s", b: "28.2 s", c: "40 s", d: "80 s" }, answer: "c", explanation: "নিঃসরণের সময় t ∝ √M। t_SO₂/t_He = √(M_SO₂/M_He) = √(64/4) = √16 = 4। t_SO₂ = 4 × 10 s = 40 s।" },
+                { question: "27°C ও 1 atm চাপে একটি বেলুনে 10 g হিলিয়াম (He) গ্যাস ভরা আছে। বেলুনটির আয়তন কত লিটার?", options: { a: "24.6 L", b: "61.5 L", c: "123 L", d: "246 L" }, answer: "b", explanation: "n = 10g / 4 g/mol = 2.5 mol। V = nRT/P = (2.5 * 0.0821 * 300) / 1 ≈ 61.5 L।" },
+                { question: "গাড়ির টায়ারের গেজ চাপ 30 psi যখন তাপমাত্রা 27°C। বায়ুমণ্ডলীয় চাপ 15 psi। তাপমাত্রা 57°C হলে নতুন গেজ চাপ কত হবে? (আয়তন স্থির)", options: { a: "31.5 psi", b: "34.5 psi", c: "39.5 psi", d: "45.0 psi" }, answer: "b", explanation: "প্রাথমিক পরম চাপ P₁=30+15=45 psi, T₁=300K, T₂=330K। P₂=P₁(T₂/T₁)=45*(330/300)=49.5 psi। নতুন গেজ চাপ = 49.5 - 15 = 34.5 psi।" },
+                { question: "27°C ও 750 mm Hg চাপে 500 cc ভেজা বায়ুকে শুষ্ক করলে STP-তে এর আয়তন কত হবে? (27°C-এ সম্পৃক্ত বাষ্পচাপ 26 mm Hg)", options: { a: "429.5 cc", b: "456.2 cc", c: "488.1 cc", d: "500 cc" }, answer: "a", explanation: "শুষ্ক বায়ুর চাপ P₁=750-26=724 mmHg, V₁=500cc, T₁=300K। STP তে, P₂=760 mmHg, T₂=273K। V₂ = V₁(P₁/P₂)(T₂/T₁) = 500*(724/760)*(273/300) ≈ 429.5 cc।" },
+                { question: "একটি খোলা পাত্রকে 27°C থেকে 127°C পর্যন্ত উত্তপ্ত করা হলে, পাত্রে থাকা বায়ুর কত অংশ বের হয়ে যাবে?", options: { a: "1/4", b: "1/3", c: "1/2", d: "3/4" }, answer: "a", explanation: "খোলা পাত্রে P স্থির। n₁T₁=n₂T₂ ⇒ n₂=n₁(300K/400K)=0.75n₁। বের হওয়া অংশ = (n₁-n₂)/n₁ = 1-0.75=0.25 বা 1/4।" },
+                { question: "20 লিটার ধারণক্ষমতার একটি গ্যাস সিলিন্ডার প্রতি মিনিটে 0.1 atm হারে চাপ হারাচ্ছে। যদি তাপমাত্রা 300 K স্থির থাকে, তবে প্রতি সেকেন্ডে কত গ্রাম O₂ গ্যাস লিক হচ্ছে?", options: { a: "0.0021 g/s", b: "0.012 g/s", c: "0.043 g/s", d: "0.087 g/s" }, answer: "c", explanation: "PV=(m/M)RT ⇒ (dP/dt)V = (dm/dt)RT/M। dm/dt = M/(RT) * V * (dP/dt) = [32g / (0.0821*300)] * 20L * (0.1/60 atm/s) ≈ 0.043 g/s।" },
+                { question: "সমভরের অক্সিজেন ও নাইট্রোজেন একটি পাত্রে মেশানো হলো। মিশ্রণের মোট চাপ 27 atm হলে নাইট্রোজেনের আংশিক চাপ কত?", options: { a: "12 atm", b: "14 atm", c: "15 atm", d: "18 atm" }, answer: "b", explanation: "ধরি ভর m। n_O₂ = m/32, n_N₂ = m/28। N₂ এর মোল ভগ্নাংশ, x = (m/28) / (m/32+m/28) = (1/28) / (60/(32*28)) = 32/60 = 8/15। P_N₂ = (8/15) * 27 atm = 14.4 ≈ 14 atm।" },
+                { question: "একটি বুদবুদ হ্রদের তলদেশ থেকে উপরে আসায় এর আয়তন 8 গুণ হয়। বায়ুমণ্ডলীয় চাপ H উচ্চতার পানির চাপের সমান হলে, হ্রদের গভীরতা কত?", options: { a: "7H", b: "8H", c: "9H", d: "H/8" }, answer: "a", explanation: "তলদেশে চাপ P₁ = P_atm + hρg = Hρg + hρg। উপরে চাপ P₂ = P_atm = Hρg। P₁V₁ = P₂V₂ ⇒ (H+h)ρg * V = Hρg * 8V ⇒ H+h=8H ⇒ h=7H।" },
+            ],
+        };
+
+        
+        let questions = [];
+        const questionCategories = Object.keys(allMcqs);
+        questionCategories.forEach(category => {
+            allMcqs[category].forEach(q => {
+                questions.push({
+                    question: q.question,
+                    options: Object.values(q.options),
+                    answer: q.options[q.answer],
+                    explanation: q.explanation
+                });
+            });
+        });
+
+
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const overviewScreen = document.getElementById('overview-screen');
+        const startBtn = document.getElementById('start-btn');
+        const questionCounter = document.getElementById('question-counter');
+        const scoreDisplay = document.getElementById('score-display');
+        const timerText = document.getElementById('timer-text');
+        const progressBar = document.getElementById('progress-bar');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const overviewTitle = document.getElementById('overview-title');
+        const overviewSummary = document.getElementById('overview-summary');
+        const overviewList = document.getElementById('overview-list');
+        const continueBtn = document.getElementById('continue-btn');
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timer;
+        const TIME_LIMIT = 40;
+        let timeLeft = TIME_LIMIT;
+        let userAnswers = [];
+
+        function saveQuizState() {
+            const state = { currentQuestionIndex, score, userAnswers };
+            localStorage.setItem('gasQuizLawsProgress', JSON.stringify(state));
+        }
+
+        function loadQuizState() {
+            const savedState = localStorage.getItem('gasQuizLawsProgress');
+            if (savedState) {
+                const state = JSON.parse(savedState);
+                currentQuestionIndex = state.currentQuestionIndex;
+                score = state.score;
+                userAnswers = state.userAnswers;
+                scoreDisplay.textContent = `স্কোর: ${score}`;
+                showScreen('quiz-screen');
+                loadQuestion();
+            }
+        }
+
+        function clearQuizState() {
+            localStorage.removeItem('gasQuizLawsProgress');
+        }
+
+        window.addEventListener('load', () => {
+            const savedData = localStorage.getItem('gasQuizLawsProgress');
+            if (savedData) {
+                const startButtonsContainer = document.querySelector('.start-buttons-container');
+                const continueSavedBtn = document.createElement('button');
+                continueSavedBtn.id = 'continue-saved-btn';
+                continueSavedBtn.className = 'btn continue-btn';
+                continueSavedBtn.textContent = 'আগেরটি চালিয়ে যান';
+                startButtonsContainer.appendChild(continueSavedBtn);
+                continueSavedBtn.addEventListener('click', loadQuizState);
+            }
+        });
+
+        startBtn.addEventListener('click', startGame);
+        continueBtn.addEventListener('click', continueQuiz);
+
+        function startGame() {
+            clearQuizState();
+            currentQuestionIndex = 0;
+            score = 0;
+            userAnswers = [];
+            scoreDisplay.textContent = 'স্কোর: 0';
+            showScreen('quiz-screen');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            resetState();
+            progressBar.style.width = `${((currentQuestionIndex) / questions.length) * 100}%`;
+            if (currentQuestionIndex >= questions.length) {
+                showOverview(true);
+                return;
+            }
+            const currentQuestion = questions[currentQuestionIndex];
+            questionCounter.textContent = `প্রশ্ন ${currentQuestionIndex + 1}/${questions.length}`;
+            questionText.textContent = currentQuestion.question;
+            currentQuestion.options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('option-btn');
+                button.addEventListener('click', () => selectAnswer(button, option));
+                optionsContainer.appendChild(button);
+            });
+            startTimer();
+        }
+
+        function startTimer() {
+            timeLeft = TIME_LIMIT;
+            timerText.textContent = timeLeft;
+            timer = setInterval(() => {
+                timeLeft--;
+                timerText.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    selectAnswer(null, null);
+                }
+            }, 1000);
+        }
+
+        function resetState() {
+            clearInterval(timer);
+            optionsContainer.innerHTML = '';
+        }
+
+        function selectAnswer(selectedButton, selectedOption) {
+            clearInterval(timer);
+            const correctOption = questions[currentQuestionIndex].answer;
+            const isCorrect = selectedOption === correctOption;
+            userAnswers.push({
+                question: questions[currentQuestionIndex].question,
+                yourAnswer: selectedOption === null ? 'সময় শেষ' : selectedOption,
+                correctAnswer: correctOption,
+                explanation: questions[currentQuestionIndex].explanation,
+                isCorrect: isCorrect,
+            });
+            Array.from(optionsContainer.children).forEach(button => {
+                if (button.textContent === correctOption) button.classList.add('correct');
+                if (button === selectedButton && !isCorrect) button.classList.add('incorrect');
+                button.disabled = true;
+            });
+            if (isCorrect) {
+                score++;
+                scoreDisplay.textContent = `স্কোর: ${score}`;
+            }
+            saveQuizState();
+            setTimeout(handleNext, 1800);
+        }
+
+        function handleNext() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex % 10 === 0 && currentQuestionIndex > 0) {
+                showOverview(currentQuestionIndex === questions.length);
+            } else {
+                loadQuestion();
+            }
+        }
+
+        function showOverview(isFinal) {
+            showScreen('overview-screen');
+            if (isFinal) {
+                clearQuizState();
+            }
+            let start = Math.floor((currentQuestionIndex - 1) / 10) * 10;
+            let end = currentQuestionIndex;
+            overviewTitle.textContent = isFinal ? 'চূড়ান্ত ফলাফল' : `ধাপ ${end / 10} এর সারসংক্ষেপ`;
+            overviewList.innerHTML = '';
+            for (let i = start; i < end; i++) {
+                const answer = userAnswers[i];
+                const item = document.createElement('div');
+                item.classList.add('overview-item');
+                const statusIcon = answer.isCorrect ? '✔' : '✖';
+                const statusClass = answer.isCorrect ? 'status-correct' : 'status-incorrect';
+                item.innerHTML = `
+                    <div class="overview-status ${statusClass}">${statusIcon}</div>
+                    <p class="question"><strong>প্রশ্ন ${i + 1}:</strong> ${answer.question}</p>
+                    <p><strong>তোমার উত্তর:</strong> ${answer.yourAnswer}</p>
+                    ${!answer.isCorrect ? `<p><strong>সঠিক উত্তর:</strong> ${answer.correctAnswer}</p>` : ''}
+                    <p class="explanation"><strong>ব্যাখ্যা:</strong> ${answer.explanation}</p>
+                `;
+                overviewList.prepend(item);
+            }
+            let segmentCorrect = userAnswers.slice(start, end).filter(a => a.isCorrect).length;
+            let segmentIncorrect = (end - start) - segmentCorrect;
+            overviewSummary.innerHTML = `
+                <div id="overview-summary-stats">
+                    <span class="summary-correct">✔ সঠিক: ${segmentCorrect}</span>
+                    <span class="summary-incorrect">✖ ভুল: ${segmentIncorrect}</span>
+                </div>
+            `;
+            if (isFinal) {
+                overviewSummary.innerHTML += `<div><strong>সর্বমোট স্কোর: ${score}/${questions.length}</strong></div>`;
+                continueBtn.textContent = 'পুনরায় খেলুন';
+            } else {
+                continueBtn.textContent = 'পরবর্তী ধাপে যান';
+            }
+        }
+
+        function continueQuiz() {
+            if (currentQuestionIndex >= questions.length) {
+                const continueSavedBtn = document.getElementById('continue-saved-btn');
+                if (continueSavedBtn) continueSavedBtn.remove();
+                startGame();
+            } else {
+                showScreen('quiz-screen');
+                loadQuestion();
+            }
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+    </script>
+</body>
+</html>
