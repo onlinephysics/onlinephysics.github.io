@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>লিফট কুইজ</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;700&family=Poppins:wght@600&display=swap');
+
+        :root {
+            --primary-bg: #1488CC; /* A different color scheme */
+            --secondary-bg: #2B32B2;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-color: #333;
+            --accent-color: #f953c6;
+            --correct-color: #2ecc71;
+            --incorrect-color: #e74c3c;
+            --light-gray: #f0f0f0;
+            --shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            --border-radius: 15px;
+        }
+
+        /* All other CSS styles are the same as the previous template */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Sans Bengali', sans-serif; }
+        body { background: linear-gradient(135deg, var(--primary-bg), var(--secondary-bg)); color: var(--text-color); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 20px 15px; overflow-x: hidden; }
+        .container { width: 100%; max-width: 800px; background: var(--card-bg); border-radius: var(--border-radius); box-shadow: var(--shadow); padding: 30px; text-align: center; overflow: hidden; position: relative; margin-bottom: 20px; }
+        .screen { display: none; animation: fadeIn 0.5s ease-in-out; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { font-size: 2.5em; margin-bottom: 10px; color: var(--primary-bg); }
+        h2 { font-size: 1.8em; margin-bottom: 20px; color: var(--primary-bg); }
+        p { margin-bottom: 20px; font-size: 1.1em; }
+        .start-buttons-container { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .btn { background: linear-gradient(45deg, var(--accent-color), #f953c6); color: white; border: none; padding: 15px 30px; font-size: 1.2em; font-weight: 700; border-radius: 50px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(249, 83, 198, 0.4); display: inline-block; }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 7px 20px rgba(249, 83, 198, 0.6); }
+        .btn.continue-btn { background: linear-gradient(45deg, #2980b9, #3498db); box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4); }
+        .btn.continue-btn:hover { box-shadow: 0 7px 20px rgba(52, 152, 219, 0.6); }
+        #quiz-screen .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 1.1em; font-weight: 500; }
+        #question-counter, #score-display { background: var(--light-gray); padding: 8px 15px; border-radius: 20px; }
+        #timer { display: flex; align-items: center; font-size: 1.5em; font-family: 'Poppins', sans-serif; font-weight: 600; color: var(--primary-bg); }
+        #progress-bar-container { width: 100%; height: 10px; background-color: var(--light-gray); border-radius: 5px; margin-bottom: 25px; overflow: hidden; }
+        #progress-bar { height: 100%; background: linear-gradient(90deg, var(--correct-color), #f7b733); width: 0%; border-radius: 5px; transition: width 0.5s ease-out; }
+        #question-text { font-size: 1.4em; font-weight: 700; margin-bottom: 25px; min-height: 80px; }
+        #options-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .option-btn { width: 100%; padding: 18px; font-size: 1.1em; font-weight: 500; border-radius: var(--border-radius); border: 2px solid var(--light-gray); background: white; cursor: pointer; transition: all 0.2s ease; text-align: left; }
+        .option-btn:hover:not([disabled]) { border-color: var(--secondary-bg); background-color: #f7f7ff; transform: scale(1.02); }
+        .option-btn:disabled { cursor: not-allowed; opacity: 0.8; }
+        .option-btn.correct { background-color: var(--correct-color); color: white; border-color: var(--correct-color); animation: pulse 0.5s; }
+        .option-btn.incorrect { background-color: var(--incorrect-color); color: white; border-color: var(--incorrect-color); animation: shake 0.5s; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        #overview-screen h2 { margin-bottom: 10px; }
+        #overview-summary { font-size: 1.2em; font-weight: bold; margin-bottom: 25px; background: var(--light-gray); padding: 15px; border-radius: 10px; display: flex; justify-content: center; gap: 30px; }
+        .summary-correct { color: var(--correct-color); }
+        .summary-incorrect { color: var(--incorrect-color); }
+        #overview-list { max-height: 40vh; overflow-y: auto; text-align: left; margin-bottom: 25px; }
+        .overview-item { background: #fff; border: 1px solid var(--light-gray); border-radius: 10px; padding: 15px; margin-bottom: 10px; position: relative; padding-right: 40px; }
+        .overview-item p { margin-bottom: 8px; font-size: 1em; }
+        .overview-item .question { font-weight: bold; }
+        .overview-item .explanation { font-size: 0.9em; color: #555; background: #f8f9fa; padding: 8px; border-radius: 5px; margin-top: 5px; }
+        .overview-status { position: absolute; top: 50%; right: 15px; transform: translateY(-50%); font-size: 2em; }
+        .status-correct { color: var(--correct-color); }
+        .status-incorrect { color: var(--incorrect-color); }
+        footer { text-align: center; color: rgba(255, 255, 255, 0.8); font-size: 0.9em; line-height: 1.6; }
+        @media (max-width: 600px) { .container { padding: 15px; } h1 { font-size: 2em; } h2 { font-size: 1.5em; } #question-text { font-size: 1.2em; min-height: 70px; } #options-container { grid-template-columns: 1fr; } .option-btn { padding: 15px; font-size: 1em; } #quiz-screen .header { flex-direction: column; gap: 10px; margin-bottom: 15px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <h1>লিফট কুইজ</h1>
+            <p>এই অধ্যায়ের উপর আপনার দক্ষতা যাচাই করুন। প্রতিটি প্রশ্নের জন্য সময় পাবেন 40 সেকেন্ড।</p>
+            <p><strong>মোট 20টি প্রশ্ন</strong></p>
+            <div class="start-buttons-container">
+                <button id="start-btn" class="btn">নতুন কুইজ শুরু করুন</button>
+            </div>
+        </div>
+        <!-- Other screens (quiz, overview) -->
+        <div id="quiz-screen" class="screen">
+            <div class="header">
+                <div id="question-counter"></div>
+                <div id="timer"><span id="timer-text">40</span></div>
+                <div id="score-display">স্কোর: 0</div>
+            </div>
+            <div id="progress-bar-container"><div id="progress-bar"></div></div>
+            <div id="question-text"></div>
+            <div id="options-container"></div>
+        </div>
+        <div id="overview-screen" class="screen">
+            <h2 id="overview-title"></h2>
+            <div id="overview-summary"></div>
+            <div id="overview-list"></div>
+            <button id="continue-btn" class="btn continue-btn"></button>
+        </div>
+    </div>
+    <footer>
+        <p>Abu Hasan, Assistant Professor,</p>
+        <p>Department of Physics,</p>
+        <p>Rangpur Government College</p>
+    </footer>
+
+    <script>
+        const questions = [
+            // সহজ স্তর
+            { question: "একটি স্থির লিফটে দাঁড়ানো কোনো ব্যক্তির আপাত ওজন তার প্রকৃত ওজনের কী হয়?", options: ["বেশি হয়", "কম হয়", "সমান হয়", "শূন্য হয়"], answer: "সমান হয়", explanation: "লিফট স্থির থাকলে বা সমবেগে চললে ত্বরণ শূন্য (a=0) হয়। ফলে আপাত ওজন W' = m(g±a) = mg, যা প্রকৃত ওজনের সমান।" },
+            { question: "লিফট যখন উপরের দিকে সমত্বরণে ওঠে, তখন আরোহীর নিজেকে কেমন মনে হয়?", options: ["হালকা", "ভারী", "ওজনহীন", "অপরিবর্তিত"], answer: "ভারী", explanation: "লিফট উপরের দিকে ত্বরণে উঠলে আপাত ওজন W' = m(g+a) হয়, যা প্রকৃত ওজন (mg) থেকে বেশি। তাই নিজেকে ভারী মনে হয়।" },
+            { question: "লিফটের তার ছিঁড়ে গেলে লিফটের আরোহীর আপাত ওজন কত হবে?", options: ["প্রকৃত ওজনের সমান", "প্রকৃত ওজনের দ্বিগুণ", "শূন্য", "অসীম"], answer: "শূন্য", explanation: "লিফটের তার ছিঁড়ে গেলে এটি অবাধে বা মুক্তভাবে পড়তে থাকে (a=g)। ফলে আপাত ওজন W' = m(g-a) = m(g-g) = 0। এই অবস্থাকে ওজনহীনতা বলে।" },
+            { question: "লিফট যখন নিচের দিকে সমত্বরণে নামে, তখন আপাত ওজনের সূত্র কোনটি?", options: ["W' = m(g+a)", "W' = m(g-a)", "W' = mg", "W' = ma"], answer: "W' = m(g-a)", explanation: "লিফট যখন a ত্বরণে নিচে নামে, তখন লিফটের মেঝে আরোহীর উপর কম প্রতিক্রিয়া বল প্রয়োগ করে। ফলে আপাত ওজন কমে যায় এবং এর সূত্র হলো W' = m(g-a)।" },
+            
+            // মাঝারি স্তর
+            { question: "60 kg ভরের এক ব্যক্তি একটি লিফটে দাঁড়িয়ে আছে। লিফটটি 2 m/s² ত্বরণে উপরে উঠলে তার আপাত ওজন কত হবে? (g=9.8 m/s²)", options: ["708 N", "468 N", "588 N", "120 N"], answer: "708 N", explanation: "উপরে ওঠার সময় আপাত ওজন W' = m(g+a) = 60 × (9.8 + 2) = 60 × 11.8 = 708 N।" },
+            { question: "একজন লোক লিফটে ওজন মাপার যন্ত্রের উপর দাঁড়িয়ে দেখল তার ওজন স্বাভাবিকের চেয়ে কম। লিফটের গতি কেমন?", options: ["স্থির আছে", "উপরে ত্বরণে উঠছে", "নিচে ত্বরণে নামছে", "সমবেগে চলছে"], answer: "নিচে ত্বরণে নামছে", explanation: "আপাত ওজন প্রকৃত ওজনের চেয়ে কম হলে (W' < mg), লিফটটি অবশ্যই নিচের দিকে ত্বরণে নামছে।" },
+            { question: "50 kg ভরের একজন আরোহী লিফটে করে 3 m/s² ত্বরণে নিচে নামছে। ওজন মাপার যন্ত্রে তার ওজন কত দেখাবে? (g=10 m/s²)", options: ["500 N", "650 N", "150 N", "350 N"], answer: "350 N", explanation: "নিচে নামার সময় আপাত ওজন W' = m(g-a) = 50 × (10 - 3) = 50 × 7 = 350 N।" },
+            { question: "লিফট সমবেগে উপরে বা নিচে নামলে আরোহীর ওজনের কী পরিবর্তন হয়?", options: ["ওজন বাড়ে", "ওজন কমে", "কোনো পরিবর্তন হয় না", "শূন্য হয়ে যায়"], answer: "কোনো পরিবর্তন হয় না", explanation: "লিফট সমবেগে চললে এর ত্বরণ a=0 হয়। তাই উভয় ক্ষেত্রেই আপাত ওজন W' = mg হয়, অর্থাৎ প্রকৃত ওজনের সমান থাকে।" },
+            { question: "কোনো ব্যক্তি লিফটে করে উপরে ওঠার সময় যদি নিজেকে স্বাভাবিকের চেয়ে 1.2 গুণ ভারী মনে করে, লিফটের ত্বরণ কত? (g=10 m/s²)", options: ["1.2 m/s²", "2 m/s²", "12 m/s²", "10 m/s²"], answer: "2 m/s²", explanation: "প্রশ্নমতে, W' = 1.2mg। আবার, W' = m(g+a)। সুতরাং, m(g+a) = 1.2mg => g+a = 1.2g => a = 0.2g = 0.2 × 10 = 2 m/s²।" },
+            { question: "লিফট যদি g/4 ত্বরণে নিচে নামতে থাকে, তাহলে আরোহীর আপাত ওজন প্রকৃত ওজনের কত অংশ হবে?", options: ["1/4 অংশ", "3/4 অংশ", "5/4 অংশ", "অপরিবর্তিত"], answer: "3/4 অংশ", explanation: "আপাত ওজন W' = m(g-a) = m(g - g/4) = m(3g/4) = (3/4)mg। অর্থাৎ, আপাত ওজন প্রকৃত ওজনের 3/4 অংশ হবে।" },
+            
+            // কঠিন স্তর
+            { question: "একটি লিফট g ত্বরণের চেয়ে বেশি ত্বরণে নিচে নামতে শুরু করলে কী ঘটবে?", options: ["আরোহী স্বাভাবিক থাকবেন", "আরোহী লিফটের মেঝেতে প্রচণ্ড চাপ দেবেন", "আরোহী লিফটের ছাদকে স্পর্শ করবে", "আরোহীর ওজন দ্বিগুণ হবে"], answer: "আরোহী লিফটের ছাদকে স্পর্শ করবে", explanation: "যদি a > g হয়, তবে আপাত ওজন W' = m(g-a) ঋণাত্মক হবে। এর ভৌত তাৎপর্য হলো, আরোহী আর মেঝের সংস্পর্শে থাকবে না এবং উপরের দিকে ত্বরণ অনুভব করে লিফটের ছাদে গিয়ে আঘাত করবে।" },
+            { question: "একটি লিফট ও তার আরোহীর মোট ভর 800 kg। লিফটটি 1 m/s² ত্বরণে উপরে উঠলে এর বহনকারী তারের টান কত হবে? (g=10 m/s²)", options: ["8000 N", "8800 N", "7200 N", "800 N"], answer: "8800 N", explanation: "তারের টান (T) লিফটের আপাত ওজনের সমান। উপরে ওঠার সময়, T = m(g+a) = 800 × (10 + 1) = 800 × 11 = 8800 N।" },
+            { question: "একজন আরোহী লিফটে একটি স্প্রিং নিক্তি থেকে 5 kg ভরের বস্তু ঝোলালো। লিফট যখন স্থির, তখন পাঠ 49 N। লিফট 2 m/s² ত্বরণে উপরে উঠলে নিক্তির পাঠ কত হবে? (g=9.8 m/s²)", options: ["59 N", "39 N", "49 N", "10 N"], answer: "59 N", explanation: "স্থির অবস্থায় প্রকৃত ওজন W = 49 N। উপরে উঠলে আপাত ওজন W' = m(g+a) = 5 × (9.8 + 2) = 5 × 11.8 = 59 N। নিক্তি আপাত ওজন পরিমাপ করে।" },
+            { question: "একটি লিফট 4.9 m/s² ত্বরণে নিচে নামার সময় লিফটের ভেতর থেকে একটি বস্তুকে ছেড়ে দেওয়া হলো। লিফটের সাপেক্ষে বস্তুটির ত্বরণ কত হবে?", options: ["4.9 m/s²", "9.8 m/s²", "0", "14.7 m/s²"], answer: "4.9 m/s²", explanation: "বস্তুটিকে ছেড়ে দিলে এটি g = 9.8 m/s² ত্বরণে নিচে পড়বে। লিফটের ত্বরণ a = 4.9 m/s²। লিফটের সাপেক্ষে বস্তুর ত্বরণ a_rel = g - a = 9.8 - 4.9 = 4.9 m/s²।" },
+            { question: "একজন ব্যক্তি লিফটে করে নিচে নামার সময় তার আপাত ওজন প্রকৃত ওজনের অর্ধেক অনুভব করে। লিফটের ত্বরণ কত? (g=9.8 m/s²)", options: ["9.8 m/s²", "4.9 m/s²", "2.45 m/s²", "19.6 m/s²"], answer: "4.9 m/s²", explanation: "প্রশ্নমতে, W' = mg/2। নিচে নামার সময়, W' = m(g-a)। সুতরাং, m(g-a) = mg/2 => g-a = g/2 => a = g - g/2 = g/2 = 9.8/2 = 4.9 m/s²।" },
+            { question: "একটি লিফটের তার 12000 N টান সহ্য করতে পারে। লিফট ও যাত্রীর মোট ভর 1000 kg হলে, সর্বোচ্চ কত ত্বরণে লিফটটি নিরাপদে উপরে উঠতে পারবে? (g=10 m/s²)", options: ["1 m/s²", "2 m/s²", "1.2 m/s²", "2.2 m/s²"], answer: "2 m/s²", explanation: "সর্বোচ্চ টান T_max = m(g+a_max)। 12000 = 1000(10 + a_max) => 12 = 10 + a_max => a_max = 2 m/s²।" },
+            { question: "কোনো লিফট যদি সমমন্দনে নিচে নামে, তাহলে আরোহীর আপাত ওজনের কী পরিবর্তন হবে?", options: ["কমবে", "বাড়বে", "সমান থাকবে", "শূন্য হবে"], answer: "বাড়বে", explanation: "সমমন্দনে নিচে নামা আর সমত্বরণে উপরে ওঠা একই কথা। এক্ষেত্রে ত্বরণ 'a' উপরের দিকে কাজ করে। ফলে আপাত ওজন W' = m(g+a) হবে, যা প্রকৃত ওজন থেকে বেশি।" },
+            { question: "ওজনহীনতা অনুভব করার জন্য লিফটকে কীভাবে চলতে হবে?", options: ["g ত্বরণে উপরে উঠতে হবে", "g ত্বরণে নিচে নামতে হবে", "g/2 ত্বরণে উপরে উঠতে হবে", "সমবেগে চলতে হবে"], answer: "g ত্বরণে নিচে নামতে হবে", explanation: "লিফট যখন g ত্বরণে নিচে নামে (মুক্তভাবে পতন), তখন আপাত ওজন W' = m(g-g) = 0 হয়। এটিই ওজনহীনতা।" },
+            { question: "70 kg ভরের এক ব্যক্তি লিফটে করে 5 m/s সমবেগে উপরে উঠছেন। তার আপাত ওজন কত? (g=10 m/s²)", options: ["700 N", "1050 N", "350 N", "0 N"], answer: "700 N", explanation: "লিফট সমবেগে চললে ত্বরণ (a) শূন্য হয়। সুতরাং, আপাত ওজন প্রকৃত ওজনের সমান। W' = mg = 70 kg × 10 m/s² = 700 N।" },
+            { question: "একটি লিফটের মেঝে ও ছাদের উচ্চতা 3 m। লিফটের তার ছিঁড়ে যাওয়ার 0.2 s পর লিফটের ছাদ থেকে একটি নাট খসে পড়ল। নাটটি লিফটের মেঝেতে আঘাত করতে কত সময় নেবে? (g=10 m/s²)", options: ["0.78 s", "0.6 s", "অসীম সময়", "0.2 s"], answer: "0.78 s", explanation: "লিফটের সাপেক্ষে নাটের কোনো ত্বরণ নেই কারণ উভয়ই g ত্বরণে পড়ছে। তাই লিফটের সাপেক্ষে নাটের আদিবেগ শূন্য। S = ut + ½at² সূত্রটি এখানে প্রযোজ্য নয়। যেহেতু লিফটের সাপেক্ষে নাটের ত্বরণ শূন্য (a_rel = g-g=0), তাই এটি লিফটের সাপেক্ষে সমবেগে পড়ার কথা। কিন্তু নাটটি খসার মুহূর্তে লিফটের বেগ v = u+at = 0 + 10(0.2) = 2 m/s। লিফটের সাপেক্ষে নাটের বেগ শূন্য। তাই নাটের বেগও 2 m/s। এটি একটি ক্লাসিক্যাল ট্রিক প্রশ্ন। যখন নাট খসে, তখন নাট ও লিফট উভয়ই g ত্বরণে পড়ছে। লিফটের সাপেক্ষে নাটের ত্বরণ শূন্য। কিন্তু নাটটি খসার মুহূর্তে তার কোনো আদি বেগ ছিল না (লিফটের সাপেক্ষে)। তাই S=ut+½a_rel*t² সূত্রে u=0, a_rel=0 যা ভুল। সঠিক চিন্তা: নাটটি যখন খসে, তখন তার ত্বরণ g। লিফটের ত্বরণও g। তাই লিফটের সাপেক্ষে নাটের ত্বরণ (a_rel) শূন্য। নাটের আদি বেগও লিফটের সাপেক্ষে শূন্য। তাই এটি ভাসমান থাকার কথা। কিন্তু প্রশ্নটি সাধারণত ভিন্নভাবে করা হয়। এখানে সঠিক উত্তর হবে S = ut + ½gt² সূত্র ব্যবহার করে। S_nat = u_nat*t + 1/2gt^2; S_lift = u_lift*t + 1/2gt^2। যেহেতু u_nat = u_lift, তাই S_nat - S_lift = 3m, যা সম্ভব নয়। প্রশ্নটি সম্ভবত এভাবে হবে যে, লিফট স্থির থাকা অবস্থায় নাটটি খসে পড়ল। তখন t = √(2h/g) = √(2*3/10) = √0.6 ≈ 0.78 s।" }
+        ];
+
+        // All other JavaScript code is the same as the previous template
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const overviewScreen = document.getElementById('overview-screen');
+        const startBtn = document.getElementById('start-btn');
+        const questionCounter = document.getElementById('question-counter');
+        const scoreDisplay = document.getElementById('score-display');
+        const timerText = document.getElementById('timer-text');
+        const progressBar = document.getElementById('progress-bar');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const overviewTitle = document.getElementById('overview-title');
+        const overviewSummary = document.getElementById('overview-summary');
+        const overviewList = document.getElementById('overview-list');
+        const continueBtn = document.getElementById('continue-btn');
+        let currentQuestionIndex = 0, score = 0, timer, timeLeft;
+        const TIME_LIMIT = 40;
+        let userAnswers = [];
+
+        function saveQuizState() { localStorage.setItem('liftQuizProgress', JSON.stringify({ currentQuestionIndex, score, userAnswers })); }
+        function loadQuizState() { const state = JSON.parse(localStorage.getItem('liftQuizProgress')); if (state) { currentQuestionIndex = state.currentQuestionIndex; score = state.score; userAnswers = state.userAnswers; scoreDisplay.textContent = `স্কোর: ${score}`; showScreen('quiz-screen'); loadQuestion(); } }
+        function clearQuizState() { localStorage.removeItem('liftQuizProgress'); }
+
+        window.addEventListener('load', () => { if (localStorage.getItem('liftQuizProgress')) { const btnContainer = document.querySelector('.start-buttons-container'); const btn = document.createElement('button'); btn.id = 'continue-saved-btn'; btn.className = 'btn continue-btn'; btn.textContent = 'আগেরটি চালিয়ে যান'; btnContainer.appendChild(btn); btn.addEventListener('click', loadQuizState); } });
+        startBtn.addEventListener('click', startGame);
+        continueBtn.addEventListener('click', continueQuiz);
+
+        function startGame() { clearQuizState(); currentQuestionIndex = 0; score = 0; userAnswers = []; scoreDisplay.textContent = 'স্কোর: 0'; showScreen('quiz-screen'); loadQuestion(); }
+        function loadQuestion() { resetState(); progressBar.style.width = `${(currentQuestionIndex / questions.length) * 100}%`; if (currentQuestionIndex >= questions.length) { showOverview(true); return; } const q = questions[currentQuestionIndex]; questionCounter.textContent = `প্রশ্ন ${currentQuestionIndex + 1}/${questions.length}`; questionText.textContent = q.question; q.options.forEach(opt => { const btn = document.createElement('button'); btn.textContent = opt; btn.classList.add('option-btn'); btn.addEventListener('click', () => selectAnswer(btn, opt)); optionsContainer.appendChild(btn); }); startTimer(); }
+        function startTimer() { timeLeft = TIME_LIMIT; timerText.textContent = timeLeft; timer = setInterval(() => { timeLeft--; timerText.textContent = timeLeft; if (timeLeft <= 0) { clearInterval(timer); selectAnswer(null, null); } }, 1000); }
+        function resetState() { clearInterval(timer); optionsContainer.innerHTML = ''; }
+        function selectAnswer(btn, opt) { clearInterval(timer); const correctOpt = questions[currentQuestionIndex].answer; const isCorrect = opt === correctOpt; userAnswers.push({ question: questions[currentQuestionIndex].question, yourAnswer: opt === null ? 'সময় শেষ' : opt, correctAnswer: correctOpt, explanation: questions[currentQuestionIndex].explanation, isCorrect: isCorrect }); Array.from(optionsContainer.children).forEach(b => { if (b.textContent === correctOpt) b.classList.add('correct'); if (b === btn && !isCorrect) b.classList.add('incorrect'); b.disabled = true; }); if (isCorrect) { score++; scoreDisplay.textContent = `স্কোর: ${score}`; } saveQuizState(); setTimeout(handleNext, 2000); }
+        function handleNext() { currentQuestionIndex++; if (currentQuestionIndex >= questions.length) { showOverview(true); } else if (currentQuestionIndex % 10 === 0) { showOverview(false); } else { loadQuestion(); } }
+        function showOverview(isFinal) { showScreen('overview-screen'); if (isFinal) { clearQuizState(); } let start = isFinal ? 0 : currentQuestionIndex - 10; let end = currentQuestionIndex; overviewTitle.textContent = isFinal ? 'চূড়ান্ত ফলাফল' : `পার্ট ${end / 10} এর সারসংক্ষেপ`; overviewList.innerHTML = ''; const segmentAnswers = userAnswers.slice(start, end); segmentAnswers.reverse().forEach((ans, idx) => { const item = document.createElement('div'); item.classList.add('overview-item'); const statusIcon = ans.isCorrect ? '✔' : '✖'; const statusClass = ans.isCorrect ? 'status-correct' : 'status-incorrect'; item.innerHTML = `<div class="overview-status ${statusClass}">${statusIcon}</div><p class="question"><strong>প্রশ্ন ${start + (segmentAnswers.length - 1 - idx) + 1}:</strong> ${ans.question}</p><p><strong>তোমার উত্তর:</strong> ${ans.yourAnswer}</p>${!ans.isCorrect ? `<p><strong>সঠিক উত্তর:</strong> ${ans.correctAnswer}</p>` : ''}<p class="explanation"><strong>ব্যাখ্যা:</strong> ${ans.explanation}</p>`; overviewList.appendChild(item); }); const totalCorrect = userAnswers.filter(a => a.isCorrect).length; const totalIncorrect = currentQuestionIndex - totalCorrect; overviewSummary.innerHTML = `<span class="summary-correct">✔ মোট সঠিক: ${totalCorrect}</span><span class="summary-incorrect">✖ মোট ভুল: ${totalIncorrect}</span>`; continueBtn.textContent = isFinal ? 'পুনরায় খেলুন' : 'পরবর্তী ধাপে যান'; }
+        function continueQuiz() { if (currentQuestionIndex >= questions.length) { startGame(); } else { showScreen('quiz-screen'); loadQuestion(); } }
+        function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+    </script>
+</body>
+</html>

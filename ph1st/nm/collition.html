@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>সংঘর্ষ কুইজ</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;700&family=Poppins:wght@600&display=swap');
+
+        :root {
+            --primary-bg: #0052D4; /* A different color scheme */
+            --secondary-bg: #65C7F7;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-color: #333;
+            --accent-color: #FF6B6B;
+            --correct-color: #2ecc71;
+            --incorrect-color: #e74c3c;
+            --light-gray: #f0f0f0;
+            --shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            --border-radius: 15px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Noto Sans Bengali', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-bg), var(--secondary-bg));
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px 15px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 30px;
+            text-align: center;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: var(--primary-bg);
+        }
+        
+        h2 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: var(--primary-bg);
+        }
+
+        p {
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+        
+        .start-buttons-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, var(--accent-color), #FF8E53);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(255, 107, 107, 0.6);
+        }
+        
+        .btn.continue-btn {
+            background: linear-gradient(45deg, #2980b9, #3498db);
+             box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+        }
+        .btn.continue-btn:hover {
+             box-shadow: 0 7px 20px rgba(52, 152, 219, 0.6);
+        }
+
+
+        #quiz-screen .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+        
+        #question-counter, #score-display {
+             background: var(--light-gray);
+             padding: 8px 15px;
+             border-radius: 20px;
+        }
+
+        #timer {
+            display: flex;
+            align-items: center;
+            font-size: 1.5em;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            color: var(--primary-bg);
+        }
+        
+        #progress-bar-container {
+            width: 100%;
+            height: 10px;
+            background-color: var(--light-gray);
+            border-radius: 5px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        #progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--correct-color), #f7b733);
+            width: 0%;
+            border-radius: 5px;
+            transition: width 0.5s ease-out;
+        }
+        
+        #question-text {
+            font-size: 1.4em;
+            font-weight: 700;
+            margin-bottom: 25px;
+            min-height: 80px;
+        }
+        
+        #options-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .option-btn {
+            width: 100%;
+            padding: 18px;
+            font-size: 1.1em;
+            font-weight: 500;
+            border-radius: var(--border-radius);
+            border: 2px solid var(--light-gray);
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .option-btn:hover:not([disabled]) {
+            border-color: var(--secondary-bg);
+            background-color: #f7f7ff;
+            transform: scale(1.02);
+        }
+        
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        .option-btn.correct {
+            background-color: var(--correct-color);
+            color: white;
+            border-color: var(--correct-color);
+            animation: pulse 0.5s;
+        }
+
+        .option-btn.incorrect {
+            background-color: var(--incorrect-color);
+            color: white;
+            border-color: var(--incorrect-color);
+            animation: shake 0.5s;
+        }
+        
+        @keyframes pulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+          100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          75% { transform: translateX(5px); }
+        }
+
+        #overview-screen h2 { margin-bottom: 10px; }
+        #overview-summary { font-size: 1.2em; font-weight: bold; margin-bottom: 25px; background: var(--light-gray); padding: 15px; border-radius: 10px; display: flex; justify-content: center; gap: 30px; }
+        .summary-correct { color: var(--correct-color); }
+        .summary-incorrect { color: var(--incorrect-color); }
+        #overview-list { max-height: 40vh; overflow-y: auto; text-align: left; margin-bottom: 25px; }
+        .overview-item { background: #fff; border: 1px solid var(--light-gray); border-radius: 10px; padding: 15px; margin-bottom: 10px; position: relative; padding-right: 40px; }
+        .overview-item p { margin-bottom: 8px; font-size: 1em; }
+        .overview-item .question { font-weight: bold; }
+        .overview-item .explanation { font-size: 0.9em; color: #555; background: #f8f9fa; padding: 8px; border-radius: 5px; margin-top: 5px; }
+        .overview-status { position: absolute; top: 50%; right: 15px; transform: translateY(-50%); font-size: 2em; }
+        .status-correct { color: var(--correct-color); }
+        .status-incorrect { color: var(--incorrect-color); }
+        
+        footer {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            h1 { font-size: 2em; }
+            h2 { font-size: 1.5em; }
+            #question-text { font-size: 1.2em; min-height: 70px; }
+            #options-container { grid-template-columns: 1fr; }
+            .option-btn { padding: 15px; font-size: 1em; }
+            #quiz-screen .header { flex-direction: column; gap: 10px; margin-bottom: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <h1>সংঘর্ষ কুইজ</h1>
+            <p>এই অধ্যায়ের উপর আপনার দক্ষতা যাচাই করুন। প্রতিটি প্রশ্নের জন্য সময় পাবেন 40 সেকেন্ড।</p>
+            <p><strong>মোট 20টি প্রশ্ন</strong></p>
+            <div class="start-buttons-container">
+                <button id="start-btn" class="btn">নতুন কুইজ শুরু করুন</button>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="screen">
+            <div class="header">
+                <div id="question-counter"></div>
+                <div id="timer">
+                    <span id="timer-text">40</span>
+                </div>
+                <div id="score-display">স্কোর: 0</div>
+            </div>
+            <div id="progress-bar-container">
+                <div id="progress-bar"></div>
+            </div>
+            <div id="question-text"></div>
+            <div id="options-container"></div>
+        </div>
+        
+        <!-- Overview Screen -->
+        <div id="overview-screen" class="screen">
+            <h2 id="overview-title"></h2>
+            <div id="overview-summary"></div>
+            <div id="overview-list"></div>
+            <button id="continue-btn" class="btn continue-btn"></button>
+        </div>
+    </div>
+    
+    <footer>
+        <p>Abu Hasan, Assistant Professor,</p>
+        <p>Department of Physics,</p>
+        <p>Rangpur Government College</p>
+    </footer>
+
+    <script>
+        const questions = [
+            // সহজ স্তর: সংজ্ঞা ও ধারণাভিত্তিক
+            { question: "যেকোনো ধরনের সংঘর্ষে কোন রাশিটি সর্বদা সংরক্ষিত থাকে (যদি বাহ্যিক বল শূন্য হয়)?", options: ["গতিশক্তি", "মোট শক্তি", "রৈখিক ভরবেগ", "কৌণিক ভরবেগ"], answer: "রৈখিক ভরবেগ", explanation: "স্থিতিস্থাপক বা অস্থিতিস্থাপক, সকল প্রকার সংঘর্ষে বাহ্যিক বল শূন্য হলে সিস্টেমের মোট রৈখিক ভরবেগ সর্বদা সংরক্ষিত থাকে।" },
+            { question: "যে সংঘর্ষের পর বস্তুদ্বয় একসাথে মিলিত হয়ে চলে, তাকে কী ধরনের সংঘর্ষ বলে?", options: ["স্থিতিস্থাপক সংঘর্ষ", "পূর্ণ অস্থিতিস্থাপক সংঘর্ষ", "আংশিক স্থিতিস্থাপক সংঘর্ষ", "বিস্ফোরণ"], answer: "পূর্ণ অস্থিতিস্থাপক সংঘর্ষ", explanation: "পূর্ণ অস্থিতিস্থাপক সংঘর্ষে বস্তুদ্বয় মিলিত হয়ে একটি সাধারণ বেগে চলতে থাকে। এক্ষেত্রে গতিশক্তির অপচয় সর্বোচ্চ হয়।" },
+            { question: "একটি পূর্ণ স্থিতিস্থাপক সংঘর্ষের ক্ষেত্রে সংঘর্ষ গুনাঙ্ক (coefficient of restitution) 'e'-এর মান কত?", options: ["e = 0", "e = 1", "0 < e < 1", "e > 1"], answer: "e = 1", explanation: "পূর্ণ স্থিতিস্থাপক সংঘর্ষে আপেক্ষিক বেগ অপরিবর্তিত থাকে, তাই সংঘর্ষ குணাঙ্ক e = 1 হয়।" },
+            { question: "বাস্তব জীবনে গাড়ির সংঘর্ষ কোন ধরনের সংঘর্ষের উদাহরণ?", options: ["পূর্ণ স্থিতিস্থাপক", "অস্থিতিস্থাপক", "আংশিক স্থিতিস্থাপক", "বিস্ফোরণ"], answer: "অস্থিতিস্থাপক", explanation: "বাস্তব জীবনে গাড়ির সংঘর্ষে শব্দ, তাপ উৎপন্ন হয় এবং গাড়ির কাঠামো বেঁকে যায়, অর্থাৎ গতিশক্তি সংরক্ষিত থাকে না। তাই এটি অস্থিতিস্থাপক সংঘর্ষ।" },
+            
+            // মাঝারি স্তর: ছোট গাণিতিক সমস্যা ও প্রয়োগমূলক
+            { question: "2 kg ভরের একটি বস্তু 10 m/s বেগে একটি স্থির 3 kg ভরের বস্তুর সাথে পূর্ণ অস্থিতিস্থাপক সংঘর্ষ ঘটাল। মিলিত বস্তুর বেগ কত হবে?", options: ["4 m/s", "5 m/s", "6 m/s", "2 m/s"], answer: "4 m/s", explanation: "ভরবেগের সংরক্ষণ সূত্রানুযায়ী, m₁u₁ + m₂u₂ = (m₁+m₂)V। এখানে, (2 × 10) + (3 × 0) = (2+3)V => 20 = 5V => V = 4 m/s।" },
+            { question: "একটি বিলিয়ার্ড বল আরেকটি স্থির বিলিয়ার্ড বলকে স্থিতিস্থাপকভাবে ধাক্কা দিলে কী ঘটবে? (বল দুটির ভর সমান)", options: ["তারা একসাথে চলবে", "প্রথমটি থেমে যাবে ও দ্বিতীয়টি প্রথমটির বেগে চলবে", "দুটিই অর্ধেক বেগে চলবে", "দুটিই বিপরীত দিকে ফিরে যাবে"], answer: "প্রথমটি থেমে যাবে ও দ্বিতীয়টি প্রথমটির বেগে চলবে", explanation: "সমান ভরের দুটি বস্তুর মধ্যে একমাত্রিক স্থিতিস্থাপক সংঘর্ষ হলে তাদের বেগ বিনিময় হয়।" },
+            { question: "কোন ধরনের সংঘর্ষে গতিশক্তির অপচয় সবচেয়ে বেশি হয়?", options: ["স্থিতিস্থাপক", "আংশিক অস্থিতিস্থাপক", "পূর্ণ অস্থিতিস্থাপক", "সকল ক্ষেত্রে সমান"], answer: "পূর্ণ অস্থিতিস্থাপক", explanation: "পূর্ণ অস্থিতিস্থাপক সংঘর্ষে বস্তু দুটি মিলিত হয়ে যায় এবং গতিশক্তি সর্বোচ্চ পরিমাণে তাপ, শব্দ বা অন্য শক্তিতে রূপান্তরিত হয়।" },
+            { question: "10 kg ভরের একটি বস্তু 5 m/s বেগে চলার সময় বিস্ফোরিত হয়ে 4 kg ও 6 kg ভরের দুটি খণ্ডে বিভক্ত হলো। 4 kg খণ্ডটি 2 m/s বেগে চলতে থাকলে, 6 kg খণ্ডটির বেগ কত?", options: ["5 m/s", "7 m/s", "12 m/s", "42 m/s"], answer: "7 m/s", explanation: "আদি ভরবেগ = 10 × 5 = 50 kg m/s। শেষ ভরবেগ = (4 × 2) + (6 × v₂)। ভরবেগের সংরক্ষণ অনুযায়ী, 50 = 8 + 6v₂ => 42 = 6v₂ => v₂ = 7 m/s।" },
+            { question: "একটি বল 10 m উচ্চতা থেকে পড়ে 6.4 m উচ্চতায় ফিরে আসলে, এর সংঘর্ষ গুনাঙ্ক (e) কত?", options: ["0.8", "0.64", "1.25", "0.512"], answer: "0.8", explanation: "সংঘর্ষ குணাঙ্ক e = √(h₂/h₁) = √(6.4/10) = √0.64 = 0.8।" },
+            { question: "গাড়ির 'Airbag' ব্যবহারের মূলনীতি কী?", options: ["ভরবেগ বাড়িয়ে দেওয়া", "সংঘর্ষের সময়কাল বাড়িয়ে বল কমানো", "সংঘর্ষ এড়িয়ে যাওয়া", "গতিশক্তি সংরক্ষণ করা"], answer: "সংঘর্ষের সময়কাল বাড়িয়ে বল কমানো", explanation: "এয়ারব্যাগ সংঘর্ষের সময়কাল (Δt) বাড়িয়ে দেয়। ফলে, ভরবেগের পরিবর্তন একই থাকলেও প্রযুক্ত বলের মান (F = Δp/Δt) অনেক কমে যায়, যা যাত্রীকে মারাত্মক আঘাত থেকে রক্ষা করে।" },
+            
+            // কঠিন স্তর: একাধিক ধারণা ও জটিল সমস্যা
+            { question: "m ভরের একটি বস্তু v বেগে একটি স্থির 2m ভরের বস্তুর সাথে স্থিতিস্থাপক সংঘর্ষ করলে, m ভরের বস্তুটির শেষ বেগ কত হবে?", options: ["v/3", "-v/3", "v", "-v"], answer: "-v/3", explanation: "স্থিতিস্থাপক সংঘর্ষে, v₁ = ((m₁-m₂)/(m₁+m₂))u₁। এখানে, m₁=m, m₂=2m, u₁=v। সুতরাং, v₁ = ((m-2m)/(m+2m))v = (-m/3m)v = -v/3। অর্থাৎ, বস্তুটি বিপরীত দিকে v/3 বেগে ফিরে যাবে।" },
+            { question: "দুটি বস্তুর সংঘর্ষের আগে ও পরে মোট গতিশক্তি যথাক্রমে 100 J এবং 70 J হলে, সংঘর্ষটি কী ধরনের?", options: ["স্থিতিস্থাপক", "অস্থিতিস্থাপক", "পূর্ণ স্থিতিস্থাপক", "বলা সম্ভব নয়"], answer: "অস্থিতিস্থাপক", explanation: "যেহেতু সংঘর্ষের পর গতিশক্তি (70 J) সংঘর্ষের আগের গতিশক্তি (100 J) থেকে কম, অর্থাৎ গতিশক্তি সংরক্ষিত হয়নি, তাই সংঘর্ষটি অস্থিতিস্থাপক।" },
+            { question: "5 kg ভরের একটি বস্তু 10 m/s বেগে ডানদিকে এবং 10 kg ভরের আরেকটি বস্তু 8 m/s বেগে বামদিকে চলছিল। পূর্ণ অস্থিতিস্থাপক সংঘর্ষের পর মিলিত বস্তুর বেগ ও দিক কী হবে?", options: ["2 m/s, ডানদিকে", "2 m/s, বামদিকে", "3 m/s, ডানদিকে", "3 m/s, বামদিকে"], answer: "2 m/s, বামদিকে", explanation: "ডানদিককে ধনাত্মক ধরলে, আদি ভরবেগ p = (5 × 10) + (10 × -8) = 50 - 80 = -30 kg m/s। মিলিত ভর = 5+10 = 15 kg। মিলিত বেগ V হলে, 15V = -30 => V = -2 m/s। ঋণাত্মক চিহ্ন নির্দেশ করে বেগ বামদিকে।" },
+            { question: "একটি বস্তুর সংঘর্ষ குணাঙ্ক e=0.5। এটি কোন ধরনের সংঘর্ষ নির্দেশ করে?", options: ["পূর্ণ স্থিতিস্থাপক", "পূর্ণ অস্থিতিস্থাপক", "আংশিক অস্থিতিস্থাপক", "বিস্ফোরণ"], answer: "আংশিক অস্থিতিস্থাপক", explanation: "যখন 0 < e < 1 হয়, তখন সংঘর্ষটি আংশিক অস্থিতিস্থাপক হয়, যেখানে গতিশক্তির কিছু অংশ অপচয় হয় কিন্তু বস্তুগুলো মিলিত হয় না।" },
+            { question: "একটি কামানের গোলা অনুভূমিকের সাথে 30° কোণে 200 m/s বেগে সর্বোচ্চ উচ্চতায় বিস্ফোরিত হয়ে দুটি সমান খণ্ডে বিভক্ত হলো। একটি খণ্ড সোজা নিচে পড়লে, অন্য খণ্ডটির বেগ কত হবে? (g = 10 m/s²)", options: ["200√3 m/s", "400 m/s", "300√3 m/s", "346.4 m/s"], answer: "346.4 m/s", explanation: "সর্বোচ্চ উচ্চতায় শুধু অনুভূমিক বেগ থাকে: vₓ = 200cos30° = 100√3 m/s। আদি ভরবেগ = M(100√3)। একটি খণ্ড (M/2) নিচে পড়লে তার অনুভূমিক বেগ শূন্য। অন্য খণ্ডের (M/2) বেগ v' হলে, M(100√3) = 0 + (M/2)v' => v' = 200√3 ≈ 346.4 m/s।" },
+            { question: "1 kg ভরের একটি বল 2 m/s বেগে একটি দেয়ালে লম্বভাবে ধাক্কা খেয়ে 1.5 m/s বেগে ফিরে আসল। দেয়ালে বলের ঘাত কত?", options: ["0.5 Ns", "2 Ns", "3.5 Ns", "1.5 Ns"], answer: "3.5 Ns", explanation: "বলের ঘাত = ভরবেগের পরিবর্তন। Δp = m(v - u) = 1 × (1.5 - (-2)) = 1 × (1.5 + 2) = 3.5 Ns।" },
+            { question: "দুটি সমান ভরের বস্তুর মধ্যে পূর্ণ অস্থিতিস্থাপক সংঘর্ষে গতিশক্তির কত অংশ হারায়, যদি একটি বস্তু স্থির থাকে?", options: ["25%", "50%", "75%", "100%"], answer: "50%", explanation: "আদি গতিশক্তি Kᵢ = ½mu²। মিলিত বেগ V = (mu+0)/(2m) = u/2। শেষ গতিশক্তি K_f = ½(2m)V² = m(u/2)² = ¼mu²। শক্তির অপচয় = Kᵢ - K_f = ¼mu²। হার = (¼mu² / ½mu²) × 100% = 50%।" },
+            { question: "নিচের কোন ক্ষেত্রে রৈখিক ভরবেগের সংরক্ষণ সূত্র প্রযোজ্য হবে না?", options: ["মহাশূন্যে দুটি নভোযানের সংঘর্ষ", "ঘর্ষণহীন তলে দুটি ব্লকের সংঘর্ষ", "একটি খাড়া উপরের দিকে নিক্ষিপ্ত রকেট", "একটি টেবিলের উপর রাখা স্থির বই"], answer: "একটি খাড়া উপরের দিকে নিক্ষিপ্ত রকেট", explanation: "রকেট যখন উপরের দিকে ওঠে, তখন তার উপর মহাকর্ষ বল (একটি বাহ্যিক বল) কাজ করে। তাই এই সিস্টেমে মোট রৈখিক ভরবেগ সংরক্ষিত থাকে না।" },
+            { question: "একমাত্রিক স্থিতিস্থাপক সংঘর্ষে একটি হালকা বস্তু একটি ভারী স্থির বস্তুকে ধাক্কা দিলে কী হয়?", options: ["হালকা বস্তুটি থেমে যায়", "হালকা বস্তুটি প্রায় একই বেগে ফিরে আসে", "ভারী বস্তুটি হালকা বস্তুর দ্বিগুণ বেগে চলে", "দুটিই একসাথে চলে"], answer: "হালকা বস্তুটি প্রায় একই বেগে ফিরে আসে", explanation: "এক্ষেত্রে m₁ << m₂ এবং u₂=0 হলে, হালকা বস্তুর শেষ বেগ v₁ ≈ -u₁। অর্থাৎ, এটি প্রায় যে বেগে এসেছিল, সেই বেগেই বিপরীত দিকে ফিরে যায়।" },
+            { question: "সংঘর্ষের পর দুটি বস্তুর আপেক্ষিক বেগ যদি সংঘর্ষের আগের আপেক্ষিক বেগের সমান ও বিপরীতমুখী হয়, তবে সংঘর্ষটি কী ধরনের?", options: ["পূর্ণ অস্থিতিস্থাপক", "আংশিক অস্থিতিস্থাপক", "পূর্ণ স্থিতিস্থাপক", "কোনোটিই নয়"], answer: "পূর্ণ স্থিতিস্থাপক", explanation: "এটি স্থিতিস্থাপক সংঘর্ষের একটি মূল বৈশিষ্ট্য, যা থেকে e = 1 প্রমাণিত হয়। (v₂-v₁) = -(u₂-u₁)" }
+        ];
+
+        // DOM Elements
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const overviewScreen = document.getElementById('overview-screen');
+        const startBtn = document.getElementById('start-btn');
+        const questionCounter = document.getElementById('question-counter');
+        const scoreDisplay = document.getElementById('score-display');
+        const timerText = document.getElementById('timer-text');
+        const progressBar = document.getElementById('progress-bar');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const overviewTitle = document.getElementById('overview-title');
+        const overviewSummary = document.getElementById('overview-summary');
+        const overviewList = document.getElementById('overview-list');
+        const continueBtn = document.getElementById('continue-btn');
+
+        // Quiz State
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timer;
+        const TIME_LIMIT = 40; 
+        let timeLeft = TIME_LIMIT;
+        let userAnswers = [];
+
+        // --- Data Persistence Functions ---
+        function saveQuizState() {
+            const state = {
+                currentQuestionIndex,
+                score,
+                userAnswers
+            };
+            localStorage.setItem('collisionQuizProgress', JSON.stringify(state));
+        }
+
+        function loadQuizState() {
+            const savedState = localStorage.getItem('collisionQuizProgress');
+            if (savedState) {
+                const state = JSON.parse(savedState);
+                currentQuestionIndex = state.currentQuestionIndex;
+                score = state.score;
+                userAnswers = state.userAnswers;
+                
+                scoreDisplay.textContent = `স্কোর: ${score}`;
+                showScreen('quiz-screen');
+                loadQuestion();
+            }
+        }
+
+        function clearQuizState() {
+            localStorage.removeItem('collisionQuizProgress');
+        }
+
+        // Check for saved data on page load
+        window.addEventListener('load', () => {
+            const savedData = localStorage.getItem('collisionQuizProgress');
+            if (savedData) {
+                const startButtonsContainer = document.querySelector('.start-buttons-container');
+                const continueSavedBtn = document.createElement('button');
+                continueSavedBtn.id = 'continue-saved-btn';
+                continueSavedBtn.className = 'btn continue-btn';
+                continueSavedBtn.textContent = 'আগেরটি চালিয়ে যান';
+                startButtonsContainer.appendChild(continueSavedBtn);
+                
+                continueSavedBtn.addEventListener('click', loadQuizState);
+            }
+        });
+
+        // --- Core Quiz Functions ---
+
+        startBtn.addEventListener('click', startGame);
+        continueBtn.addEventListener('click', continueQuiz);
+
+        function startGame() {
+            clearQuizState();
+            currentQuestionIndex = 0;
+            score = 0;
+            userAnswers = [];
+            scoreDisplay.textContent = 'স্কোর: 0';
+            showScreen('quiz-screen');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            resetState();
+            
+            progressBar.style.width = `${((currentQuestionIndex) / questions.length) * 100}%`;
+
+            if(currentQuestionIndex >= questions.length){
+                showOverview(true); 
+                return;
+            }
+
+            const currentQuestion = questions[currentQuestionIndex];
+            questionCounter.textContent = `প্রশ্ন ${currentQuestionIndex + 1}/${questions.length}`;
+            questionText.textContent = currentQuestion.question;
+
+            currentQuestion.options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('option-btn');
+                button.addEventListener('click', () => selectAnswer(button, option));
+                optionsContainer.appendChild(button);
+            });
+            startTimer();
+        }
+        
+        function startTimer() {
+            timeLeft = TIME_LIMIT;
+            timerText.textContent = timeLeft;
+            
+            timer = setInterval(() => {
+                timeLeft--;
+                timerText.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    selectAnswer(null, null); 
+                }
+            }, 1000);
+        }
+
+        function resetState() {
+            clearInterval(timer);
+            optionsContainer.innerHTML = '';
+        }
+        
+        function selectAnswer(selectedButton, selectedOption) {
+            clearInterval(timer);
+            const correctOption = questions[currentQuestionIndex].answer;
+            const isCorrect = selectedOption === correctOption;
+            
+            userAnswers.push({
+                question: questions[currentQuestionIndex].question,
+                yourAnswer: selectedOption === null ? 'সময় শেষ' : selectedOption,
+                correctAnswer: correctOption,
+                explanation: questions[currentQuestionIndex].explanation,
+                isCorrect: isCorrect,
+            });
+
+            Array.from(optionsContainer.children).forEach(button => {
+                if(button.textContent === correctOption) button.classList.add('correct');
+                if(button === selectedButton && !isCorrect) button.classList.add('incorrect');
+                button.disabled = true;
+            });
+            
+            if (isCorrect) {
+                score++;
+                scoreDisplay.textContent = `স্কোর: ${score}`;
+            }
+
+            saveQuizState(); 
+
+            setTimeout(handleNext, 2000);
+        }
+
+        function handleNext(){
+            currentQuestionIndex++;
+            if (currentQuestionIndex >= questions.length) {
+                showOverview(true);
+            } else if (currentQuestionIndex % 10 === 0) {
+                showOverview(false);
+            } else {
+                 loadQuestion();
+            }
+        }
+
+        function showOverview(isFinal) {
+            showScreen('overview-screen');
+            if (isFinal) {
+                clearQuizState();
+            }
+
+            let start = isFinal ? 0 : currentQuestionIndex - 10;
+            let end = currentQuestionIndex;
+
+            overviewTitle.textContent = isFinal ? 'চূড়ান্ত ফলাফল' : `পার্ট ${end/10} এর সারসংক্ষেপ`;
+            
+            overviewList.innerHTML = '';
+            
+            const segmentAnswers = userAnswers.slice(start, end);
+
+            segmentAnswers.reverse().forEach((answer, index) => {
+                const item = document.createElement('div');
+                item.classList.add('overview-item');
+                const statusIcon = answer.isCorrect ? '✔' : '✖';
+                const statusClass = answer.isCorrect ? 'status-correct' : 'status-incorrect';
+                
+                item.innerHTML = `
+                    <div class="overview-status ${statusClass}">${statusIcon}</div>
+                    <p class="question"><strong>প্রশ্ন ${start + (segmentAnswers.length - 1 - index) + 1}:</strong> ${answer.question}</p>
+                    <p><strong>তোমার উত্তর:</strong> ${answer.yourAnswer}</p>
+                    ${!answer.isCorrect ? `<p><strong>সঠিক উত্তর:</strong> ${answer.correctAnswer}</p>` : ''}
+                    <p class="explanation"><strong>ব্যাখ্যা:</strong> ${answer.explanation}</p>
+                `;
+                overviewList.appendChild(item);
+            });
+            
+            const totalCorrect = userAnswers.filter(a => a.isCorrect).length;
+            const totalIncorrect = currentQuestionIndex - totalCorrect;
+
+            overviewSummary.innerHTML = `
+                <span class="summary-correct">✔ মোট সঠিক: ${totalCorrect}</span>
+                <span class="summary-incorrect">✖ মোট ভুল: ${totalIncorrect}</span>
+            `;
+            
+            if(isFinal) {
+                continueBtn.textContent = 'পুনরায় খেলুন';
+            } else {
+                continueBtn.textContent = 'পরবর্তী ধাপে যান';
+            }
+        }
+
+        function continueQuiz() {
+            if (currentQuestionIndex >= questions.length) {
+                startGame();
+            } else {
+                showScreen('quiz-screen');
+                loadQuestion();
+            }
+        }
+        
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+    </script>
+</body>
+</html>

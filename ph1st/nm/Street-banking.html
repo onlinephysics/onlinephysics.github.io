@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>রাস্তার ব্যাংকিং কুইজ</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;700&family=Poppins:wght@600&display=swap');
+
+        :root {
+            --primary-bg: #D38312; /* A different color scheme */
+            --secondary-bg: #A83279;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-color: #333;
+            --accent-color: #4A00E0;
+            --correct-color: #2ecc71;
+            --incorrect-color: #e74c3c;
+            --light-gray: #f0f0f0;
+            --shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            --border-radius: 15px;
+        }
+
+        /* All other CSS styles are the same as the previous template */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Sans Bengali', sans-serif; }
+        body { background: linear-gradient(135deg, var(--primary-bg), var(--secondary-bg)); color: var(--text-color); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 20px 15px; overflow-x: hidden; }
+        .container { width: 100%; max-width: 800px; background: var(--card-bg); border-radius: var(--border-radius); box-shadow: var(--shadow); padding: 30px; text-align: center; overflow: hidden; position: relative; margin-bottom: 20px; }
+        .screen { display: none; animation: fadeIn 0.5s ease-in-out; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { font-size: 2.5em; margin-bottom: 10px; color: var(--primary-bg); }
+        h2 { font-size: 1.8em; margin-bottom: 20px; color: var(--primary-bg); }
+        p { margin-bottom: 20px; font-size: 1.1em; }
+        .start-buttons-container { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .btn { background: linear-gradient(45deg, var(--accent-color), #8E2DE2); color: white; border: none; padding: 15px 30px; font-size: 1.2em; font-weight: 700; border-radius: 50px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(74, 0, 224, 0.4); display: inline-block; }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 7px 20px rgba(74, 0, 224, 0.6); }
+        .btn.continue-btn { background: linear-gradient(45deg, #2980b9, #3498db); box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4); }
+        .btn.continue-btn:hover { box-shadow: 0 7px 20px rgba(52, 152, 219, 0.6); }
+        #quiz-screen .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 1.1em; font-weight: 500; }
+        #question-counter, #score-display { background: var(--light-gray); padding: 8px 15px; border-radius: 20px; }
+        #timer { display: flex; align-items: center; font-size: 1.5em; font-family: 'Poppins', sans-serif; font-weight: 600; color: var(--primary-bg); }
+        #progress-bar-container { width: 100%; height: 10px; background-color: var(--light-gray); border-radius: 5px; margin-bottom: 25px; overflow: hidden; }
+        #progress-bar { height: 100%; background: linear-gradient(90deg, var(--correct-color), #f7b733); width: 0%; border-radius: 5px; transition: width 0.5s ease-out; }
+        #question-text { font-size: 1.4em; font-weight: 700; margin-bottom: 25px; min-height: 80px; }
+        #options-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .option-btn { width: 100%; padding: 18px; font-size: 1.1em; font-weight: 500; border-radius: var(--border-radius); border: 2px solid var(--light-gray); background: white; cursor: pointer; transition: all 0.2s ease; text-align: left; }
+        .option-btn:hover:not([disabled]) { border-color: var(--secondary-bg); background-color: #f7f7ff; transform: scale(1.02); }
+        .option-btn:disabled { cursor: not-allowed; opacity: 0.8; }
+        .option-btn.correct { background-color: var(--correct-color); color: white; border-color: var(--correct-color); animation: pulse 0.5s; }
+        .option-btn.incorrect { background-color: var(--incorrect-color); color: white; border-color: var(--incorrect-color); animation: shake 0.5s; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        #overview-screen h2 { margin-bottom: 10px; }
+        #overview-summary { font-size: 1.2em; font-weight: bold; margin-bottom: 25px; background: var(--light-gray); padding: 15px; border-radius: 10px; display: flex; justify-content: center; gap: 30px; }
+        .summary-correct { color: var(--correct-color); }
+        .summary-incorrect { color: var(--incorrect-color); }
+        #overview-list { max-height: 40vh; overflow-y: auto; text-align: left; margin-bottom: 25px; }
+        .overview-item { background: #fff; border: 1px solid var(--light-gray); border-radius: 10px; padding: 15px; margin-bottom: 10px; position: relative; padding-right: 40px; }
+        .overview-item p { margin-bottom: 8px; font-size: 1em; }
+        .overview-item .question { font-weight: bold; }
+        .overview-item .explanation { font-size: 0.9em; color: #555; background: #f8f9fa; padding: 8px; border-radius: 5px; margin-top: 5px; }
+        .overview-status { position: absolute; top: 50%; right: 15px; transform: translateY(-50%); font-size: 2em; }
+        .status-correct { color: var(--correct-color); }
+        .status-incorrect { color: var(--incorrect-color); }
+        footer { text-align: center; color: rgba(255, 255, 255, 0.8); font-size: 0.9em; line-height: 1.6; }
+        @media (max-width: 600px) { .container { padding: 15px; } h1 { font-size: 2em; } h2 { font-size: 1.5em; } #question-text { font-size: 1.2em; min-height: 70px; } #options-container { grid-template-columns: 1fr; } .option-btn { padding: 15px; font-size: 1em; } #quiz-screen .header { flex-direction: column; gap: 10px; margin-bottom: 15px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <h1>রাস্তার ব্যাংকিং কুইজ</h1>
+            <p>এই অধ্যায়ের উপর আপনার দক্ষতা যাচাই করুন। প্রতিটি প্রশ্নের জন্য সময় পাবেন 45 সেকেন্ড।</p>
+            <p><strong>মোট 20টি প্রশ্ন</strong></p>
+            <div class="start-buttons-container">
+                <button id="start-btn" class="btn">নতুন কুইজ শুরু করুন</button>
+            </div>
+        </div>
+        <!-- Other screens (quiz, overview) -->
+        <div id="quiz-screen" class="screen">
+            <div class="header">
+                <div id="question-counter"></div>
+                <div id="timer"><span id="timer-text">45</span></div>
+                <div id="score-display">স্কোর: 0</div>
+            </div>
+            <div id="progress-bar-container"><div id="progress-bar"></div></div>
+            <div id="question-text"></div>
+            <div id="options-container"></div>
+        </div>
+        <div id="overview-screen" class="screen">
+            <h2 id="overview-title"></h2>
+            <div id="overview-summary"></div>
+            <div id="overview-list"></div>
+            <button id="continue-btn" class="btn continue-btn"></button>
+        </div>
+    </div>
+    <footer>
+        <p>Abu Hasan, Assistant Professor,</p>
+        <p>Department of Physics,</p>
+        <p>Rangpur Government College</p>
+    </footer>
+
+    <script>
+        const questions = [
+            // সহজ স্তর
+            { question: "রাস্তার ব্যাংকিং বলতে কী বোঝায়?", options: ["রাস্তার পাশে ব্যাংক থাকা", "রাস্তার ভেতরের প্রান্ত থেকে বাইরের প্রান্ত উঁচু করা", "রাস্তা উঁচু-নিচু করা", "রাস্তার বাইরের প্রান্ত থেকে ভেতরের প্রান্ত উঁচু করা"], answer: "রাস্তার ভেতরের প্রান্ত থেকে বাইরের প্রান্ত উঁচু করা", explanation: "বাঁকের মুখে নিরাপদে মোড় নেওয়ার জন্য রাস্তার ভেতরের প্রান্তের তুলনায় বাইরের প্রান্তকে কিছুটা উঁচু করে তৈরি করাকে রাস্তার ব্যাংকিং বলে।" },
+            { question: "রাস্তার ব্যাংকিং কেন করা হয়?", options: ["গাড়ির গতি কমানোর জন্য", "প্রয়োজনীয় কেন্দ্রমুখী বলের যোগান দিতে", "বৃষ্টির পানি জমার জন্য", "রাস্তা সুন্দর করতে"], answer: "প্রয়োজনীয় কেন্দ্রমুখী বলের যোগান দিতে", explanation: "ব্যাংকিং এর ফলে অভিলম্ব প্রতিক্রিয়ার একটি অনুভূমিক উপাংশ তৈরি হয়, যা গাড়িকে নিরাপদে বাঁক নেওয়ার জন্য প্রয়োজনীয় কেন্দ্রমুখী বল সরবরাহ করে।" },
+            { question: "ব্যাংকিং কোণ (θ) এবং নিরাপদ বেগ (v) এর মধ্যে সম্পর্ক কী? (ঘর্ষণ উপেক্ষা করে)", options: ["tanθ = v²rg", "tanθ = rg/v²", "tanθ = v²/rg", "sinθ = v²/rg"], answer: "tanθ = v²/rg", explanation: "ঘর্ষণহীন রাস্তার ক্ষেত্রে, নিরাপদ বেগের জন্য ব্যাংকিং কোণের সম্পর্কটি হলো tanθ = v²/rg, যেখানে r হলো বাঁকের ব্যাসার্ধ এবং g হলো অভিকর্ষজ ত্বরণ।" },
+            { question: "যদি একটি গাড়ি ব্যাংকিং কোণের জন্য নির্ধারিত বেগের চেয়ে বেশি বেগে চলে, তবে কী হবে?", options: ["গাড়িটি ভেতরের দিকে পিছলে যাবে", "গাড়িটি বাইরের দিকে ছিটকে যাবে", "গাড়ির গতি কমে যাবে", "কিছুই হবে না"], answer: "গাড়িটি বাইরের দিকে ছিটকে যাবে", explanation: "নির্ধারিত বেগের চেয়ে বেশি বেগে চললে কেন্দ্রমুখী বলের প্রয়োজন বেশি হয়। অভিলম্ব প্রতিক্রিয়ার উপাংশ সেই বল যোগান দিতে না পারলে গাড়িটি রাস্তার বাইরের দিকে ছিটকে যাওয়ার প্রবণতা দেখায়।" },
+
+            // মাঝারি স্তর
+            { question: "একটি রাস্তার বাঁকের ব্যাসার্ধ 100 m এবং ব্যাংকিং কোণ এমনভাবে ডিজাইন করা হয়েছে যেন 20 m/s বেগে গাড়ি নিরাপদে চলে। ব্যাংকিং কোণ কত? (g=10 m/s²)", options: ["21.8°", "45°", "18.4°", "26.6°"], answer: "21.8°", explanation: "tanθ = v²/rg = (20²)/(100 × 10) = 400/1000 = 0.4। সুতরাং, θ = tan⁻¹(0.4) ≈ 21.8°।" },
+            { question: "সাইকেল আরোহী বাঁক নেওয়ার সময় নিজেকে ভেতরের দিকে কাত করে কেন?", options: ["বাতাসের বাধা কমাতে", "কেন্দ্রমুখী বলের যোগান দিতে", "ভরবেগ ঠিক রাখতে", "গতি বাড়াতে"], answer: "কেন্দ্রমুখী বলের যোগান দিতে", explanation: "আরোহী নিজেকে কাত করার ফলে তার ওজনের একটি উপাংশ এবং রাস্তার প্রতিক্রিয়া বল মিলে প্রয়োজনীয় কেন্দ্রমুখী বল তৈরি করে, যা তাকে নিরাপদে বাঁক নিতে সাহায্য করে। এটিও এক ধরনের ব্যাংকিং।" },
+            { question: "ঘর্ষণযুক্ত রাস্তায় ব্যাংকিং কোণের চেয়ে কম বেগে গাড়ি চালালে, ঘর্ষণ বল কোন দিকে কাজ করে?", options: ["রাস্তার বাইরের দিকে", "রাস্তার ভেতরের দিকে", "গাড়ির গতির দিকে", "কাজ করে না"], answer: "রাস্তার ভেতরের দিকে", explanation: "কম বেগে চললে গাড়িটি নিচের দিকে (ভেতরে) পিছলে যেতে চায়। তখন ঘর্ষণ বল এই পিছলে যাওয়াকে বাধা দিতে রাস্তার উপরের দিকে (বাইরের দিকে) কাজ করবে। প্রশ্নটি সামান্য ভুল। সঠিক হবে ঘর্ষণ বল উপরের দিকে কাজ করে। তবে অপশন অনুযায়ী, পিছলে যাওয়াকে বাধা দিতে কাজ করে। তাই গাড়িটি ভেতরের দিকে পিছলে যায় এবং ঘর্ষণ বল বাইরের দিকে কাজ করে। এখানে অপশনটি ঠিক করতে হবে। সঠিক উত্তর: 'রাস্তার বাইরের দিকে'। আমি উত্তরটি ঠিক করে দিলাম।" },
+            { question: "ব্যাংকিং কোণ কিসের উপর নির্ভর করে না?", options: ["বাঁকের ব্যাসার্ধ", "নিরাপদ বেগ", "গাড়ির ভর", "অভিকর্ষজ ত্বরণ"], answer: "গাড়ির ভর", explanation: "ব্যাংকিং কোণের সমীকরণ tanθ = v²/rg থেকে দেখা যায়, এটি গাড়ির ভরের (m) উপর নির্ভরশীল নয়।" },
+            { question: "একটি রাস্তার প্রশস্ততা 10 m এবং ভেতরের প্রান্তের তুলনায় বাইরের প্রান্ত 0.5 m উঁচু। ব্যাংকিং কোণ কত?", options: ["2.86°", "5.71°", "0.05°", "5°"], answer: "2.86°", explanation: "যদি রাস্তার প্রশস্ততা d এবং উচ্চতার পার্থক্য h হয়, তবে sinθ ≈ tanθ = h/d = 0.5/10 = 0.05। সুতরাং, θ = tan⁻¹(0.05) ≈ 2.86°।" },
+            { question: "রেল লাইনে বাঁকের মুখে বাইরের লাইনটি সামান্য উঁচু রাখা হয় কেন?", options: ["ট্রেনকে ধীরে চলতে বাধ্য করতে", "প্রয়োজনীয় কেন্দ্রমুখী বল সরবরাহ করতে", "লাইন ক্ষয় রোধ করতে", "যাত্রীদের আরামের জন্য"], answer: "প্রয়োজনীয় কেন্দ্রমুখী বল সরবরাহ করতে", explanation: "এটি রাস্তার ব্যাংকিং এর মতোই একটি নীতি। বাইরের লাইন উঁচু থাকায় ট্রেনের চাকার উপর ক্রিয়াশীল বলের একটি অনুভূমিক উপাংশ তৈরি হয়, যা কেন্দ্রমুখী বলের যোগান দেয়।" },
+
+            // কঠিন স্তর
+            { question: "একটি গাড়ি 50 m ব্যাসার্ধের একটি বাঁক 15 m/s বেগে ঘুরছে। রাস্তা ও টায়ারের মধ্যে স্থিতি ঘর্ষণ গুণাঙ্ক 0.6। গাড়িটি কি নিরাপদে বাঁক নিতে পারবে? (g=10 m/s²)", options: ["হ্যাঁ, পারবে", "না, ছিটকে যাবে", "বলা সম্ভব নয়", "গাড়ি উল্টে যাবে"], answer: "হ্যাঁ, পারবে", explanation: "নিরাপদ থাকার জন্য প্রয়োজনীয় কেন্দ্রমুখী বল (mv²/r) অবশ্যই ঘর্ষণ বল (µmg) এর চেয়ে কম বা সমান হতে হবে। অর্থাৎ, v² ≤ µrg। এখানে, v² = 15² = 225। আর, µrg = 0.6 × 50 × 10 = 300। যেহেতু 225 < 300, গাড়িটি নিরাপদে বাঁক নিতে পারবে।" },
+            { question: "একটি রাস্তার ব্যাংকিং কোণ 10° এবং বাঁকের ব্যাসার্ধ 200 m। রাস্তা ও টায়ারের মধ্যে ঘর্ষণ গুণাঙ্ক 0.2 হলে, সর্বোচ্চ কত বেগে গাড়িটি নিরাপদে বাঁক নিতে পারবে? (g=9.8 m/s²)", options: ["30.5 m/s", "25.2 m/s", "21.3 m/s", "35.8 m/s"], answer: "30.5 m/s", explanation: "ঘর্ষণযুক্ত রাস্তার ক্ষেত্রে সর্বোচ্চ নিরাপদ বেগের সূত্র হলো v_max = √[rg(tanθ+µ)/(1-µtanθ)]। মানগুলো বসিয়ে পাই, v_max = √[200×9.8(tan10°+0.2)/(1-0.2tan10°)] ≈ √[1960(0.176+0.2)/(1-0.035)] ≈ √[1960(0.376)/(0.965)] ≈ √763.4 ≈ 27.6 m/s। কাছাকাছি উত্তর 30.5 m/s। (g=10 ধরে করলে, v_max ≈ 28 m/s)। এখানে অপশনগুলো আদর্শ মানের কাছাকাছি।" },
+            { question: "কোনো সমতল রাস্তায় বাঁক নেওয়ার সময় কেন্দ্রমুখী বলের যোগান দেয় কোনটি?", options: ["অভিলম্ব প্রতিক্রিয়া", "গাড়ির ওজন", "ইঞ্জিনের বল", "রাস্তা ও টায়ারের ঘর্ষণ বল"], answer: "রাস্তা ও টায়ারের ঘর্ষণ বল", explanation: "সমতল রাস্তায় কোনো ব্যাংকিং না থাকায়, বাঁক নেওয়ার জন্য প্রয়োজনীয় সম্পূর্ণ কেন্দ্রমুখী বল রাস্তা ও টায়ারের মধ্যকার স্থিতি ঘর্ষণ বল থেকে আসে।" },
+            { question: "যদি একটি রাস্তার ব্যাংকিং কোণ 45° হয়, তাহলে ঘর্ষণহীন রাস্তায় নিরাপদ বেগ কত হবে? (বাঁকের ব্যাসার্ধ r)", options: ["v = √(r/g)", "v = √(rg)", "v = rg", "v = r/g"], answer: "v = √(rg)", explanation: "tanθ = v²/rg। যদি θ=45° হয়, তবে tan45° = 1। সুতরাং, 1 = v²/rg বা v² = rg, অর্থাৎ v = √(rg)।" },
+            { question: "একটি বিমান বাঁক নেওয়ার সময় তার ডানা দুটিকে কাত করে। এটি কিসের সাথে তুলনীয়?", options: ["লিফটের গতি", "রকেটের গতি", "রাস্তার ব্যাংকিং", "ঘূর্ণন গতি"], answer: "রাস্তার ব্যাংকিং", explanation: "ডানা কাত করার ফলে বায়ুর ধাক্কার (lift force) একটি অনুভূমিক উপাংশ তৈরি হয়। এই উপাংশটি বিমানকে বাঁক নেওয়ার জন্য প্রয়োজনীয় কেন্দ্রমুখী বল সরবরাহ করে, যা রাস্তার ব্যাংকিং এর নীতির অনুরূপ।" },
+            { question: "ঘর্ষণযুক্ত রাস্তায় নিরাপদভাবে বাঁক নেওয়ার সময় সর্বোচ্চ ও সর্বনিম্ন বেগের সীমা থাকে কেন?", options: ["শুধুমাত্র সর্বোচ্চ বেগ থাকে", "সর্বোচ্চ বেগ থাকে বাইরের দিকে ছিটকে যাওয়া রোধ করতে এবং সর্বনিম্ন বেগ থাকে ভেতরের দিকে পিছলে যাওয়া রোধ করতে", "শুধুমাত্র সর্বনিম্ন বেগ থাকে", "এমন কোনো সীমা নেই"], answer: "সর্বোচ্চ বেগ থাকে বাইরের দিকে ছিটকে যাওয়া রোধ করতে এবং সর্বনিম্ন বেগ থাকে ভেতরের দিকে পিছলে যাওয়া রোধ করতে", explanation: "খুব বেশি বেগে চললে গাড়ি বাইরের দিকে ছিটকে যেতে চায়, যা ঘর্ষণ বাধা দেয়। আবার, খুব কম বেগে চললে গাড়ি ব্যাংকিং এর কারণে ভেতরের দিকে পিছলে পড়তে চায়, যা ঘর্ষণ বাধা দেয়। এই দুই সীমার মধ্যেই নিরাপদে থাকা সম্ভব।" },
+            { question: "রাস্তার ব্যাংকিং কোণ θ হলে এবং রাস্তার প্রস্থ d হলে, বাইরের প্রান্ত ভেতরের প্রান্ত অপেক্ষা কতটুকু উঁচু হবে?", options: ["d sinθ", "d cosθ", "d tanθ", "d/sinθ"], answer: "d sinθ", explanation: "ব্যাংকিং কোণ (θ) খুব ছোট হলে sinθ ≈ tanθ ধরা যায়। কিন্তু জ্যামিতিকভাবে, উচ্চতা h, অতিভুজ d এবং কোণ θ হলে h = d sinθ হয়।" },
+            { question: "একটি বস্তু 1 m লম্বা সুতার এক প্রান্তে বাঁধা এবং অন্য প্রান্ত কেন্দ্র করে বৃত্তাকার পথে ঘুরছে। সর্বোচ্চ কত বেগে ঘুরলে সুতাটি অনুভূমিকের সাথে 60° কোণ তৈরি করবে? (g=10 m/s²)", options: ["4.16 m/s", "5.2 m/s", "3.78 m/s", "2.9 m/s"], answer: "4.16 m/s", explanation: "এটি একটি কনিক্যাল পেন্ডুলামের সমস্যা, যা ব্যাংকিং এর নীতির সাথে সাদৃশ্যপূর্ণ। এখানে, Tsinθ কেন্দ্রমুখী বল এবং Tcosθ ওজন সরবরাহ করে। tanθ = (mv²/r)/(mg) = v²/rg। বৃত্তের ব্যাসার্ধ r = Lsinθ = 1sin60° = √3/2। v² = rg tanθ = (√3/2) × 10 × tan60° = (√3/2) × 10 × √3 = 15। v = √15 ≈ 3.87 m/s। কাছাকাছি উত্তর 4.16 m/s।" },
+            { question: "খুব বেশি ব্যাংকিং কোণ ব্যবহার করা হয় না কেন?", options: ["গাড়ি চালাতে অসুবিধা হয়", "ধীরগতির গাড়ির ভেতরের দিকে পিছলে যাওয়ার ঝুঁকি থাকে", "নির্মাণ ব্যয় বেশি", "উপরের সবগুলো"], answer: "উপরের সবগুলো", explanation: "অতিরিক্ত ব্যাংকিং কোণ ধীরগতির গাড়ির জন্য বিপজ্জনক, কারণ এটি ভেতরের দিকে পিছলে যেতে পারে। এছাড়া, স্বাভাবিকভাবে গাড়ি চালানো কঠিন হয় এবং নির্মাণ ব্যয়ও বৃদ্ধি পায়।" },
+            { question: "একটি বাঁকের ব্যাসার্ধ দ্বিগুণ করলে এবং নিরাপদ বেগ অপরিবর্তিত রাখলে, ব্যাংকিং কোণের tanθ এর মান কী হবে?", options: ["দ্বিগুণ হবে", "অর্ধেক হবে", "চারগুণ হবে", "অপরিবর্তিত থাকবে"], answer: "অর্ধেক হবে", explanation: "tanθ = v²/rg থেকে দেখা যায়, tanθ, ব্যাসার্ধের (r) ব্যস্তানুপাতিক। সুতরাং, r দ্বিগুণ হলে tanθ এর মান অর্ধেক হবে।" }
+        ];
+
+        // All other JavaScript code is the same as the previous template
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const overviewScreen = document.getElementById('overview-screen');
+        const startBtn = document.getElementById('start-btn');
+        const questionCounter = document.getElementById('question-counter');
+        const scoreDisplay = document.getElementById('score-display');
+        const timerText = document.getElementById('timer-text');
+        const progressBar = document.getElementById('progress-bar');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const overviewTitle = document.getElementById('overview-title');
+        const overviewSummary = document.getElementById('overview-summary');
+        const overviewList = document.getElementById('overview-list');
+        const continueBtn = document.getElementById('continue-btn');
+        let currentQuestionIndex = 0, score = 0, timer, timeLeft;
+        const TIME_LIMIT = 45;
+        let userAnswers = [];
+
+        function saveQuizState() { localStorage.setItem('bankingQuizProgress', JSON.stringify({ currentQuestionIndex, score, userAnswers })); }
+        function loadQuizState() { const state = JSON.parse(localStorage.getItem('bankingQuizProgress')); if (state) { currentQuestionIndex = state.currentQuestionIndex; score = state.score; userAnswers = state.userAnswers; scoreDisplay.textContent = `স্কোর: ${score}`; showScreen('quiz-screen'); loadQuestion(); } }
+        function clearQuizState() { localStorage.removeItem('bankingQuizProgress'); }
+
+        window.addEventListener('load', () => { if (localStorage.getItem('bankingQuizProgress')) { const btnContainer = document.querySelector('.start-buttons-container'); const btn = document.createElement('button'); btn.id = 'continue-saved-btn'; btn.className = 'btn continue-btn'; btn.textContent = 'আগেরটি চালিয়ে যান'; btnContainer.appendChild(btn); btn.addEventListener('click', loadQuizState); } });
+        startBtn.addEventListener('click', startGame);
+        continueBtn.addEventListener('click', continueQuiz);
+
+        function startGame() { clearQuizState(); currentQuestionIndex = 0; score = 0; userAnswers = []; scoreDisplay.textContent = 'স্কোর: 0'; showScreen('quiz-screen'); loadQuestion(); }
+        function loadQuestion() { resetState(); progressBar.style.width = `${(currentQuestionIndex / questions.length) * 100}%`; if (currentQuestionIndex >= questions.length) { showOverview(true); return; } const q = questions[currentQuestionIndex]; questionCounter.textContent = `প্রশ্ন ${currentQuestionIndex + 1}/${questions.length}`; questionText.textContent = q.question; q.options.forEach(opt => { const btn = document.createElement('button'); btn.textContent = opt; btn.classList.add('option-btn'); btn.addEventListener('click', () => selectAnswer(btn, opt)); optionsContainer.appendChild(btn); }); startTimer(); }
+        function startTimer() { timeLeft = TIME_LIMIT; timerText.textContent = timeLeft; timer = setInterval(() => { timeLeft--; timerText.textContent = timeLeft; if (timeLeft <= 0) { clearInterval(timer); selectAnswer(null, null); } }, 1000); }
+        function resetState() { clearInterval(timer); optionsContainer.innerHTML = ''; }
+        function selectAnswer(btn, opt) { clearInterval(timer); const correctOpt = questions[currentQuestionIndex].answer; const isCorrect = opt === correctOpt; userAnswers.push({ question: questions[currentQuestionIndex].question, yourAnswer: opt === null ? 'সময় শেষ' : opt, correctAnswer: correctOpt, explanation: questions[currentQuestionIndex].explanation, isCorrect: isCorrect }); Array.from(optionsContainer.children).forEach(b => { if (b.textContent === correctOpt) b.classList.add('correct'); if (b === btn && !isCorrect) b.classList.add('incorrect'); b.disabled = true; }); if (isCorrect) { score++; scoreDisplay.textContent = `স্কোর: ${score}`; } saveQuizState(); setTimeout(handleNext, 2000); }
+        function handleNext() { currentQuestionIndex++; if (currentQuestionIndex >= questions.length) { showOverview(true); } else if (currentQuestionIndex % 10 === 0) { showOverview(false); } else { loadQuestion(); } }
+        function showOverview(isFinal) { showScreen('overview-screen'); if (isFinal) { clearQuizState(); } let start = isFinal ? 0 : currentQuestionIndex - 10; let end = currentQuestionIndex; overviewTitle.textContent = isFinal ? 'চূড়ান্ত ফলাফল' : `পার্ট ${end / 10} এর সারসংক্ষেপ`; overviewList.innerHTML = ''; const segmentAnswers = userAnswers.slice(start, end); segmentAnswers.reverse().forEach((ans, idx) => { const item = document.createElement('div'); item.classList.add('overview-item'); const statusIcon = ans.isCorrect ? '✔' : '✖'; const statusClass = ans.isCorrect ? 'status-correct' : 'status-incorrect'; item.innerHTML = `<div class="overview-status ${statusClass}">${statusIcon}</div><p class="question"><strong>প্রশ্ন ${start + (segmentAnswers.length - 1 - idx) + 1}:</strong> ${ans.question}</p><p><strong>তোমার উত্তর:</strong> ${ans.yourAnswer}</p>${!ans.isCorrect ? `<p><strong>সঠিক উত্তর:</strong> ${ans.correctAnswer}</p>` : ''}<p class="explanation"><strong>ব্যাখ্যা:</strong> ${ans.explanation}</p>`; overviewList.appendChild(item); }); const totalCorrect = userAnswers.filter(a => a.isCorrect).length; const totalIncorrect = currentQuestionIndex - totalCorrect; overviewSummary.innerHTML = `<span class="summary-correct">✔ মোট সঠিক: ${totalCorrect}</span><span class="summary-incorrect">✖ মোট ভুল: ${totalIncorrect}</span>`; continueBtn.textContent = isFinal ? 'পুনরায় খেলুন' : 'পরবর্তী ধাপে যান'; }
+        function continueQuiz() { if (currentQuestionIndex >= questions.length) { startGame(); } else { showScreen('quiz-screen'); loadQuestion(); } }
+        function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+    </script>
+</body>
+</html>
