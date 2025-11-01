@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>আদর্শ গ্যাস ও গ্যাসের গতিতত্ত্ব ফ্ল্যাশকার্ড</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap');
+
+        :root {
+            --primary-color: #d9534f; /* Custom color for Gas Laws */
+            --primary-dark: #c9302c;
+            --secondary-color: #5cb85c;
+            --light-bg: #fff0f0;
+            --card-bg: #ffffff;
+            --card-back-bg: #f9e6e6;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Hind Siliguri', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            text-align: center;
+            position: relative;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        h1 {
+            color: var(--primary-dark);
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+        
+        /* Fullscreen Button Styles */
+        .fullscreen-btn {
+            position: absolute;
+            top: -10px;
+            right: 0;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+            z-index: 1000;
+        }
+
+        .fullscreen-btn:hover {
+            background-color: rgba(0,0,0,0.1);
+        }
+
+        .fullscreen-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--primary-dark);
+        }
+
+        .icon-exit-fullscreen {
+            display: none;
+        }
+
+        .flashcard-scene {
+            width: 100%;
+            perspective: 1200px;
+            margin-bottom: 20px;
+            transition: height 0.4s ease-in-out; 
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            cursor: pointer;
+        }
+
+        .flashcard.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: auto; 
+            min-height: 200px; 
+            backface-visibility: hidden;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px 25px; 
+            box-sizing: border-box;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        .card-face-front {
+            background-color: var(--card-bg);
+            border: 2px solid var(--primary-color);
+        }
+
+        .card-face-back {
+            background-color: var(--card-back-bg);
+            border: 2px solid var(--primary-dark);
+            transform: rotateY(180deg);
+        }
+
+        .category {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .question-number {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: var(--secondary-color);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 700;
+        }
+        
+        .front-content {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        .back-content {
+            text-align: left;
+            font-size: 1rem;
+            line-height: 1.7;
+            width: 100%;
+        }
+        
+        .back-content h3 {
+            color: var(--primary-dark);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 5px;
+            margin-top: 0;
+            font-size: 1.1rem;
+        }
+        
+        .back-content strong {
+            color: #dc3545;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .nav-button {
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: var(--primary-color);
+            color: white;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        
+        .nav-button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .nav-button:disabled {
+            background-color: #f0c9c9;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .random-button {
+            background-color: var(--secondary-color);
+        }
+        
+        .random-button:hover {
+            background-color: #449d44;
+        }
+        
+        /* Footer Style */
+        .footer {
+            margin-top: 30px;
+            font-size: 0.9rem;
+            color: #555;
+            font-weight: 600;
+        }
+        
+        /* Mobile Friendly Adjustments */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+            .front-content {
+                font-size: 1.2rem;
+            }
+            .back-content {
+                font-size: 0.9rem;
+            }
+            .nav-button {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+            .fullscreen-btn {
+                top: -5px;
+                right: -5px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>আদর্শ গ্যাস ও গ্যাসের গতিতত্ত্ব (অনুধাবনমূলক)</h1>
+
+        <!-- Fullscreen Button -->
+        <button id="fullscreenBtn" class="fullscreen-btn" title="Toggle Fullscreen">
+            <svg class="icon-enter-fullscreen" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+            <svg class="icon-exit-fullscreen" viewBox="0 0 24 24"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>
+        </button>
+
+        <div id="flashcardScene" class="flashcard-scene">
+            <div id="flashcard" class="flashcard">
+                <div class="card-face card-face-front">
+                    <div id="category" class="category">আর্দ্রতা ও শিশিরাঙ্ক</div>
+                    <div id="question-number" class="question-number"></div>
+                    <div id="question" class="front-content"></div>
+                </div>
+                <div class="card-face card-face-back">
+                    <div id="answer" class="back-content"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button id="prevBtn" class="nav-button">পূর্ববর্তী</button>
+            <button id="randomBtn" class="nav-button random-button">র‍্যান্ডম</button>
+            <button id="nextBtn" class="nav-button">পরবর্তী</button>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        Based on HSC Physics 1st Paper - Chapter 10
+    </footer>
+
+    <script>
+        const flashcardsData = [
+            {
+                category: "আর্দ্রতা ও শিশিরাঙ্ক",
+                question: "মেঘমুক্ত দিন আরামদায়ক কেন? ব্যাখ্যা কর।",
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3>
+                <p>মেঘমুক্ত দিনে বাতাসের আর্দ্রতা (জলীয় বাষ্পের পরিমাণ) সহনীয় সীমার মধ্যে থাকে। ফলে আমাদের শরীর থেকে ঘাম দ্রুত বাষ্পীভূত হতে পারে। বাষ্পায়নের জন্য প্রয়োজনীয় সুপ্ততাপ শরীর থেকে গৃহীত হওয়ায় শরীর শীতল হয় এবং আমরা আরাম অনুভব করি।</p>
+                <h3>সহজ ব্যাখ্যা:</h3>
+                <p><strong>মেঘ নেই মানে ছাতা নেই!</strong> মেঘ হচ্ছে বায়ুমণ্ডলের জন্য একটা ছাতার মতো। মেঘ না থাকলে ভূপৃষ্ঠ থেকে তাপ বিকিরণ করে মহাকাশে চলে যেতে পারে। মেঘলা দিনে সেই বিকিরিত তাপ আবার পৃথিবীতে ফিরে আসে। আর্দ্রতা কম থাকলে ঘাম সহজেই উড়ে যায়, ফলে আমাদের শরীর ঠান্ডা থাকে।</p>`
+            },
+            {
+                category: "আর্দ্রতা ও শিশিরাঙ্ক",
+                question: "পরম আর্দ্রতা ও আপেক্ষিক আর্দ্রতার মধ্যে কোনটি অধিক গুরুত্বপূর্ণ? ব্যাখ্যা কর।",
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3>
+                <p>আপেক্ষিক আর্দ্রতা অধিক গুরুত্বপূর্ণ। কারণ পরম আর্দ্রতা শুধু বায়ুতে জলীয় বাষ্পের পরিমাণ নির্দেশ করে। কিন্তু আপেক্ষিক আর্দ্রতা বায়ুর জলীয় বাষ্প ধারণক্ষমতার তুলনায় কী পরিমাণ বাষ্প আছে তা শতকরা হিসাবে প্রকাশ করে। আমাদের শারীরিক স্বস্তি, অস্বস্তি এবং আবহাওয়ার পূর্বাভাস আপেক্ষিক আর্দ্রতার ওপরই নির্ভর করে।</p>
+                <h3>সহজ ব্যাখ্যা:</h3>
+                <p><strong>ধারণক্ষমতার সাপেক্ষে হিসাব!</strong> তোমার ব্যাগে ১০টি বই আছে (পরম আর্দ্রতা)। কিন্তু ব্যাগটার ধারণক্ষমতা যদি হয় ২০টি বই, তাহলে ব্যাগটি ৫০% পূর্ণ। যদি ধারণক্ষমতা হয় ১০টি বই, তাহলে ব্যাগটি ১০০% পূর্ণ। আমরা স্বস্তি পাই ৫০% পূর্ণ ব্যাগে, ১০০% এ নয়। তাই শুধু পরিমাণ (পরম আর্দ্রতা) নয়, ধারণক্ষমতার সাপেক্ষে পরিমাণ (আপেক্ষিক আর্দ্রতা) জরুরি।</p>`
+            },
+            {
+                category: "আর্দ্রতা ও শিশিরাঙ্ক",
+                question: "কোনো স্থানের শিশিরাঙ্ক 12° C বলতে কী বুঝায়?",
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3>
+                <p>কোনো স্থানের শিশিরাঙ্ক 12° C বলতে বুঝায় যে, ঐ স্থানের বায়ুর তাপমাত্রা যদি কোনো কারণে হ্রাস পেয়ে 12° C-এ পৌঁছায়, তবে বায়ু তার মধ্যে উপস্থিত জলীয় বাষ্প দ্বারা সম্পৃক্ত হবে। তাপমাত্রা এর চেয়ে কম হলে অতিরিক্ত জলীয় বাষ্প ঘনীভূত হয়ে শিশির বা কুয়াশায় পরিণত হবে।</p>
+                <h3>সহজ ব্যাখ্যা:</h3>
+                <p><strong>সম্পৃক্ত হওয়ার তাপমাত্রা!</strong> এটা হলো সেই ঠান্ডা তাপমাত্রা, যেখানে পৌঁছালে বায়ু আর এক ফোঁটা জলীয় বাষ্পও ধরে রাখতে পারে না। 12° C এর নিচে গেলেই বাড়তি জলীয় বাষ্পগুলো শিশির হয়ে জমে যাবে।</p>`
+            },
+            {
+                category: "আর্দ্রতা ও শিশিরাঙ্ক",
+                question: "আপেক্ষিক আর্দ্রতা 100% হলে শিশিরাঙ্ক কেমন হবে?",
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3>
+                <p>আপেক্ষিক আর্দ্রতা 100% হওয়ার অর্থ হলো বায়ু জলীয় বাষ্প দ্বারা সম্পূর্ণ সম্পৃক্ত। শিশিরাঙ্কের সংজ্ঞা অনুযায়ী, সম্পৃক্ত বায়ুর তাপমাত্রা এবং শিশিরাঙ্ক সমান হয়। সুতরাং, আপেক্ষিক আর্দ্রতা 100% হলে শিশিরাঙ্ক হবে বায়ুর বর্তমান তাপমাত্রার সমান।</p>
+                <h3>সহজ ব্যাখ্যা:</h3>
+                <p><strong>সম্পূর্ণ ভরা বালতি!</strong> যখন বায়ু জলীয় বাষ্পে কানায় কানায় ভরা (100% আর্দ্র), তার মানে তার বর্তমান তাপমাত্রাই হলো 'সম্পৃক্ত হওয়ার তাপমাত্রা'। তাই বায়ুর বর্তমান তাপমাত্রা আর শিশিরাঙ্ক একই হবে।</p>`
+            },
+            {
+                category: "আর্দ্রতা ও শিশিরাঙ্ক",
+                question: "“বর্ষাকাল অপেক্ষা শীতকাল আরামদায়ক”– আপেক্ষিক আর্দ্রতার আলোকে ব্যাখ্যা কর।",
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3>
+                <p>বর্ষাকালে বাতাসে জলীয় বাষ্পের পরিমাণ বেশি থাকায় আপেক্ষিক আর্দ্রতা বেশি থাকে। ফলে শরীর থেকে ঘাম সহজে বাষ্পীভূত হতে পারে না এবং ভ্যাপসা গরমে অস্বস্তি লাগে। অন্যদিকে, শীতকালে বাতাস শুষ্ক থাকায় আপেক্ষিক আর্দ্রতা কম থাকে, ফলে ঘাম দ্রুত বাষ্পীভূত হয়ে শরীরকে শীতল রাখে। একারণে শীতকাল বেশি আরামদায়ক।</p>
+                <h3>সহজ ব্যাখ্যা:</h3>
+                <p><strong>শীতকালে ফ্যান!</strong> শীতকালে ফ্যানের বাতাস আরামদায়ক লাগে, কারণ বাতাস শুষ্ক বলে ঘাম দ্রুত শুকিয়ে যায়। বর্ষায় ফ্যান চললেও ঘাম শুকায় না, কারণ বাতাসে জলীয় বাষ্পের জায়গা নেই।</p>`
+            },
+            {
+                category: "আর্দ্রতা ও শিশিরাঙ্ক",
+                question: "শীতের সকালে শিশির দেখা যায় কেন?",
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3>
+                <p>শীতকালে রাতের বেলায় ভূপৃষ্ঠ তাপ বিকিরণ করে দ্রুত শীতল হয়। এর সংস্পর্শে থাকা বায়ুস্তরও শীতল হতে থাকে। এক পর্যায়ে বায়ুর তাপমাত্রা শিশিরাঙ্কের নিচে নেমে গেলে বায়ুতে থাকা অতিরিক্ত জলীয় বাষ্প ঘনীভূত হয়ে ক্ষুদ্র জলকণা রূপে ঘাস বা পাতার উপর জমা হয়। এটিই সকালে শিশির হিসেবে দেখা যায়।</p>
+                <h3>সহজ ব্যাখ্যা:</h3>
+                <p><strong>গ্লাস ঘামা!</strong> ফ্রিজ থেকে বের করা ঠান্ডা গ্লাসের আশেপাশে বাতাস ঠান্ডা হয়ে শিশিরাঙ্কে নেমে যায়। ফলে বাতাসের জলীয় বাষ্প ঘনীভূত হয়ে গ্লাসের গায়ে পানির কণা তৈরি করে। শীতকালে ঘাস/পাতাগুলো ফ্রিজের গ্লাসের মতো আচরণ করে।</p>`
+            },
+            {
+                category: "আর্দ্রতা ও শিশিরাঙ্ক",
+                question: "কোনো স্থানের আপেক্ষিক আর্দ্রতা 50% বলতে কী বুঝ?",
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3>
+                <p>এর অর্থ হলো, ঐ স্থানের নির্দিষ্ট তাপমাত্রায় নির্দিষ্ট আয়তনের বায়ু তার জলীয় বাষ্প ধারণ করার মোট ক্ষমতার শতকরা ৫০ ভাগ জলীয় বাষ্প দ্বারা পূর্ণ। অর্থাৎ, বায়ুটিকে সম্পৃক্ত করতে আরও সমপরিমাণ জলীয় বাষ্পের প্রয়োজন।</p>
+                <h3>সহজ ব্যাখ্যা:</h3>
+                <p><strong>অর্ধেক ভরা বালতি!</strong> এর মানে বায়ু অর্ধেক জলীয় বাষ্প ধরে আছে, এবং বাকি অর্ধেক (৫০%) ধারণক্ষমতা এখনো খালি।</p>`
+            },
+            {
+                category: "আর্দ্রতা ও শিশিরাঙ্ক",
+                question: "শুষ্ক বায়ুর চেয়ে আর্দ্র বায়ু হালকা হয় কেন?",
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3>
+                <p>আর্দ্র বায়ুতে শুষ্ক বায়ুর কিছু অণু (যেমন N₂ ও O₂) জলীয় বাষ্প (H₂O) দ্বারা প্রতিস্থাপিত হয়। N₂ ও O₂ এর গড় আণবিক ভর (প্রায় ২৯) জলীয় বাষ্পের আণবিক ভরের (১৮) চেয়ে বেশি। তাই সম-আয়তনে আর্দ্র বায়ুর ভর শুষ্ক বায়ুর ভরের চেয়ে কম হয় এবং আর্দ্র বায়ু হালকা হয়।</p>
+                <h3>সহজ ব্যাখ্যা:</h3>
+                <p><strong>ভারী ইট সরিয়ে হালকা তুলো রাখা!</strong> একটি ব্যাগে কিছু ভারী ইট (N₂/O₂) ছিল। তুমি সেই ইটগুলো সরিয়ে তার বদলে হালকা তুলো (H₂O) রাখলে। ব্যাগটি কি হালকা হবে? হ্যাঁ। আর্দ্র বায়ুতেও তাই হয়।</p>`
+            },
+            {
+                category: "আর্দ্রতা ও শিশিরাঙ্ক",
+                question: "শীতকালের চেয়ে বর্ষাকালে ভেজা কাপড় দেরিতে শুকায় কেন?",
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3>
+                <p>বর্ষাকালে বাতাসে জলীয় বাষ্পের পরিমাণ বেশি থাকায় আপেক্ষিক আর্দ্রতাও বেশি থাকে। ফলে বাতাস জলীয় বাষ্প দ্বারা প্রায় সম্পৃক্ত থাকায় এর বাষ্প ধারণক্ষমতা কমে যায় এবং বাষ্পায়ন প্রক্রিয়া ধীরে চলে। অন্যদিকে, শীতকালে বাতাস শুষ্ক থাকায় আপেক্ষিক আর্দ্রতা কম থাকে এবং বাষ্পায়ন দ্রুত হয়।</p>
+                <h3>সহজ ব্যাখ্যা:</h3>
+                <p><strong>বাতাসের পেট ভরা!</strong> বর্ষাকালে বাতাসের পেট জলীয় বাষ্পে প্রায় ভরা। কাপড় থেকে জলীয় বাষ্প শুষে নেওয়ার ক্ষমতা তার কম থাকে। শীতকালে বাতাসের পেট খালি থাকে, তাই সে দ্রুত কাপড়ের ভেতরের জলীয় বাষ্প শুষে নিতে পারে।</p>`
+            },
+            {
+                category: "আর্দ্রতা ও শিশিরাঙ্ক",
+                question: "মেঘলা দিনে ভ্যাপসা গরম লাগে কেন?",
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3>
+                <p>মেঘলা দিনে বায়ুর আপেক্ষিক আর্দ্রতা অনেক বেশি থাকে। ফলে আমাদের শরীর থেকে ঘাম সহজে বাষ্পীভূত হতে পারে না। অবাষ্পীভূত এই ঘাম শরীরে অস্বস্তিকর ও ভ্যাপসা গরমের অনুভূতি সৃষ্টি করে, কারণ বাষ্পায়নের মাধ্যমে শরীর ঠান্ডা হওয়ার প্রক্রিয়াটি বাধাগ্রস্ত হয়।</p>
+                <h3>সহজ ব্যাখ্যা:</h3>
+                <p><strong>ঘাম শুকানোর বাধা!</strong> প্রচুর আর্দ্রতার কারণে বাতাস জলীয় বাষ্পের সদ্ব্যবহার করতে পারে না। ফলে আমাদের শরীরের ঘাম বাষ্প হতে পারে না এবং শরীর ঠান্ডা হতে পারে না, ফলে ভ্যাপসা লাগে।</p>`
+            },
+            {
+                category: "আর্দ্রতা ও শিশিরাঙ্ক",
+                question: "আকাশ মেঘলা থাকলে শিশির পড়ে না কেন?",
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3>
+                <p>মেঘ তাপ অপরিবাহী আবরণের মতো কাজ করে এবং ভূপৃষ্ঠ থেকে বিকীর্ণ তাপকে পৃথিবীতে ফেরত পাঠায়। ফলে ভূপৃষ্ঠ ও সংলগ্ন বায়ুস্তর ঠান্ডা হয়ে শিশিরাঙ্কে পৌঁছাতে পারে না, তাই শিশির জমে না।</p>
+                <h3>সহজ ব্যাখ্যা:</h3>
+                <p><strong>কম্বল মুড়ি দেওয়া!</strong> মেঘলা রাতে পৃথিবী যেন একটা কম্বল মুড়ি দিয়ে থাকে। পৃথিবী যে তাপ বিকিরণ করে, মেঘ সেই তাপকে মহাশূন্যে যেতে দেয় না। তাপটা আবার পৃথিবীতে ফিরে আসে। ফলে তাপমাত্রা শিশিরাঙ্কের নিচে নামতে পারে না।</p>`
+            },
+            {
+                category: "আদর্শ গ্যাস",
+                question: "পরমশূন্য তাপমাত্রায় গ্যাসের গতিশক্তি শূন্য হয় – ব্যাখ্যা কর।",
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3>
+                <p>গ্যাসের অণুর গড় গতিশক্তি $E_k = \frac{3}{2}kT$। যেহেতু গতিশক্তি পরম তাপমাত্রার ($T$) সমানুপাতিক, তাই পরমশূন্য তাপমাত্রা ($T=0 K$) এ গ্যাসের অণুগুলোর গতিশক্তি তাত্ত্বিকভাবে শূন্য হয়ে যায়। এর অর্থ হলো, সকল আণবিক গতি থেমে যায়।</p>
+                <h3>সহজ ব্যাখ্যা:</h3>
+                <p><strong>কম্পনহীন অবস্থা!</strong> গ্যাস অণুগুলোর শক্তি বা গতি নির্ভর করে তার তাপমাত্রার ওপর। তাপমাত্রা শূন্য (পরমশূন্য) মানে অণুগুলোর নড়াচড়ার শক্তিও শূন্য। বাস্তবে এমন তাপমাত্রা অর্জন করা সম্ভব নয়।</p>`
+            },
+            {
+                category: "আদর্শ গ্যাস",
+                question: "একই তাপমাত্রায় ভিন্ন ভিন্ন এক মোল গ্যাসের ক্ষেত্রে গড় গতিশক্তি ধ্রুব থাকে কিনা? ব্যাখ্যা কর।",
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3>
+                <p>হ্যাঁ, ধ্রুব থাকে। গ্যাসের অণুর গড় গতিশক্তির সূত্র $E_k = \frac{3}{2}kT$। সমীকরণটি থেকে দেখা যায়, গড় গতিশক্তি শুধুমাত্র পরম তাপমাত্রা ($T$) এর ওপর নির্ভরশীল। তাই একই তাপমাত্রায় যেকোনো গ্যাসের (ভিন্ন ভিন্ন হলেও) অণুর গড় গতিশক্তি ধ্রুব বা সমান থাকে।</p>
+                <h3>সহজ ব্যাখ্যা:</h3>
+                <p><strong>তাপমাত্রা হলো মূল চাবি!</strong> আদর্শ গ্যাসের ক্ষেত্রে, অণুর ভর বা গ্যাসের প্রকৃতি যাই হোক না কেন, তাদের গড় গতিশক্তি শুধুমাত্র তাপমাত্রার ওপর নির্ভর করে। তাপমাত্রা একই হলে সবার শক্তি একই হবে।</p>`
+            },
+            {
+                category: "আদর্শ গ্যাস",
+                question: "একই তাপমাত্রায় সকল গ্যাসের অণুগুলোর গড় গতিশক্তি সমান থাকে – ব্যাখ্যা কর।",
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3>
+                <p>গ্যাসের অণুর গড় গতিশক্তির সমীকরণ $E_k = \frac{3}{2}kT$। এ থেকে দেখা যায়, গড় গতিশক্তি শুধুমাত্র পরম তাপমাত্রা ($T$) এর সমানুপাতিক এবং গ্যাসের প্রকৃতি বা আণবিক ভরের ওপর নির্ভর করে না। তাই তাপমাত্রা নির্দিষ্ট থাকলে সকল গ্যাসের অণুর গড় গতিশক্তি সমান থাকে।</p>
+                <h3>সহজ ব্যাখ্যা:</h3>
+                <p><strong>ভর কোনো সমস্যা নয়!</strong> গ্যাসের গতিতত্ত্বের মূল কথা হলো, তাপমাত্রাই হলো গতির পরিমাপক। ভারী অণুগুলো আস্তে চলে, হালকা অণুগুলো জোরে চলে, কিন্তু সবার গড় গতিশক্তি একই তাপমাত্রা ধরে রাখে।</p>`
+            },
+            {
+                category: "আদর্শ গ্যাস",
+                question: "Cp কেন Cv অপেক্ষা বড় হয়? স্থির চাপে গ্যাসের মোলার আপেক্ষিক তাপ স্থির আয়তনের চেয়ে বেশি কেন?",
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3>
+                <p>স্থির আয়তনে ($C_v$) গ্যাসকে তাপ দেওয়া হলে সেই সম্পূর্ণ তাপশক্তি গ্যাসের অভ্যন্তরীণ শক্তি বৃদ্ধিতে ব্যবহৃত হয়। কিন্তু স্থির চাপে ($C_p$) গ্যাসকে তাপ দেওয়া হলে সেই তাপশক্তি দুটি অংশে ব্যয় হয়: (i) অভ্যন্তরীণ শক্তি বৃদ্ধি করতে এবং (ii) বাহ্যিক চাপের বিরুদ্ধে গ্যাসের আয়তন প্রসারণে কাজ সম্পন্ন করতে। এই অতিরিক্ত কাজের জন্য স্থির চাপে বেশি তাপের প্রয়োজন হয়। একারণে $C_p$-এর মান সর্বদা $C_v$-এর চেয়ে বড় হয়।</p>
+                <h3>সহজ ব্যাখ্যা:</h3>
+                <p><strong>দুই ধরনের রান্না!</strong> তুমি একটা গ্যাসকে তাপ দিচ্ছো। প্রথম ক্ষেত্রে (স্থির আয়তনে) পাত্রটা শক্তভাবে বন্ধ, সব তাপ শুধু গ্যাসের অণুগুলোকে গরম করতে কাজে লাগে। দ্বিতীয় ক্ষেত্রে (স্থির চাপে) পিস্টন লাগানো আছে, তাপ দেওয়ার ফলে গ্যাসটা গরমও হয়, আবার পিস্টন ঠেলে বাইরেও কাজ করে। বাইরে কাজ করার জন্য আরও তাপ দরকার হয়, তাই $C_p$ বেশি হয়।</p>`
+            },
+            {
+                category: "আদর্শ গ্যাস",
+                question: "উচ্চ তাপমাত্রা ও নিম্ন চাপে বাস্তব গ্যাস আদর্শ গ্যাসের ন্যায় আচরণ করে কেন?",
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3>
+                <p>উচ্চ তাপমাত্রায় অণুর গতিশক্তি বৃদ্ধি পাওয়ায় আন্তঃআণবিক আকর্ষণ বল নগণ্য হয়ে যায়। আবার, নিম্ন চাপে অণুগুলো পরস্পরের থেকে দূরে থাকায় তাদের নিজস্ব আয়তন পাত্রের আয়তনের তুলনায় উপেক্ষা করা যায়। এই দুটি শর্ত আদর্শ গ্যাসের স্বীকার্যের কাছাকাছি হওয়ায় বাস্তব গ্যাস আদর্শ গ্যাসের মতো আচরণ করে।</p>
+                <h3>সহজ ব্যাখ্যা:</h3>
+                <p><strong>অণুগুলো যখন স্বাধীন!</strong> আদর্শ গ্যাসের অণু দুটি শর্ত মানে: ১) তাদের মধ্যে আকর্ষণ নেই, ২) তাদের নিজস্ব আয়তন নেই। যখন খুব গরম (উচ্চ তাপমাত্রা), তখন অণুগুলো এত জোরে ছোটে যে আকর্ষণ বল পাত্তা পায় না। যখন চাপ কম (নিম্ন চাপ), তখন অণুগুলো এত দূরে দূরে থাকে যে তাদের নিজস্ব আয়তন গণনা না করলেও চলে।</p>`
+            },
+            {
+                category: "আদর্শ গ্যাস",
+                question: "“বেলুন ফোলানোর সময় বয়েলের সূত্র লঙ্ঘিত হয়”– ব্যাখ্যা কর।",
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3>
+                <p>বয়েলের সূত্রের প্রধান শর্ত হলো গ্যাসের ভর ও তাপমাত্রা স্থির থাকতে হবে। বেলুনে ফুঁ দেওয়ার সময় বাইরে থেকে নতুন গ্যাস (ভর) প্রবেশ করে এবং ভর পরিবর্তিত হতে থাকে। গ্যাসের ভর স্থির না থাকায় বয়েলের সূত্রের মূল শর্তই লঙ্ঘিত হয়, তাই এই সূত্র প্রযোজ্য হয় না।</p>
+                <h3>সহজ ব্যাখ্যা:</h3>
+                <p><strong>ভর পাল্টে যাওয়া!</strong> বয়েলের সূত্র একটা নির্দিষ্ট পরিমাণ গ্যাসের জন্য প্রযোজ্য। যখন ফুঁ দিয়ে বেলুন ফোলানো হয়, তখন গ্যাসের পরিমাণ (ভর) ক্রমাগত বাড়তে থাকে। যেহেতু ভরের শর্ত মানা হচ্ছে না, তাই সূত্রও কাজ করবে না।</p>`
+            },
+            {
+                category: "আদর্শ গ্যাস",
+                question: "তাপমাত্রা বৃদ্ধি করলে গ্যাসের চাপ বৃদ্ধি পায় কেন? (আয়তন স্থির থাকলে)",
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3>
+                <p>তাপমাত্রা বাড়ালে গ্যাস অণুগুলোর গড় গতিশক্তি বৃদ্ধি পায়। ফলে অণুগুলো অধিক বেগে ছোটাছুটি করে এবং অধিকতর জোরে ও ঘন ঘন পাত্রের দেয়ালে ধাক্কা দেয়, যা গ্যাসের চাপ বৃদ্ধি করে।</p>
+                <h3>সহজ ব্যাখ্যা:</h3>
+                <p><strong>গরম হয়ে রেগে যাওয়া!</strong> তাপমাত্রা বাড়লে অণুগুলো আরও গরম হয়, ফলে তাদের ছোটাছুটির গতি বেড়ে যায়। দ্রুত ও জোরে ছোটার কারণে তারা পাত্রের দেয়ালে আরও জোরে আঘাত করে। এই জোরে আঘাত করাই হলো চাপ বৃদ্ধি।</p>`
+            },
+            {
+                category: "গতিশক্তি ও তাপমাত্রা",
+                question: "কোনো একটি গ্যাসের একটি অণুর গতিশক্তি তাপমাত্রার সাথে কীভাবে পরিবর্তিত হয় - লেখচিত্রের মাধ্যমে ব্যাখ্যা কর।",
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3>
+                <p>গ্যাসের অণুর গড় গতিশক্তি $E_k$ তার পরম তাপমাত্রার ($T$) সমানুপাতিক, অর্থাৎ $E_k \propto T$। এটি $y = mx$ সমীকরণের অনুরূপ। তাই গতিশক্তিকে y-অক্ষে এবং পরম তাপমাত্রাকে (কেলভিন স্কেলে) x-অক্ষে স্থাপন করলে লেখচিত্রটি একটি মূলবিন্দুগামী সরলরেখা হবে, যা নির্দেশ করে তাপমাত্রা বাড়লে গতিশক্তি আনুপাতিক হারে বাড়ে।</p>
+                <h3>সহজ ব্যাখ্যা:</h3>
+                <p><strong>সোজা সম্পর্ক!</strong> গতিশক্তি আর তাপমাত্রার সম্পর্ক সরলরেখার মতো। তাপমাত্রা ডাবল করলে গতিশক্তিও ডাবল হবে (কেলভিন স্কেলে)। লেখচিত্রটা ঠিক মূলবিন্দু থেকে শুরু হয়ে সোজা উপরের দিকে যাবে।</p>`
+            },
+            {
+                category: "ব্যবহারিক প্রয়োগ",
+                question: "মাটির কলসিতে পানি ঠান্ডা থাকে কেন?",
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3>
+                <p>মাটির কলসির গায়ে অসংখ্য অতি ক্ষুদ্র ছিদ্র থাকে, যা দিয়ে পানি চুঁইয়ে বাইরে এসে বাষ্পীভূত হয়। বাষ্পায়নের জন্য প্রয়োজনীয় সুপ্ততাপ কলসি এবং কলসির ভেতরের পানি থেকে সরবরাহ করা হয়। ফলে কলসির ভেতরের পানি ক্রমাগত তাপ হারাতে থাকে এবং ঠান্ডা হয়ে যায়।</p>
+                <h3>সহজ ব্যাখ্যা:</h3>
+                <p><strong>ঘাম ঝরানো কলসি!</strong> মাটির কলসির গা ঘামে। এই ঘাম বাষ্প হওয়ার সময় কলসির ভেতর থেকে তাপ নিয়ে নেয়। তাপ চলে যাওয়ায় ভেতরের পানি ঠান্ডা হয়।</p>`
+            },
+            {
+                category: "ব্যবহারিক প্রয়োগ",
+                question: "সাইকেলের টায়ার ফেটে গেলে বাতাস ঠান্ডা অনুভূত হয় কেন?",
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3>
+                <p>টায়ার ফেটে গেলে ভেতরের উচ্চ চাপের বাতাস দ্রুতগতিতে বাইরের নিম্নচাপে প্রসারিত হয়, যা একটি রুদ্ধতাপীয় প্রক্রিয়া। এই দ্রুত প্রসারণের জন্য প্রয়োজনীয় শক্তি বাতাস তার নিজস্ব অভ্যন্তরীণ শক্তি থেকে ব্যয় করে। অভ্যন্তরীণ শক্তি কমে যাওয়ায় বাতাসের তাপমাত্রা হ্রাস পায় এবং বাতাস ঠান্ডা অনুভূত হয়।</p>
+                <h3>সহজ ব্যাখ্যা:</h3>
+                <p><strong>কাজের খরচ!</strong> বাতাস যখন দ্রুত প্রসারিত হয়, তখন সে বাইরের বাতাসকে ধাক্কা দেওয়ার কাজ করে। এই কাজের জন্য তার নিজস্ব শক্তি খরচ হয়, ফলে সে নিজেই ঠান্ডা হয়ে যায়।</p>`
+            },
+            {
+                category: "ব্যবহারিক প্রয়োগ",
+                question: "ফ্রিজ থেকে বের করে রাখলে ঠান্ডা পানির বোতলের গায়ে পানি জমে কেন?",
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3>
+                <p>বায়ুতে থাকা জলীয় বাষ্প যখন ঠান্ডা বোতলের সংস্পর্শে আসে, তখন এর তাপমাত্রা শিশিরাঙ্কের নিচে নেমে যায়। ফলে ঐ বায়ুর জলীয় বাষ্প ঘনীভূত হয়ে পানির ফোঁটা আকারে বোতলের বাইরের পৃষ্ঠে জমা হয়।</p>
+                <h3>সহজ ব্যাখ্যা:</h3>
+                <p><strong>ঘনীভবন!</strong> বোতলের চারপাশের বাতাস হঠাৎ ঠান্ডা হয়ে গেলে সে আর জলীয় বাষ্প ধরে রাখতে পারে না। বাষ্পগুলো বোতলের ঠান্ডা গায়ে লেগে সরাসরি তরল পানিতে পরিণত হয়।</p>`
+            },
+            {
+                category: "ব্যবহারিক প্রয়োগ",
+                question: "রান্নার সময় প্রেসার কুকারে খাদ্যদ্রব্য দ্রুত সিদ্ধ হয় কেন?",
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3>
+                <p>প্রেসার কুকার একটি আবদ্ধ পাত্র হওয়ায় উৎপন্ন বাষ্পের চাপে এর অভ্যন্তরে চাপ বৃদ্ধি পায়। উচ্চ চাপে পানির স্ফুটনাঙ্ক বৃদ্ধি পেয়ে 120°C বা তার বেশি হয়। এই উচ্চতর তাপমাত্রায় খাদ্যদ্রব্য দ্রুত সিদ্ধ হয়, যা সাধারণ খোলা পাত্রে সম্ভব নয়।</p>
+                <h3>সহজ ব্যাখ্যা:</h3>
+                <p><strong>প্রেসার কুকারের নিয়ম!</strong> স্বাভাবিক চাপে পানি ১০০°C এ বাষ্প হয়, এর বেশি গরম হয় না। কিন্তু চাপ বাড়ালে পানির স্ফুটনাঙ্কও বেড়ে যায়। তাই কুকারে পানি ১০০°C এর বেশি গরম হয়ে রান্না দ্রুত শেষ করে।</p>`
+            },
+            {
+                category: "আর্দ্রতা ও শিশিরাঙ্ক",
+                question: "বিষুব অঞ্চলের আবহাওয়া অস্বস্তিকর কেন?",
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3>
+                <p>বিষুবীয় অঞ্চলে উচ্চ তাপমাত্রা ও প্রচুর বৃষ্টিপাতের কারণে সেখানকার বাতাসে আপেক্ষিক আর্দ্রতার মান প্রায় সবসময়ই উচ্চ থাকে। উচ্চ আর্দ্রতার কারণে শরীর থেকে ঘাম সহজে বাষ্পীভূত হতে পারে না, ফলে শরীর শীতল হওয়ার প্রক্রিয়া বাধাগ্রস্ত হয় এবং অস্বস্তি অনুভূত হয়।</p>
+                <h3>সহজ ব্যাখ্যা:</h3>
+                <p><strong>গরম ও আঠালো!</strong> বিষুব রেখার কাছাকাছি আবহাওয়া একই সাথে খুব গরম এবং খুব ভেজা থাকে (উচ্চ আর্দ্রতা)। ফলে ঘাম হয় কিন্তু শুকায় না, যার কারণে শরীর সবসময় আঠালো ও অস্বস্তিকর মনে হয়।</p>`
+            },
+            {
+                category: "আর্দ্রতা ও শিশিরাঙ্ক",
+                question: "একই তাপমাত্রায় ঢাকা অপেক্ষা কক্সবাজারে অস্বস্তির অনুভূত হয় কেন?",
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3>
+                <p>কক্সবাজার সমুদ্রের নিকটবর্তী হওয়ায় এর বাতাসে প্রচুর জলীয় বাষ্প থাকে, অর্থাৎ আপেক্ষিক আর্দ্রতা বেশি থাকে। ঢাকার বাতাসে তুলনামূলকভাবে জলীয় বাষ্প কম। উচ্চ আপেক্ষিক আর্দ্রতার কারণে কক্সবাজারে ঘাম সহজে শুকায় না এবং অস্বস্তি বোধ হয়।</p>
+                <h3>সহজ ব্যাখ্যা:</h3>
+                <p><strong>সমুদ্রের প্রভাব!</strong> সমুদ্রের কাছাকাছি মানেই প্রচুর বাষ্প। এই বাষ্পের কারণে কক্সবাজারের বাতাস আর্দ্রতা দিয়ে প্রায় ভরা থাকে। ঢাকাতে আর্দ্রতা তুলনামূলকভাবে কম থাকায় ঘাম অপেক্ষাকৃত সহজে শুকায়।</p>`
+            },
+            {
+                category: "আদর্শ গ্যাস",
+                question: "গ্যাসের অণুগুলোর বেগের উপর চাপের কোনো প্রভাব নেই – ব্যাখ্যা কর।",
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3>
+                <p>গ্যাস অণুর মূল গড় বর্গবেগের সূত্র $C_{rms} = \sqrt{\frac{3RT}{M}}$। এই সমীকরণে দেখা যায় যে, অণুর বেগ শুধুমাত্র পরম তাপমাত্রা ($T$) এবং গ্যাসের আণবিক ভরের ($M$) উপর নির্ভরশীল, চাপের ($P$) ওপর নয়। তাই তাপমাত্রা স্থির থাকলে চাপ পরিবর্তন করলেও অণুগুলোর বেগের কোনো পরিবর্তন হয় না।</p>
+                <h3>সহজ ব্যাখ্যা:</h3>
+                <p><strong>বেগ = তাপমাত্রা!</strong> অণুগুলো কত জোরে দৌড়াবে, তা শুধু নির্ভর করে গ্যাসের গরম হওয়ার (তাপমাত্রার) ওপর। চাপ বাড়ালে শুধু অণুগুলো কাছাকাছি আসে, কিন্তু তাদের দৌড়ের স্পিড বা গতিশক্তি বাড়ে না (যদি তাপমাত্রা স্থির থাকে)।</p>`
+            },
+            {
+                category: "তাপগতিবিদ্যা",
+                question: "শীতকালে ঠোঁট ও ত্বক ফাটে কেন?",
+                answer: `<h3>পরীক্ষায় লেখার জন্য উত্তর:</h3>
+                <p>শীতকালে বায়ুর আপেক্ষিক আর্দ্রতা খুব কম থাকে। এই শুষ্ক বায়ু আমাদের শরীর (ত্বক ও ঠোঁট) থেকে দ্রুত জলীয় বাষ্প শোষণ করে নেয়। ফলে ঠোঁট ও ত্বক শুষ্ক হয়ে ফেটে যায়।</p>
+                <h3>সহজ ব্যাখ্যা:</h3>
+                <p><strong>শুষ্ক বাতাসের শোষণ!</strong> শুষ্ক বাতাস হলো জলীয় বাষ্পের ক্ষুধার্ত। সে যেখানেই জলীয় বাষ্প পায়, শুষে নেয়। শীতকালে আমাদের ত্বক ও ঠোঁট থেকে জলীয় বাষ্প টেনে নেয়, ফলে ত্বক শুকিয়ে যায় এবং ফেটে যায়।</p>`
+            }
+        ];
+        
+        let currentCardIndex = 0;
+        const flashcardScene = document.getElementById('flashcardScene');
+        const flashcard = document.getElementById('flashcard');
+        const frontFace = flashcard.querySelector('.card-face-front');
+        const backFace = flashcard.querySelector('.card-face-back');
+        
+        const questionEl = document.getElementById('question');
+        const answerEl = document.getElementById('answer');
+        const categoryEl = document.getElementById('category');
+        const questionNumberEl = document.getElementById('question-number');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const randomBtn = document.getElementById('randomBtn');
+        
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const iconEnter = fullscreenBtn.querySelector('.icon-enter-fullscreen');
+        const iconExit = fullscreenBtn.querySelector('.icon-exit-fullscreen');
+
+        function updateCardHeight() {
+            // Use requestAnimationFrame to ensure DOM is updated before measuring height
+            requestAnimationFrame(() => {
+                const isFlipped = flashcard.classList.contains('is-flipped');
+                const activeFace = isFlipped ? backFace : frontFace;
+                // scrollHeight gives the true height of the content
+                const contentHeight = activeFace.scrollHeight + 60; // Add buffer for padding
+                flashcardScene.style.height = `${contentHeight}px`;
+            });
+        }
+
+        function showCard(index) {
+            // If the card is flipped, flip it back first smoothly
+            if (flashcard.classList.contains('is-flipped')) {
+                flashcard.classList.remove('is-flipped');
+            }
+            
+            // Wait for the flip-back animation to finish before changing content
+            setTimeout(() => {
+                const card = flashcardsData[index];
+                questionEl.textContent = card.question;
+                answerEl.innerHTML = card.answer;
+                categoryEl.textContent = card.category;
+                questionNumberEl.textContent = index + 1;
+
+                prevBtn.disabled = index === 0;
+                nextBtn.disabled = index === flashcardsData.length - 1;
+                
+                // Update height after content is loaded
+                updateCardHeight();
+            }, 300); // Half of the flip duration
+        }
+
+        flashcard.addEventListener('click', () => {
+            flashcard.classList.toggle('is-flipped');
+            updateCardHeight(); // Update height on every flip
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentCardIndex > 0) {
+                currentCardIndex--;
+                showCard(currentCardIndex);
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentCardIndex < flashcardsData.length - 1) {
+                currentCardIndex++;
+                showCard(currentCardIndex);
+            }
+        });
+
+        randomBtn.addEventListener('click', () => {
+            let randomIndex;
+            do {
+                randomIndex = Math.floor(Math.random() * flashcardsData.length);
+            } while (randomIndex === currentCardIndex && flashcardsData.length > 1); 
+            
+            currentCardIndex = randomIndex;
+            showCard(currentCardIndex);
+        });
+
+        // --- Fullscreen Logic ---
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        function updateFullscreenIcon() {
+            if (document.fullscreenElement) {
+                iconEnter.style.display = 'none';
+                iconExit.style.display = 'block';
+            } else {
+                iconEnter.style.display = 'block';
+                iconExit.style.display = 'none';
+            }
+        }
+
+        fullscreenBtn.addEventListener('click', toggleFullScreen);
+        document.addEventListener('fullscreenchange', updateFullscreenIcon);
+
+        // Adjust height on window resize
+        window.addEventListener('resize', updateCardHeight);
+
+        // Initial load
+        showCard(currentCardIndex);
+    </script>
+</body>
+</html>
