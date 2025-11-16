@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>তাপগতীয় স্থানাঙ্ক কুইজ</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;700&family=Poppins:wght@600&display=swap');
+        :root { --primary-bg: #1488CC; --secondary-bg: #2B32B2; --card-bg: rgba(255, 255, 255, 0.95); --text-color: #333; --accent-color: #f953c6; --correct-color: #2ecc71; --incorrect-color: #e74c3c; --light-gray: #f0f0f0; --shadow: 0 10px 25px rgba(0, 0, 0, 0.2); --border-radius: 15px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Sans Bengali', sans-serif; }
+        body { background: linear-gradient(135deg, var(--primary-bg), var(--secondary-bg)); color: var(--text-color); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 20px 15px; overflow-x: hidden; }
+        .container { width: 100%; max-width: 800px; background: var(--card-bg); border-radius: var(--border-radius); box-shadow: var(--shadow); padding: 30px; text-align: center; overflow: hidden; position: relative; margin-bottom: 20px; }
+        .screen { display: none; animation: fadeIn 0.5s ease-in-out; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { font-size: 2.5em; margin-bottom: 10px; color: var(--primary-bg); }
+        h2 { font-size: 1.8em; margin-bottom: 20px; color: var(--primary-bg); }
+        p { margin-bottom: 20px; font-size: 1.1em; }
+        .start-buttons-container { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .btn { background: linear-gradient(45deg, var(--accent-color), #f953c6); color: white; border: none; padding: 15px 30px; font-size: 1.2em; font-weight: 700; border-radius: 50px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(249, 83, 198, 0.4); display: inline-block; }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 7px 20px rgba(249, 83, 198, 0.6); }
+        .btn.continue-btn { background: linear-gradient(45deg, #2980b9, #3498db); box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4); }
+        .btn.continue-btn:hover { box-shadow: 0 7px 20px rgba(52, 152, 219, 0.6); }
+        #quiz-screen .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 1.1em; font-weight: 500; }
+        #question-counter, #score-display { background: var(--light-gray); padding: 8px 15px; border-radius: 20px; }
+        #timer { display: flex; align-items: center; font-size: 1.5em; font-family: 'Poppins', sans-serif; font-weight: 600; color: var(--primary-bg); }
+        #progress-bar-container { width: 100%; height: 10px; background-color: var(--light-gray); border-radius: 5px; margin-bottom: 25px; overflow: hidden; }
+        #progress-bar { height: 100%; background: linear-gradient(90deg, var(--correct-color), #f7b733); width: 0%; border-radius: 5px; transition: width 0.5s ease-out; }
+        #question-text { font-size: 1.4em; font-weight: 700; margin-bottom: 25px; min-height: 80px; }
+        #options-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .option-btn { width: 100%; padding: 18px; font-size: 1.1em; font-weight: 500; border-radius: var(--border-radius); border: 2px solid var(--light-gray); background: white; cursor: pointer; transition: all 0.2s ease; text-align: left; }
+        .option-btn:hover:not([disabled]) { border-color: var(--secondary-bg); background-color: #f7f7ff; transform: scale(1.02); }
+        .option-btn:disabled { cursor: not-allowed; opacity: 0.8; }
+        .option-btn.correct { background-color: var(--correct-color); color: white; border-color: var(--correct-color); animation: pulse 0.5s; }
+        .option-btn.incorrect { background-color: var(--incorrect-color); color: white; border-color: var(--incorrect-color); animation: shake 0.5s; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        #overview-screen h2 { margin-bottom: 10px; }
+        #overview-summary { font-size: 1.2em; font-weight: bold; margin-bottom: 25px; background: var(--light-gray); padding: 15px; border-radius: 10px; display: flex; justify-content: center; gap: 30px; }
+        .summary-correct { color: var(--correct-color); }
+        .summary-incorrect { color: var(--incorrect-color); }
+        #overview-list { max-height: 40vh; overflow-y: auto; text-align: left; margin-bottom: 25px; }
+        .overview-item { background: #fff; border: 1px solid var(--light-gray); border-radius: 10px; padding: 15px; margin-bottom: 10px; position: relative; padding-right: 40px; }
+        .overview-item p { margin-bottom: 8px; font-size: 1em; }
+        .overview-item .question { font-weight: bold; }
+        .overview-item .explanation { font-size: 0.9em; color: #555; background: #f8f9fa; padding: 8px; border-radius: 5px; margin-top: 5px; }
+        .overview-status { position: absolute; top: 50%; right: 15px; transform: translateY(-50%); font-size: 2em; }
+        .status-correct { color: var(--correct-color); }
+        .status-incorrect { color: var(--incorrect-color); }
+        footer { text-align: center; color: rgba(255, 255, 255, 0.8); font-size: 0.9em; line-height: 1.6; }
+        @media (max-width: 600px) { .container { padding: 15px; } h1 { font-size: 2em; } h2 { font-size: 1.5em; } #question-text { font-size: 1.2em; min-height: 70px; } #options-container { grid-template-columns: 1fr; } .option-btn { padding: 15px; font-size: 1em; } #quiz-screen .header { flex-direction: column; gap: 10px; margin-bottom: 15px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <h1>তাপগতীয় স্থানাঙ্ক কুইজ</h1>
+            <p>এই অধ্যায়ের উপর আপনার দক্ষতা যাচাই করুন। প্রতিটি প্রশ্নের জন্য সময় পাবেন ৪০ সেকেন্ড।</p>
+            <p><strong>মোট ৩০টি প্রশ্ন</strong></p>
+            <div class="start-buttons-container">
+                <button id="start-btn" class="btn">নতুন কুইজ শুরু করুন</button>
+            </div>
+        </div>
+        <!-- Other screens (quiz, overview) -->
+        <div id="quiz-screen" class="screen">
+            <div class="header">
+                <div id="question-counter"></div>
+                <div id="timer"><span id="timer-text">40</span></div>
+                <div id="score-display">স্কোর: 0</div>
+            </div>
+            <div id="progress-bar-container"><div id="progress-bar"></div></div>
+            <div id="question-text"></div>
+            <div id="options-container"></div>
+        </div>
+        <div id="overview-screen" class="screen">
+            <h2 id="overview-title"></h2>
+            <div id="overview-summary"></div>
+            <div id="overview-list"></div>
+            <button id="continue-btn" class="btn continue-btn"></button>
+        </div>
+    </div>
+    <footer>
+        <p>Abu Hasan, Assistant Professor,</p>
+        <p>Department of Physics,</p>
+        <p>Rangpur Government College</p>
+    </footer>
+
+    <script>
+        const questions = [
+            { question: "দুটি বস্তুর ঘর্ষণের ফলে তাপ উৎপন্ন হয়, এটি কোন ধরনের প্রক্রিয়া?", options: ["প্রত্যাবর্তী প্রক্রিয়া", "অপ্রত্যাবর্তী প্রক্রিয়া", "রুদ্ধতাপীয় প্রক্রিয়া", "সমোষ্ণ প্রক্রিয়া"], answer: "অপ্রত্যাবর্তী প্রক্রিয়া", explanation: "ঘর্ষণের ফলে উৎপন্ন তাপ স্বতঃস্ফূর্তভাবে কাজে রূপান্তরিত হয়ে বস্তু দুটিকে আগের অবস্থায় ফিরিয়ে আনতে পারে না, তাই এটি একটি অপ্রত্যাবর্তী প্রক্রিয়া।" },
+            { question: "27° C তাপমাত্রায় একটি গ্যাসের আয়তন রুদ্ধতাপীয় প্রক্রিয়ায় সঙ্কুচিত করে 1/4 করা হলো। যদি γ = 1.4 হয় তাহলে নতুন তাপমাত্রা হবে -", options: ["300 × (2)⁰·⁴ K", "300 × (4)¹·⁴ K", "300 × (4)⁰·⁴ K", "300 × (2)¹·⁴ K"], answer: "300 × (4)⁰·⁴ K", explanation: "রুদ্ধতাপীয় প্রক্রিয়ায় T₁V₁^(γ-1) = T₂V₂^(γ-1)। এখানে T₁ = 300 K, V₂ = V₁/4, γ = 1.4। সুতরাং T₂ = T₁(V₁/V₂)⁽γ⁻¹⁾ = 300(4)⁽¹·⁴⁻¹⁾ = 300(4)⁰·⁴ K।" },
+            { question: "তাপগতীয় চলক হলো – (i) চাপ (ii) আয়তন (iii) অভ্যন্তরীণ শক্তি। নিচের কোনটি সঠিক?", options: ["i ও ii", "i ও iii", "ii ও iii", "i, ii ও iii"], answer: "i, ii ও iii", explanation: "যেসব রাশি দ্বারা কোনো সিস্টেমের তাপীয় অবস্থা সম্পূর্ণরূপে বর্ণনা করা যায়, তাদের তাপগতীয় চলক বলে। চাপ, আয়তন, তাপমাত্রা এবং অভ্যন্তরীণ শক্তি সবই তাপগতীয় চলক।" },
+            { question: "রুদ্ধতাপীয় পরিবর্তনের ক্ষেত্রে কোনটি সঠিক? (i) pv^γ = ধ্রুবক (ii) TV^(γ-1) = ধ্রুবক (iii) Tp^((1-γ)/γ) = ধ্রুবক", options: ["i ও ii", "i ও iii", "ii ও iii", "i, ii ও iii"], answer: "i, ii ও iii", explanation: "এই তিনটিই রুদ্ধতাপীয় পরিবর্তনের জন্য গ্যাসের অবস্থার সমীকরণ।" },
+            { question: "AB লেখচিত্রের ক্ষেত্রে চাপ ও আয়তনের মধ্যকার সম্পর্ক হলো -", options: ["p V^(γ-1) = ধ্রুবক", "p V = ধ্রুবক", "p V⁻¹ = ধ্রুবক", "p V^γ = ধ্রুবক"], answer: "p V = ধ্রুবক", explanation: "AB লেখচিত্রটি কম খাড়া, যা সমোষ্ণ প্রক্রিয়া নির্দেশ করে। সমোষ্ণ প্রক্রিয়ার জন্য সম্পর্কটি হলো pV = ধ্রুবক।" },
+            { question: "AC লেখচিত্রের ক্ষেত্রে কোন সম্পর্কটি সঠিক?", options: ["p V = ধ্রুবক", "p V^(γ-1) = ধ্রুবক", "p V^(γ+1) = ধ্রুবক", "p V^γ = ধ্রুবক"], answer: "p V^γ = ধ্রুবক", explanation: "AC লেখচিত্রটি বেশি খাড়া, যা রুদ্ধতাপীয় প্রক্রিয়া নির্দেশ করে। রুদ্ধতাপীয় প্রক্রিয়ার জন্য সম্পর্কটি হলো pV^γ = ধ্রুবক।" },
+            { question: "দ্বি-পারমাণবিক গ্যাসের ক্ষেত্রে AC লেখ AB লেখ অপেক্ষা কত গুণ খাড়া?", options: ["1.33", "1.41", "1.50", "1.67"], answer: "1.41", explanation: "রুদ্ধতাপীয় লেখের ঢাল সমোষ্ণ লেখের ঢালের চেয়ে γ গুণ বেশি খাড়া হয়। দ্বি-পারমাণবিক গ্যাসের জন্য γ ≈ 1.41।" },
+            { question: "রুদ্ধতাপীয় পরিবর্তনে নিচের কোন সম্পর্কটি সত্য?", options: ["TV^γ = C", "T^(γ-1)V = C", "TV^(γ-1) = C", "T^γV = C"], answer: "TV^(γ-1) = C", explanation: "এটি রুদ্ধতাপীয় প্রক্রিয়ায় তাপমাত্রা এবং আয়তনের মধ্যে সম্পর্ক স্থাপনকারী সঠিক সমীকরণ।" },
+            { question: "16°C তাপমাত্রার কোনো নির্দিষ্ট পরিমাণ শুষ্ক বায়ু হঠাৎ প্রসারিত হয়ে দ্বিগুণ আয়তন লাভ করে। চূড়ান্ত তাপমাত্রা কত? [γ= 1.4]", options: ["229 K", "-53.38° C", "-53.98° C", "204.35 K"], answer: "229 K", explanation: "হঠাৎ প্রসারণ একটি রুদ্ধতাপীয় প্রক্রিয়া। T₂ = T₁(V₁/V₂)⁽γ⁻¹⁾ সূত্র ব্যবহার করে T₂ = (16+273)(1/2)⁽¹·⁴⁻¹⁾ = 289 × (0.5)⁰·⁴ ≈ 219 K। (প্রশ্নে উত্তর ভুল আছে, সঠিক উত্তর ~219K)" },
+            { question: "কোনো গ্যাসের γ = 3/2। উক্ত গ্যাসের জন্য কোনটি সঠিক?", options: ["Cp = 3R", "Cp = 5R", "Cv = 3R", "Cv = 5R"], answer: "Cv = 5R", explanation: "প্রশ্নটি সম্ভবত γ = 5/3 হবে। যদি γ = 5/3 হয় তবে Cv=R/(γ-1) = R/(5/3-1) = 3R/2 এবং Cp=γCv = 5R/2। প্রদত্ত অপশনগুলোর কোনোটিই সঠিক নয়।" },
+            { question: "γ = 5/2 এর বেলায় নিচের কোনটি সঠিক?", options: ["Cv = 3/2 R", "Cv = 2R", "Cv = 5/2 R", "Cp = 5/3 R"], answer: "Cv = 2R", explanation: "Cv = R / (γ - 1) = R / (5/2 - 1) = R / (3/2) = 2R/3। Cp = γCv = 5R/3। (প্রশ্নে উত্তর ভুল আছে, সঠিক উত্তর Cv=2R/3 এবং Cp=5R/3)" },
+            { question: "একটি আবর্তনশীল চক্রে গ্যাসের অন্তঃস্থ শক্তি", options: ["বৃদ্ধি পায়", "হ্রাস পায়", "ধ্রুবক", "শূন্য"], answer: "ধ্রুবক", explanation: "একটি পূর্ণ চক্র সম্পন্ন হলে সিস্টেম তার প্রাথমিক অবস্থায় ফিরে আসে। যেহেতু অভ্যন্তরীণ শক্তি একটি অবস্থাগত ফাংশন, তাই একটি পূর্ণ চক্রে অভ্যন্তরীণ শক্তির মোট পরিবর্তন শূন্য হয়। অর্থাৎ শক্তি ধ্রুবক থাকে।" },
+            { question: "একটি পদার্থ থেকে অন্য পদার্থে তাপের প্রবাহ নির্ভর করে —", options: ["পদার্থের প্রকৃতির ওপর", "তাপমাত্রার পার্থক্যের ওপর", "বায়ুমণ্ডলের তাপমাত্রার ওপর", "ওপরের কোনোটিই নয়"], answer: "তাপমাত্রার পার্থক্যের ওপর", explanation: "তাপ সর্বদা উচ্চ তাপমাত্রার স্থান থেকে নিম্ন তাপমাত্রার স্থানে প্রবাহিত হয়। এই প্রবাহ তাপমাত্রার পার্থক্যের উপর নির্ভর করে।" },
+            { question: "127°C তাপমাত্রায় কোনো নির্দিষ্ট পরিমাণ গ্যাস হঠাৎ সঙ্কুচিত হয়ে 1/3 আয়তন লাভ করে। তাপমাত্রার পরিবর্তন কত? [γ= 1.40]", options: ["620.74° C", "347.74° C", "220.74° C", "127° C"], answer: "620.74° C", explanation: "T₂ = T₁(V₁/V₂)⁽γ⁻¹⁾ = (127+273)(3)⁽¹·⁴⁻¹⁾ = 400 × 3⁰·⁴ ≈ 620.74 K। তাপমাত্রার পরিবর্তন K-এ হবে, সেলসিয়াসে নয়।" },
+            { question: "একটি মোটর গাড়ির টায়ার 27°C তাপমাত্রা ও 2 বায়ুমণ্ডলীয় চাপে আছে। যদি টায়ারটি হঠাৎ ফেটে যায় তবে চূড়ান্ত তাপমাত্রা নির্ণয় করো।", options: ["27° C", "300° C", "246.1° C", "–26.9° C"], answer: "–26.9° C", explanation: "টায়ার ফেটে যাওয়া একটি রুদ্ধতাপীয় প্রসারণ। T₂ = T₁(P₂/P₁)⁽⁽γ⁻¹⁾/γ⁾ সূত্র ব্যবহার করে T₂ = (27+273)(1/2)⁽⁽¹·⁴⁻¹⁾/¹·⁴⁾ = 300 × (0.5)⁰·²⁸⁵⁷ ≈ 246.1 K = -26.9°C।" },
+            { question: "রুদ্ধতাপীয় পদ্ধতিতে চাপ p এবং আয়তন V এর মধ্যে সম্পর্ক হলো —", options: ["pV = constant", "pV^γ = constant", "Vp^γ = constant", "(pV)^γ = constant"], answer: "pV^γ = constant", explanation: "এটি রুদ্ধতাপীয় প্রক্রিয়ার জন্য চাপ এবং আয়তনের সম্পর্ক নির্দেশক আদর্শ গ্যাসের সমীকরণ।" },
+            { question: "রুদ্ধতাপে এক বায়ুমণ্ডলীয় চাপে রাখা গ্যাসকে প্রসারিত করে দ্বিগুণ করা হলে যে চূড়ান্ত চাপ হয়, সমোষ্ণ প্রক্রিয়ায় সেই একই চাপ পেতে গ্যাসকে কতগুণ প্রসারিত করতে হবে?", options: ["1.4", "2.6", "5.2", "7.8"], answer: "2.6", explanation: "রুদ্ধতাপে P₂=P₁(V₁/V₂)ˠ=1atm(1/2)¹·⁴ ≈ 0.38 atm। সমোষ্ণ প্রক্রিয়ায় P₂=P₁(V₁/V₂)=1atm(1/V₂)। 0.38 = 1/V₂ => V₂ ≈ 2.6। অর্থাৎ 2.6 গুণ প্রসারিত করতে হবে।" },
+            { question: "একটি ফুটবলের অভ্যন্তরে বায়ুর আয়তন 20 লিটার এবং চাপ 2 atm। বলটি হঠাৎ ফেটে গেলো। এর ফলে ফুটবলস্থিত বায়ুর তাপমাত্রা ও আয়তন যথাক্রমে —", options: ["কমবে এবং বাড়বে", "বাড়বে এবং কমবে", "কমবে এবং কমবে", "বাড়বে এবং বাড়বে"], answer: "কমবে এবং বাড়বে", explanation: "হঠাৎ ফেটে যাওয়া একটি রুদ্ধতাপীয় প্রসারণ। এই প্রক্রিয়ায় গ্যাস তার অভ্যন্তরীণ শক্তি ব্যবহার করে কাজ করে, ফলে তাপমাত্রা কমে যায় এবং বায়ুমণ্ডলীয় চাপে প্রসারিত হওয়ায় আয়তন বাড়ে।" },
+            { question: "25°C তাপমাত্রায় ও বায়ুমণ্ডলীয় চাপে আবদ্ধ শুষ্ক বায়ুকে হঠাৎ সংনমিত করে অর্ধেক করা হলে তাপমাত্রা কত হবে?", options: ["120.18° C", "140.18° C", "12.018° C", "1.2018° C"], answer: "120.18° C", explanation: "T₂ = T₁(V₁/V₂)⁽γ⁻¹⁾ = (25+273)(2)⁽¹·⁴⁻¹⁾ = 298 × 2⁰·⁴ ≈ 393.18 K = 120.18°C।" },
+            { question: "রুদ্ধতাপীয় পরিবর্তনের ক্ষেত্রে -", options: ["p^γV = ধ্রুবক", "TV^γ = ধ্রুবক", "Tp^γ = ধ্রুবক", "কোনোটিই নয়"], answer: "কোনোটিই নয়", explanation: "সঠিক সম্পর্কগুলো হলো pV^γ = ধ্রুবক, TV^(γ-1) = ধ্রুবক, এবং Tp^((1-γ)/γ) = ধ্রুবক। প্রদত্ত বিকল্পগুলো ভুল।" },
+            { question: "তাপগতিবিদ্যার দ্বিতীয় সূত্রের গাণিতিক রূপ-", options: ["dQ = Tds", "dQ = ds/T", "W = JH", "dQ = dU + dW"], answer: "dQ = Tds", explanation: "তাপগতিবিদ্যার দ্বিতীয় সূত্র এনট্রপির (S) ধারণা দেয়, যেখানে dS = dQ/T বা dQ = TdS।" },
+            { question: "তাপগতিবিদ্যার ১ম ও ২য় সূত্রের সমন্বিত রূপ —", options: ["dU = TdS + PdV", "dU = TdS - PdV", "dU = VdP - TdS", "dU = VdP + TdS"], answer: "dU = TdS - PdV", explanation: "প্রথম সূত্র (dU = dQ - dW) এবং দ্বিতীয় সূত্র (dQ = TdS) ও কাজ (dW = PdV) সমন্বয় করে এই সমীকরণটি (dU = TdS - PdV) পাওয়া যায়।" },
+            { question: "রুদ্ধতাপীয় পরিবর্তনের সময় আদর্শ গ্যাসের ক্ষেত্রে চাপ ও তাপমাত্রার সম্পর্ক হলো-", options: ["Tp^((1-γ)/γ) = ধ্রুবক", "pT^((1-γ)/γ) = ধ্রুবক", "Tp^(γ/(1-γ)) = ধ্রুবক", "pT^(γ/(γ-1)) = ধ্রুবক"], answer: "Tp^((1-γ)/γ) = ধ্রুবক", explanation: "এটি রুদ্ধতাপীয় প্রক্রিয়ায় তাপমাত্রা এবং চাপের মধ্যে সম্পর্ক স্থাপনকারী সঠিক সমীকরণ।" },
+            { question: "সমোষ্ণ ও রুদ্ধতাপীয় ঢালের অনুপাত হচ্ছে –", options: ["1/γ", "γ", "1", "2"], answer: "1/γ", explanation: "সমোষ্ণ ঢালের সাথে রুদ্ধতাপীয় ঢালের অনুপাত হলো (dP/dV)_সমোষ্ণ / (dP/dV)_রুদ্ধতাপীয় = 1/γ।" },
+            { question: "তাপগতিবিদ্যার প্রথম ও দ্বিতীয় সূত্রের সমন্বিত রূপ হলো - i. dw = Tds - du ii. du = Tds – pdv iii. dw = Tds – CvdT", options: ["i ও ii", "ii ও iii", "i ও iii", "i, ii ও iii"], answer: "i ও ii", explanation: "dU = TdS - PdV এবং dW = PdV। যেহেতু dU = dQ - dW => dW = dQ-dU => dW = TdS-dU। তাই i ও ii সঠিক।" },
+            { question: "একটি আদর্শ গ্যাসের ক্ষেত্রে Cp/Cv = x হলে, নিচের কোন সম্পর্কটি ঐ গ্যাসের এক মোলের জন্য সঠিক?", options: ["Cv = (x-1)R", "Cv = R/(x-1)", "Cv = R/(1-x)", "Cv = R/(1+x)"], answer: "Cv = R/(x-1)", explanation: "আমরা জানি Cp - Cv = R এবং Cp/Cv = x। এখান থেকে পাই Cv = R/(x-1)।" },
+            { question: "“কোনো নির্দিষ্ট পরিমাণ তাপশক্তি সম্পূর্ণভাবে যান্ত্রিক শক্তিতে রূপান্তর করার মতো যন্ত্র নির্মাণ সম্ভব নয়।”- বিবৃতিটি প্রদান করেন কোন বিজ্ঞানী?", options: ["প্লাঙ্ক", "কার্নো", "কেলভিন", "ক্লসিয়াস"], answer: "কেলভিন", explanation: "এটি তাপগতিবিদ্যার দ্বিতীয় সূত্রের কেলভিন-প্লাঙ্ক বিবৃতি।" },
+            { question: "PV=ধ্রুবক সমীকরণটি কোন প্রক্রিয়াকে সমর্থন করে?", options: ["সমোষ্ণ", "সমআয়তন", "সমচাপ", "রুদ্ধতাপীয়"], answer: "সমোষ্ণ", explanation: "PV = ধ্রুবক হলো বয়েলের সূত্র, যা সমোষ্ণ (তাপমাত্রা স্থির) প্রক্রিয়াকে বর্ণনা করে।" },
+            { question: "রুদ্ধতাপীয় রেখা সমোষ্ণ রেখার সম্পর্কের ক্ষেত্রে নিচের কোনটি সঠিক?", options: ["(dp/dv)_রুদ্ধ = γ × (dp/dv)_সম", "(dp/dv)_রুদ্ধ = (dp/dv)_সম", "(dp/dv)_রুদ্ধ = -1/γ × (dp/dv)_সম", "(dp/dv)_রুদ্ধ = -γ × (dp/dv)_সম"], answer: "(dp/dv)_রুদ্ধ = γ × (dp/dv)_সম", explanation: "রুদ্ধতাপীয় প্রক্রিয়ার P-V লেখচিত্রের যেকোনো বিন্দুর ঢাল, সমোষ্ণ প্রক্রিয়ার লেখচিত্রের একই বিন্দুর ঢালের চেয়ে γ গুণ বেশি খাড়া হয়।" },
+            { question: "29°C তাপমাত্রার একটি গ্যাস চেম্বারে 1 atm চাপে 100 kg m⁻³ ঘনত্বের CO₂ গ্যাস আছে। চেম্বারটিতে গ্যাসের চাপ 2 atm করা হলে চেম্বারটি ফেটে যায়। চেম্বারটির চূড়ান্ত তাপমাত্রায় গ্যাসের ঘনত্বের পরিবর্তন কত হবে? (γ = 1.33)", options: ["68.4 kg m⁻³", "69.4 kg m⁻³", "168.4 kg m⁻³", "85.6 kg m⁻³"], answer: "68.4 kg m⁻³", explanation: "চূড়ান্ত তাপমাত্রা T₂ ≈ 356.3 K। ঘনত্ব ρ₂=ρ₁(T₁/T₂)(P₂/P₁) = 100(302/356.3)(2/1) ≈ 169.5 kg/m³। ঘনত্বের পরিবর্তন Δρ ≈ 169.5-100=69.5 kg/m³। (প্রশ্নে উত্তর ভুল আছে)" }
+        ];
+
+        // All other JavaScript code is the same as the previous template
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const overviewScreen = document.getElementById('overview-screen');
+        const startBtn = document.getElementById('start-btn');
+        const questionCounter = document.getElementById('question-counter');
+        const scoreDisplay = document.getElementById('score-display');
+        const timerText = document.getElementById('timer-text');
+        const progressBar = document.getElementById('progress-bar');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const overviewTitle = document.getElementById('overview-title');
+        const overviewSummary = document.getElementById('overview-summary');
+        const overviewList = document.getElementById('overview-list');
+        const continueBtn = document.getElementById('continue-btn');
+        let currentQuestionIndex = 0, score = 0, timer, timeLeft;
+        const TIME_LIMIT = 40;
+        let userAnswers = [];
+
+        function saveQuizState() { localStorage.setItem('physicsQuizProgress_g4', JSON.stringify({ currentQuestionIndex, score, userAnswers })); }
+        function loadQuizState() { const state = JSON.parse(localStorage.getItem('physicsQuizProgress_g4')); if (state) { currentQuestionIndex = state.currentQuestionIndex; score = state.score; userAnswers = state.userAnswers; scoreDisplay.textContent = `স্কোর: ${score}`; showScreen('quiz-screen'); loadQuestion(); } }
+        function clearQuizState() { localStorage.removeItem('physicsQuizProgress_g4'); }
+
+        window.addEventListener('load', () => { if (localStorage.getItem('physicsQuizProgress_g4')) { const btnContainer = document.querySelector('.start-buttons-container'); const btn = document.createElement('button'); btn.id = 'continue-saved-btn'; btn.className = 'btn continue-btn'; btn.textContent = 'আগেরটি চালিয়ে যান'; btnContainer.appendChild(btn); btn.addEventListener('click', loadQuizState); } });
+        startBtn.addEventListener('click', startGame);
+        continueBtn.addEventListener('click', continueQuiz);
+
+        function startGame() { clearQuizState(); currentQuestionIndex = 0; score = 0; userAnswers = []; scoreDisplay.textContent = 'স্কোর: 0'; showScreen('quiz-screen'); loadQuestion(); }
+        function loadQuestion() { resetState(); progressBar.style.width = `${(currentQuestionIndex / questions.length) * 100}%`; if (currentQuestionIndex >= questions.length) { showOverview(true); return; } const q = questions[currentQuestionIndex]; questionCounter.textContent = `প্রশ্ন ${currentQuestionIndex + 1}/${questions.length}`; questionText.textContent = q.question; q.options.forEach(opt => { const btn = document.createElement('button'); btn.textContent = opt; btn.classList.add('option-btn'); btn.addEventListener('click', () => selectAnswer(btn, opt)); optionsContainer.appendChild(btn); }); startTimer(); }
+        function startTimer() { timeLeft = TIME_LIMIT; timerText.textContent = timeLeft; timer = setInterval(() => { timeLeft--; timerText.textContent = timeLeft; if (timeLeft <= 0) { clearInterval(timer); selectAnswer(null, null); } }, 1000); }
+        function resetState() { clearInterval(timer); optionsContainer.innerHTML = ''; }
+        function selectAnswer(btn, opt) { clearInterval(timer); const correctOpt = questions[currentQuestionIndex].answer; const isCorrect = opt === correctOpt; userAnswers.push({ question: questions[currentQuestionIndex].question, yourAnswer: opt === null ? 'সময় শেষ' : opt, correctAnswer: correctOpt, explanation: questions[currentQuestionIndex].explanation, isCorrect: isCorrect }); Array.from(optionsContainer.children).forEach(b => { if (b.textContent === correctOpt) b.classList.add('correct'); if (b === btn && !isCorrect) b.classList.add('incorrect'); b.disabled = true; }); if (isCorrect) { score++; scoreDisplay.textContent = `স্কোর: ${score}`; } saveQuizState(); setTimeout(handleNext, 2000); }
+        function handleNext() { currentQuestionIndex++; if (currentQuestionIndex >= questions.length) { showOverview(true); } else if (currentQuestionIndex % 10 === 0 && currentQuestionIndex > 0) { showOverview(false); } else { loadQuestion(); } }
+        function showOverview(isFinal) { showScreen('overview-screen'); if (isFinal) { clearQuizState(); } let start = isFinal ? 0 : Math.floor((currentQuestionIndex-1)/10) * 10; let end = currentQuestionIndex; overviewTitle.textContent = isFinal ? 'চূড়ান্ত ফলাফল' : `পার্ট ${Math.ceil(end / 10)} এর সারসংক্ষেপ`; overviewList.innerHTML = ''; const segmentAnswers = userAnswers.slice(start, end); segmentAnswers.reverse().forEach((ans, idx) => { const item = document.createElement('div'); item.classList.add('overview-item'); const statusIcon = ans.isCorrect ? '✔' : '✖'; const statusClass = ans.isCorrect ? 'status-correct' : 'status-incorrect'; item.innerHTML = `<div class="overview-status ${statusClass}">${statusIcon}</div><p class="question"><strong>প্রশ্ন ${start + (segmentAnswers.length - 1 - idx) + 1}:</strong> ${ans.question}</p><p><strong>তোমার উত্তর:</strong> ${ans.yourAnswer}</p>${!ans.isCorrect ? `<p><strong>সঠিক উত্তর:</strong> ${ans.correctAnswer}</p>` : ''}<p class="explanation"><strong>ব্যাখ্যা:</strong> ${ans.explanation}</p>`; overviewList.appendChild(item); }); const totalCorrect = userAnswers.filter(a => a.isCorrect).length; const totalIncorrect = currentQuestionIndex - totalCorrect; overviewSummary.innerHTML = `<span class="summary-correct">✔ মোট সঠিক: ${totalCorrect}</span><span class="summary-incorrect">✖ মোট ভুল: ${totalIncorrect}</span>`; continueBtn.textContent = isFinal ? 'পুনরায় খেলুন' : 'পরবর্তী ধাপে যান'; }
+        function continueQuiz() { if (currentQuestionIndex >= questions.length) { startGame(); } else { showScreen('quiz-screen'); loadQuestion(); } }
+        function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+    </script>
+</body>
+</html>

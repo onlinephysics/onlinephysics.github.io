@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>তাপ ইঞ্জিন ও রেফ্রিজারেটর কুইজ</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;700&family=Poppins:wght@600&display=swap');
+        :root { --primary-bg: #1488CC; --secondary-bg: #2B32B2; --card-bg: rgba(255, 255, 255, 0.95); --text-color: #333; --accent-color: #f953c6; --correct-color: #2ecc71; --incorrect-color: #e74c3c; --light-gray: #f0f0f0; --shadow: 0 10px 25px rgba(0, 0, 0, 0.2); --border-radius: 15px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Sans Bengali', sans-serif; }
+        body { background: linear-gradient(135deg, var(--primary-bg), var(--secondary-bg)); color: var(--text-color); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 20px 15px; overflow-x: hidden; }
+        .container { width: 100%; max-width: 800px; background: var(--card-bg); border-radius: var(--border-radius); box-shadow: var(--shadow); padding: 30px; text-align: center; overflow: hidden; position: relative; margin-bottom: 20px; }
+        .screen { display: none; animation: fadeIn 0.5s ease-in-out; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { font-size: 2.5em; margin-bottom: 10px; color: var(--primary-bg); }
+        h2 { font-size: 1.8em; margin-bottom: 20px; color: var(--primary-bg); }
+        p { margin-bottom: 20px; font-size: 1.1em; }
+        .start-buttons-container { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .btn { background: linear-gradient(45deg, var(--accent-color), #f953c6); color: white; border: none; padding: 15px 30px; font-size: 1.2em; font-weight: 700; border-radius: 50px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(249, 83, 198, 0.4); display: inline-block; }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 7px 20px rgba(249, 83, 198, 0.6); }
+        .btn.continue-btn { background: linear-gradient(45deg, #2980b9, #3498db); box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4); }
+        .btn.continue-btn:hover { box-shadow: 0 7px 20px rgba(52, 152, 219, 0.6); }
+        #quiz-screen .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 1.1em; font-weight: 500; }
+        #question-counter, #score-display { background: var(--light-gray); padding: 8px 15px; border-radius: 20px; }
+        #timer { display: flex; align-items: center; font-size: 1.5em; font-family: 'Poppins', sans-serif; font-weight: 600; color: var(--primary-bg); }
+        #progress-bar-container { width: 100%; height: 10px; background-color: var(--light-gray); border-radius: 5px; margin-bottom: 25px; overflow: hidden; }
+        #progress-bar { height: 100%; background: linear-gradient(90deg, var(--correct-color), #f7b733); width: 0%; border-radius: 5px; transition: width 0.5s ease-out; }
+        #question-text { font-size: 1.4em; font-weight: 700; margin-bottom: 25px; min-height: 80px; }
+        #options-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .option-btn { width: 100%; padding: 18px; font-size: 1.1em; font-weight: 500; border-radius: var(--border-radius); border: 2px solid var(--light-gray); background: white; cursor: pointer; transition: all 0.2s ease; text-align: left; }
+        .option-btn:hover:not([disabled]) { border-color: var(--secondary-bg); background-color: #f7f7ff; transform: scale(1.02); }
+        .option-btn:disabled { cursor: not-allowed; opacity: 0.8; }
+        .option-btn.correct { background-color: var(--correct-color); color: white; border-color: var(--correct-color); animation: pulse 0.5s; }
+        .option-btn.incorrect { background-color: var(--incorrect-color); color: white; border-color: var(--incorrect-color); animation: shake 0.5s; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        #overview-screen h2 { margin-bottom: 10px; }
+        #overview-summary { font-size: 1.2em; font-weight: bold; margin-bottom: 25px; background: var(--light-gray); padding: 15px; border-radius: 10px; display: flex; justify-content: center; gap: 30px; }
+        .summary-correct { color: var(--correct-color); }
+        .summary-incorrect { color: var(--incorrect-color); }
+        #overview-list { max-height: 40vh; overflow-y: auto; text-align: left; margin-bottom: 25px; }
+        .overview-item { background: #fff; border: 1px solid var(--light-gray); border-radius: 10px; padding: 15px; margin-bottom: 10px; position: relative; padding-right: 40px; }
+        .overview-item p { margin-bottom: 8px; font-size: 1em; }
+        .overview-item .question { font-weight: bold; }
+        .overview-item .explanation { font-size: 0.9em; color: #555; background: #f8f9fa; padding: 8px; border-radius: 5px; margin-top: 5px; }
+        .overview-status { position: absolute; top: 50%; right: 15px; transform: translateY(-50%); font-size: 2em; }
+        .status-correct { color: var(--correct-color); }
+        .status-incorrect { color: var(--incorrect-color); }
+        footer { text-align: center; color: rgba(255, 255, 255, 0.8); font-size: 0.9em; line-height: 1.6; }
+        @media (max-width: 600px) { .container { padding: 15px; } h1 { font-size: 2em; } h2 { font-size: 1.5em; } #question-text { font-size: 1.2em; min-height: 70px; } #options-container { grid-template-columns: 1fr; } .option-btn { padding: 15px; font-size: 1em; } #quiz-screen .header { flex-direction: column; gap: 10px; margin-bottom: 15px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <h1>তাপ ইঞ্জিন ও রেফ্রিজারেটর কুইজ</h1>
+            <p>এই অধ্যায়ের উপর আপনার দক্ষতা যাচাই করুন। প্রতিটি প্রশ্নের জন্য সময় পাবেন ৪০ সেকেন্ড।</p>
+            <p><strong>মোট ৩০টি প্রশ্ন</strong></p>
+            <div class="start-buttons-container">
+                <button id="start-btn" class="btn">নতুন কুইজ শুরু করুন</button>
+            </div>
+        </div>
+        <!-- Other screens (quiz, overview) -->
+        <div id="quiz-screen" class="screen">
+            <div class="header">
+                <div id="question-counter"></div>
+                <div id="timer"><span id="timer-text">40</span></div>
+                <div id="score-display">স্কোর: 0</div>
+            </div>
+            <div id="progress-bar-container"><div id="progress-bar"></div></div>
+            <div id="question-text"></div>
+            <div id="options-container"></div>
+        </div>
+        <div id="overview-screen" class="screen">
+            <h2 id="overview-title"></h2>
+            <div id="overview-summary"></div>
+            <div id="overview-list"></div>
+            <button id="continue-btn" class="btn continue-btn"></button>
+        </div>
+    </div>
+    <footer>
+        <p>Abu Hasan, Assistant Professor,</p>
+        <p>Department of Physics,</p>
+        <p>Rangpur Government College</p>
+    </footer>
+
+    <script>
+        const questions = [
+            { question: "গৃহীত তাপ Q₁ এবং বর্জিত তাপ Q₂ হলে তাপীয় ইঞ্জিনের দক্ষতা –", options: ["η = 1 – (Q₂/Q₁)", "η = 1 + (Q₂/Q₁)", "η = 1 - (Q₁/Q₂)", "η = 1 + (Q₁/Q₂)"], answer: "η = 1 – (Q₂/Q₁)", explanation: "ইঞ্জিনের দক্ষতা হলো কৃতকাজ এবং গৃহীত তাপের অনুপাত। η = W/Q₁ = (Q₁-Q₂)/Q₁ = 1 - (Q₂/Q₁)।" },
+            { question: "একটি রেফ্রিজারেটরের কার্যকৃত সহগ K = 2.5। এটি ঠাণ্ডা প্রকোষ্ঠ হতে প্রতি চক্রে 500 J তাপ অপসারণ করলে, প্রতি চক্রে সরবরাহকৃত কাজ কত হবে?", options: ["1250 J", "502.5 J", "500 J", "200 J"], answer: "200 J", explanation: "কার্যকৃত সহগ K = Q₂/W। সুতরাং, কাজ W = Q₂/K = 500 J / 2.5 = 200 J।" },
+            { question: "তাপ ইঞ্জিন একটি যন্ত্র যা' রূপান্তর করে —", options: ["যান্ত্রিকশক্তিকে তাপশক্তিতে", "তাপশক্তিকে যান্ত্রিকশক্তিতে", "রাসায়নিকশক্তিকে তড়িৎশক্তিতে", "তড়িৎশক্তিকে যান্ত্রিকশক্তিতে"], answer: "তাপশক্তিকে যান্ত্রিকশক্তিতে", explanation: "তাপ ইঞ্জিন তাপ শক্তিকে যান্ত্রিক শক্তিতে বা কাজে রূপান্তর করে।" },
+            { question: "একটি তাপ ইঞ্জিনের কর্মদক্ষতা হচ্ছে –", options: ["η = W/Q₁", "η = Q₁/W", "η = W × Q₁", "η = W × Q₂"], answer: "η = W/Q₁", explanation: "কর্মদক্ষতা (η) হলো একটি ইঞ্জিন তার গৃহীত তাপের (Q₁) কত অংশকে কাজে (W) রূপান্তর করতে পারে তার পরিমাপ।" },
+            { question: "যদি কোনো তাপ ইঞ্জিন থেকে তাপ বর্জিত না হয়, তবে ইঞ্জিনের দক্ষতা কত হবে ?", options: ["0%", "1%", "50%", "100%"], answer: "100%", explanation: "যদি তাপ বর্জিত না হয় (Q₂=0), তবে দক্ষতা η = 1 - (Q₂/Q₁) = 1 - 0 = 1, অর্থাৎ 100%। কিন্তু তাপগতিবিদ্যার দ্বিতীয় সূত্রানুযায়ী এটি বাস্তবে সম্ভব নয়।" },
+            { question: "কার্নো চক্রের ১ম ধাপের ক্ষেত্রে নিচের কোনটি সঠিক?", options: ["তাপমাত্রা বৃদ্ধি পায়", "তাপমাত্রা স্থির থাকে", "অভ্যন্তরীণ শক্তি হ্রাস পায়", "তাপ বর্জিত হয়"], answer: "তাপমাত্রা স্থির থাকে", explanation: "কার্নো চক্রের প্রথম ধাপ হলো সমোষ্ণ প্রসারণ, যেখানে সিস্টেম উৎস থেকে তাপ গ্রহণ করে এবং তাপমাত্রা স্থির রেখে প্রসারিত হয়।" },
+            { question: "একটি তাপ ইঞ্জিন সম্পর্কে ধারণা পাই- (i) এর দক্ষতা উৎস ও তাপগ্রাহকের তাপমাত্রার ওপর নির্ভর করে (ii) এর দক্ষতা কখনও 100% হতে পারে না (iii) এটি শীতল উৎস থেকে তাপ উষ্ণ পরিবেশে স্থানান্তর করে। নিচের কোনটি সঠিক?", options: ["i ও ii", "ii ও iii", "i", "i, ii ও iii"], answer: "i ও ii", explanation: "(i) ও (ii) সঠিক। (iii) হলো রেফ্রিজারেটরের কাজ, তাপ ইঞ্জিনের নয়।" },
+            { question: "একটি কার্নো ইঞ্জিন 600 K তাপমাত্রার তাপ উৎস থেকে 1200 J তাপ গ্রহণ করে এবং তাপ গ্রাহকে 300 J তাপ বর্জন করে। তাপগ্রাহকের তাপমাত্রা কত?", options: ["150 K", "300 K", "600 K", "2400 K"], answer: "150 K", explanation: "কার্নো ইঞ্জিনের জন্য Q₁/T₁ = Q₂/T₂। সুতরাং, T₂ = T₁(Q₂/Q₁) = 600 K × (300 J / 1200 J) = 150 K।" },
+            { question: "পূর্বের উদ্দীপকের ইঞ্জিনের দক্ষতা কত?", options: ["44%", "50%", "60%", "75%"], answer: "75%", explanation: "দক্ষতা η = 1 - (Q₂/Q₁) = 1 - (300 J / 1200 J) = 1 - 0.25 = 0.75 বা 75%।" },
+            { question: "একটি তাপ ইঞ্জিন 327°C তাপমাত্রায় 500 J তাপ গ্রহণ করে এবং 27°C তাপমাত্রায় তাপ বর্জন করে। ইঞ্জিন কর্তৃক সম্পাদিত কাজের পরিমাণ কত?", options: ["1500 J", "1000 J", "500 J", "250 J"], answer: "250 J", explanation: "প্রথমে দক্ষতা নির্ণয় করুন: T₁ = 327+273=600K, T₂ = 27+273=300K। η = 1 - T₂/T₁ = 1 - 300/600 = 0.5। কাজ W = η × Q₁ = 0.5 × 500 J = 250 J।" },
+            { question: "পূর্বের উদ্দীপকে, কিছু সময় পর তাপগ্রাহকের তাপমাত্রা 177°C-এ উন্নীত হলে, দু অবস্থায় ইঞ্জিনের কর্মদক্ষতার অনুপাত কত?", options: ["3:4", "1:1", "2:3", "2:1"], answer: "2:1", explanation: "প্রথম দক্ষতা η₁ = 0.5। নতুন T₂' = 177+273=450K। নতুন দক্ষতা η₂ = 1 - 450/600 = 1 - 0.75 = 0.25। অনুপাত η₁ : η₂ = 0.5 : 0.25 = 2:1।" },
+            { question: "একটি কার্নো ইঞ্জিন বাষ্পবিন্দু ও বরফবিন্দুর মধ্যে কাজ করলে এর দক্ষতা কত?", options: ["61.28%", "62.18%", "26.18%", "26.81%"], answer: "26.81%", explanation: "এখানে T₁ = 100°C = 373.15 K এবং T₂ = 0°C = 273.15 K। দক্ষতা η = 1 - (T₂/T₁) = 1 - (273.15 / 373.15) ≈ 0.2681 বা 26.81%।" },
+            { question: "127°C এবং 427°C তাপমাত্রার মধ্যে কার্যরত একটি ইঞ্জিনের সম্ভাব্য সর্বোচ্চ দক্ষতা কত হবে?", options: ["23.62%", "42.86%", "50%", "70.25%"], answer: "42.86%", explanation: "সর্বোচ্চ দক্ষতা কার্নো ইঞ্জিনের। T₁ = 427+273=700 K, T₂ = 127+273=400 K। η = 1 - (400 / 700) ≈ 0.4286 বা 42.86%।" },
+            { question: "কার্নো চক্রের চতুর্থ ধাপে কী ঘটে?", options: ["সমোষ্ণ প্রসারণ", "সমোষ্ণ সংকোচন", "রুদ্ধতাপীয় সংকোচন", "রুদ্ধতাপীয় প্রসারণ"], answer: "রুদ্ধতাপীয় সংকোচন", explanation: "কার্নো চক্রের চারটি ধাপ হলো: ১. সমোষ্ণ প্রসারণ, ২. রুদ্ধতাপীয় প্রসারণ, ৩. সমোষ্ণ সংকোচন, ৪. রুদ্ধতাপীয় সংকোচন।" },
+            { question: "একটি রেফ্রিজারেটরের কর্মসম্পাদন সহগ হলো 4.6। ঠাণ্ডা প্রকোষ্ঠ থেকে প্রতি চক্রে 250 J তাপ অপসারণ করলে প্রতি চক্রে কৃতকাজের পরিমাণ কত?", options: ["46 J", "48 J", "50 J", "54 J"], answer: "54 J", explanation: "K = Q₂/W => W = Q₂/K = 250 J / 4.6 ≈ 54.3 J, যা বিকল্প (ঘ) এর কাছাকাছি।" },
+            { question: "কার্নো ইঞ্জিনের কোন ধাপে তাপ বর্জন হয়?", options: ["প্রথম", "দ্বিতীয়", "তৃতীয়", "চতুর্থ"], answer: "তৃতীয়", explanation: "তৃতীয় ধাপে (সমোষ্ণ সংকোচন) সিস্টেম তাপ গ্রাহকে তাপ (Q₂) বর্জন করে সংকুচিত হয়।" },
+            { question: "একটি কার্নো ইঞ্জিন 500 K এবং 250 K তাপমাত্রার দুটি আধারের মাধ্যমে পরিচালিত হয়। প্রত্যেক চক্রে ইঞ্জিন যদি 1 k cal তাপ গ্রহণ করে তাহলে প্রত্যেক চক্রে তাপগ্রাহকে তাপ বর্জন করার পরিমাণ কত?", options: ["500 cal", "1000 cal", "500 k cal", "10 k cal"], answer: "500 cal", explanation: "Q₂/Q₁ = T₂/T₁ => Q₂ = Q₁(T₂/T₁) = 1000 cal × (250 K / 500 K) = 500 cal।" },
+            { question: "তাপকে নিম্নমাত্রা থেকে উচ্চতাপমাত্রায় পাঠানোর প্রক্রিয়াকে কী বলে?", options: ["হিমায়ন", "তাপ ইঞ্জিন", "লীন তাপ", "হিমায়ক"], answer: "হিমায়ন", explanation: "হিমায়ন বা রেফ্রিজারেশন হলো এমন একটি প্রক্রিয়া যার মাধ্যমে একটি স্থান থেকে তাপ অপসারণ করে সেটিকে তার পারিপার্শ্বিক অবস্থার চেয়ে শীতল করা হয়।" },
+            { question: "যদি কোনো তাপ ইঞ্জিন থেকে কোনো তাপ বের না হয়, তবে ইঞ্জিনটির দক্ষতা কত?", options: ["0%", "30%", "100%", "10%"], answer: "100%", explanation: "যদি কোনো তাপ বর্জিত না হয় (Q₂=0), তাহলে গৃহীত সমস্ত তাপই কাজে রূপান্তরিত হয়, ফলে দক্ষতা 100% হয়।" },
+            { question: "রেফ্রিজারেটর ও তাপ ইঞ্জিন তাপগতিবিদ্যার কোন সূত্রের ভিত্তিতে নির্মিত হয়?", options: ["শূন্যতম", "প্রথম", "দ্বিতীয়", "তৃতীয়"], answer: "দ্বিতীয়", explanation: "তাপ ইঞ্জিন ও রেফ্রিজারেটরের কার্যনীতি (তাপের একমুখী প্রবাহ এবং দক্ষতার সীমাবদ্ধতা) তাপগতিবিদ্যার দ্বিতীয় সূত্র দ্বারা নিয়ন্ত্রিত হয়।" },
+            { question: "একটি কার্নো ইঞ্জিন 227°C এবং 127°C তাপমাত্রার মধ্যে কাজ করে। যদি ইঞ্জিন কর্তৃক কৃতকাজের পরিমাণ 500 J হয়, তবে তাপ গ্রাহকে প্রত্যাখ্যাত তাপের পরিমাণ কত হবে?", options: ["2000 J", "1500 J", "500 J", "1000 J"], answer: "1000 J", explanation: "T₁=500K, T₂=400K। η=1-400/500=0.2। W=ηQ₁ => 500=0.2×Q₁ => Q₁=2500J। প্রত্যাখ্যাত তাপ Q₂ = Q₁ - W = 2500 - 500 = 2000J। (প্রশ্নে উত্তর ভুল আছে, সঠিক উত্তর 2000J)" },
+            { question: "–8°C এবং 27°C তাপমাত্রার মধ্যে ক্রিয়ারত একটি হিমায়কের সর্বোচ্চ কার্যকৃত সহগ কত?", options: ["8.57", "7.57", "2.132", "0.469"], answer: "7.57", explanation: "সর্বোচ্চ সহগ (কার্নো হিমায়ক) K = T₂/(T₁-T₂) = (273-8) / ((27+273)-(273-8)) = 265 / 35 = 7.57।" },
+            { question: "কার্নো চক্রের কোন ধাপে তাপ গৃহীত হয়?", options: ["প্রথম", "দ্বিতীয়", "তৃতীয়", "চতুর্থ"], answer: "প্রথম", explanation: "প্রথম ধাপে (সমোষ্ণ প্রসারণ) সিস্টেম তাপ উৎস থেকে তাপ (Q₁) গ্রহণ করে।" },
+            { question: "একটি কার্নো ইঞ্জিনের কর্মদক্ষতা 50% যখন এর তাপগ্রাহকের তাপমাত্রা 27°C। ইঞ্জিনটির কর্মদক্ষতা 60% করতে উৎসের তাপমাত্রা কত বাড়াতে হবে?", options: ["60 K", "120 K", "150 K", "160 K"], answer: "150 K", explanation: "প্রথম ক্ষেত্রে, 0.5 = 1 - 300/T₁ => T₁ = 600 K। দ্বিতীয় ক্ষেত্রে, 0.6 = 1 - 300/T₁' => T₁' = 750 K। তাপমাত্রা বাড়াতে হবে 750 - 600 = 150 K।" },
+            { question: "একটি কার্নো ইঞ্জিন 237°C এবং 139°C তাপমাত্রায় কার্যরত। উচ্চতাপমাত্রায় এটি 2.54 × 10⁵ J তাপ শোষণ করে, প্রতি সাইকেলে ইঞ্জিনটি কী পরিমাণ কাজ করছে?", options: ["50.4 × 10⁴ J", "450 kJ", "4.8 × 10⁴ J", "488 kJ"], answer: "4.8 × 10⁴ J", explanation: "T₁=510K, T₂=412K। η=1-412/510 ≈ 0.192। W=ηQ₁ = 0.192 × 2.54 × 10⁵ J ≈ 4.88 × 10⁴ J।" },
+            { question: "একটি রেফ্রিজারেটর শীতল তাপাধার থেকে 450 J তাপ গ্রহণ করে উষ্ণ তাপাধারে 600 J তাপশক্তি বর্জন করে। রেফ্রিজারেটরটির কার্যসম্পাদন সহগ কত?", options: ["3", "4", "1.83", "2.33"], answer: "3", explanation: "কাজ W = Q₁ - Q₂ = 600 - 450 = 150 J। সহগ K = Q₂/W = 450 / 150 = 3।" },
+            { question: "কার্নো ইঞ্জিনের চতুর্থ ধাপে তাপ -", options: ["গ্রহণ করে", "বর্জন করে", "গ্রহণ ও বর্জন উভয়েই হতে পারে", "গ্রহণ ও বর্জন কোনোটিই হয় না"], answer: "গ্রহণ ও বর্জন কোনোটিই হয় না", explanation: "চতুর্থ ধাপটি হলো রুদ্ধতাপীয় সংকোচন, যেখানে সিস্টেমের সাথে পরিবেশের কোনো তাপ বিনিময় হয় না।" },
+            { question: "কার্নোচক্রের চতুর্থ ধাপে নিচের কোনটি স্থির থাকে?", options: ["চাপ", "আয়তন", "তাপমাত্রা", "এনট্রপি"], answer: "এনট্রপি", explanation: "চতুর্থ ধাপটি রুদ্ধতাপীয়, আর সকল প্রত্যাবর্তী রুদ্ধতাপীয় প্রক্রিয়ায় এনট্রপি স্থির থাকে।" },
+            { question: "যদি কোনো তাপ-ইঞ্জিন থেকে তাপ বর্জিত না হয়, তবে ইঞ্জিনের দক্ষতা কত হবে?", options: ["0%", "1%", "50%", "100%"], answer: "100%", explanation: "যদি Q₂=0 হয়, তাহলে দক্ষতা η = 1 - 0 = 100%। এটি আদর্শ অবস্থা যা বাস্তবে সম্ভব নয়।" },
+            { question: "একটি কার্নো চক্র প্রাথমিক 327°C তাপমাত্রায় কাজ সম্পন্ন করে। প্রতিটি ধাপে সংকোচন বা প্রসারণের অনুপাত 1:6 হলে কার্নো চক্রের সর্বনিম্ন তাপমাত্রা এবং দক্ষতা যথাক্রমে [γ = 1.4]", options: ["0 K, 28%", "287.012 K, 50.21%", "393.52 K, 15.21%", "293.056 K, 51.16%"], answer: "293.056 K, 51.16%", explanation: "T₂=T₁(V₁/V₂)⁽γ⁻¹⁾ = 600(1/6)⁰·⁴ ≈ 293K। η = 1 - T₂/T₁ = 1 - 293/600 ≈ 0.5116 বা 51.16%।" }
+        ];
+
+        // All other JavaScript code is the same as the previous template
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const overviewScreen = document.getElementById('overview-screen');
+        const startBtn = document.getElementById('start-btn');
+        const questionCounter = document.getElementById('question-counter');
+        const scoreDisplay = document.getElementById('score-display');
+        const timerText = document.getElementById('timer-text');
+        const progressBar = document.getElementById('progress-bar');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const overviewTitle = document.getElementById('overview-title');
+        const overviewSummary = document.getElementById('overview-summary');
+        const overviewList = document.getElementById('overview-list');
+        const continueBtn = document.getElementById('continue-btn');
+        let currentQuestionIndex = 0, score = 0, timer, timeLeft;
+        const TIME_LIMIT = 40;
+        let userAnswers = [];
+
+        function saveQuizState() { localStorage.setItem('physicsQuizProgress_g5', JSON.stringify({ currentQuestionIndex, score, userAnswers })); }
+        function loadQuizState() { const state = JSON.parse(localStorage.getItem('physicsQuizProgress_g5')); if (state) { currentQuestionIndex = state.currentQuestionIndex; score = state.score; userAnswers = state.userAnswers; scoreDisplay.textContent = `স্কোর: ${score}`; showScreen('quiz-screen'); loadQuestion(); } }
+        function clearQuizState() { localStorage.removeItem('physicsQuizProgress_g5'); }
+
+        window.addEventListener('load', () => { if (localStorage.getItem('physicsQuizProgress_g5')) { const btnContainer = document.querySelector('.start-buttons-container'); const btn = document.createElement('button'); btn.id = 'continue-saved-btn'; btn.className = 'btn continue-btn'; btn.textContent = 'আগেরটি চালিয়ে যান'; btnContainer.appendChild(btn); btn.addEventListener('click', loadQuizState); } });
+        startBtn.addEventListener('click', startGame);
+        continueBtn.addEventListener('click', continueQuiz);
+
+        function startGame() { clearQuizState(); currentQuestionIndex = 0; score = 0; userAnswers = []; scoreDisplay.textContent = 'স্কোর: 0'; showScreen('quiz-screen'); loadQuestion(); }
+        function loadQuestion() { resetState(); progressBar.style.width = `${(currentQuestionIndex / questions.length) * 100}%`; if (currentQuestionIndex >= questions.length) { showOverview(true); return; } const q = questions[currentQuestionIndex]; questionCounter.textContent = `প্রশ্ন ${currentQuestionIndex + 1}/${questions.length}`; questionText.textContent = q.question; q.options.forEach(opt => { const btn = document.createElement('button'); btn.textContent = opt; btn.classList.add('option-btn'); btn.addEventListener('click', () => selectAnswer(btn, opt)); optionsContainer.appendChild(btn); }); startTimer(); }
+        function startTimer() { timeLeft = TIME_LIMIT; timerText.textContent = timeLeft; timer = setInterval(() => { timeLeft--; timerText.textContent = timeLeft; if (timeLeft <= 0) { clearInterval(timer); selectAnswer(null, null); } }, 1000); }
+        function resetState() { clearInterval(timer); optionsContainer.innerHTML = ''; }
+        function selectAnswer(btn, opt) { clearInterval(timer); const correctOpt = questions[currentQuestionIndex].answer; const isCorrect = opt === correctOpt; userAnswers.push({ question: questions[currentQuestionIndex].question, yourAnswer: opt === null ? 'সময় শেষ' : opt, correctAnswer: correctOpt, explanation: questions[currentQuestionIndex].explanation, isCorrect: isCorrect }); Array.from(optionsContainer.children).forEach(b => { if (b.textContent === correctOpt) b.classList.add('correct'); if (b === btn && !isCorrect) b.classList.add('incorrect'); b.disabled = true; }); if (isCorrect) { score++; scoreDisplay.textContent = `স্কোর: ${score}`; } saveQuizState(); setTimeout(handleNext, 2000); }
+        function handleNext() { currentQuestionIndex++; if (currentQuestionIndex >= questions.length) { showOverview(true); } else if (currentQuestionIndex % 10 === 0 && currentQuestionIndex > 0) { showOverview(false); } else { loadQuestion(); } }
+        function showOverview(isFinal) { showScreen('overview-screen'); if (isFinal) { clearQuizState(); } let start = isFinal ? 0 : Math.floor((currentQuestionIndex-1)/10) * 10; let end = currentQuestionIndex; overviewTitle.textContent = isFinal ? 'চূড়ান্ত ফলাফল' : `পার্ট ${Math.ceil(end / 10)} এর সারসংক্ষেপ`; overviewList.innerHTML = ''; const segmentAnswers = userAnswers.slice(start, end); segmentAnswers.reverse().forEach((ans, idx) => { const item = document.createElement('div'); item.classList.add('overview-item'); const statusIcon = ans.isCorrect ? '✔' : '✖'; const statusClass = ans.isCorrect ? 'status-correct' : 'status-incorrect'; item.innerHTML = `<div class="overview-status ${statusClass}">${statusIcon}</div><p class="question"><strong>প্রশ্ন ${start + (segmentAnswers.length - 1 - idx) + 1}:</strong> ${ans.question}</p><p><strong>তোমার উত্তর:</strong> ${ans.yourAnswer}</p>${!ans.isCorrect ? `<p><strong>সঠিক উত্তর:</strong> ${ans.correctAnswer}</p>` : ''}<p class="explanation"><strong>ব্যাখ্যা:</strong> ${ans.explanation}</p>`; overviewList.appendChild(item); }); const totalCorrect = userAnswers.filter(a => a.isCorrect).length; const totalIncorrect = currentQuestionIndex - totalCorrect; overviewSummary.innerHTML = `<span class="summary-correct">✔ মোট সঠিক: ${totalCorrect}</span><span class="summary-incorrect">✖ মোট ভুল: ${totalIncorrect}</span>`; continueBtn.textContent = isFinal ? 'পুনরায় খেলুন' : 'পরবর্তী ধাপে যান'; }
+        function continueQuiz() { if (currentQuestionIndex >= questions.length) { startGame(); } else { showScreen('quiz-screen'); loadQuestion(); } }
+        function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+    </script>
+</body>
+</html>

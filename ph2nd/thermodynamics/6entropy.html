@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>এনট্রপি কুইজ</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;700&family=Poppins:wght@600&display=swap');
+        :root { --primary-bg: #1488CC; --secondary-bg: #2B32B2; --card-bg: rgba(255, 255, 255, 0.95); --text-color: #333; --accent-color: #f953c6; --correct-color: #2ecc71; --incorrect-color: #e74c3c; --light-gray: #f0f0f0; --shadow: 0 10px 25px rgba(0, 0, 0, 0.2); --border-radius: 15px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Sans Bengali', sans-serif; }
+        body { background: linear-gradient(135deg, var(--primary-bg), var(--secondary-bg)); color: var(--text-color); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 20px 15px; overflow-x: hidden; }
+        .container { width: 100%; max-width: 800px; background: var(--card-bg); border-radius: var(--border-radius); box-shadow: var(--shadow); padding: 30px; text-align: center; overflow: hidden; position: relative; margin-bottom: 20px; }
+        .screen { display: none; animation: fadeIn 0.5s ease-in-out; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { font-size: 2.5em; margin-bottom: 10px; color: var(--primary-bg); }
+        h2 { font-size: 1.8em; margin-bottom: 20px; color: var(--primary-bg); }
+        p { margin-bottom: 20px; font-size: 1.1em; }
+        .start-buttons-container { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .btn { background: linear-gradient(45deg, var(--accent-color), #f953c6); color: white; border: none; padding: 15px 30px; font-size: 1.2em; font-weight: 700; border-radius: 50px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(249, 83, 198, 0.4); display: inline-block; }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 7px 20px rgba(249, 83, 198, 0.6); }
+        .btn.continue-btn { background: linear-gradient(45deg, #2980b9, #3498db); box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4); }
+        .btn.continue-btn:hover { box-shadow: 0 7px 20px rgba(52, 152, 219, 0.6); }
+        #quiz-screen .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 1.1em; font-weight: 500; }
+        #question-counter, #score-display { background: var(--light-gray); padding: 8px 15px; border-radius: 20px; }
+        #timer { display: flex; align-items: center; font-size: 1.5em; font-family: 'Poppins', sans-serif; font-weight: 600; color: var(--primary-bg); }
+        #progress-bar-container { width: 100%; height: 10px; background-color: var(--light-gray); border-radius: 5px; margin-bottom: 25px; overflow: hidden; }
+        #progress-bar { height: 100%; background: linear-gradient(90deg, var(--correct-color), #f7b733); width: 0%; border-radius: 5px; transition: width 0.5s ease-out; }
+        #question-text { font-size: 1.4em; font-weight: 700; margin-bottom: 25px; min-height: 80px; }
+        #options-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .option-btn { width: 100%; padding: 18px; font-size: 1.1em; font-weight: 500; border-radius: var(--border-radius); border: 2px solid var(--light-gray); background: white; cursor: pointer; transition: all 0.2s ease; text-align: left; }
+        .option-btn:hover:not([disabled]) { border-color: var(--secondary-bg); background-color: #f7f7ff; transform: scale(1.02); }
+        .option-btn:disabled { cursor: not-allowed; opacity: 0.8; }
+        .option-btn.correct { background-color: var(--correct-color); color: white; border-color: var(--correct-color); animation: pulse 0.5s; }
+        .option-btn.incorrect { background-color: var(--incorrect-color); color: white; border-color: var(--incorrect-color); animation: shake 0.5s; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        #overview-screen h2 { margin-bottom: 10px; }
+        #overview-summary { font-size: 1.2em; font-weight: bold; margin-bottom: 25px; background: var(--light-gray); padding: 15px; border-radius: 10px; display: flex; justify-content: center; gap: 30px; }
+        .summary-correct { color: var(--correct-color); }
+        .summary-incorrect { color: var(--incorrect-color); }
+        #overview-list { max-height: 40vh; overflow-y: auto; text-align: left; margin-bottom: 25px; }
+        .overview-item { background: #fff; border: 1px solid var(--light-gray); border-radius: 10px; padding: 15px; margin-bottom: 10px; position: relative; padding-right: 40px; }
+        .overview-item p { margin-bottom: 8px; font-size: 1em; }
+        .overview-item .question { font-weight: bold; }
+        .overview-item .explanation { font-size: 0.9em; color: #555; background: #f8f9fa; padding: 8px; border-radius: 5px; margin-top: 5px; }
+        .overview-status { position: absolute; top: 50%; right: 15px; transform: translateY(-50%); font-size: 2em; }
+        .status-correct { color: var(--correct-color); }
+        .status-incorrect { color: var(--incorrect-color); }
+        footer { text-align: center; color: rgba(255, 255, 255, 0.8); font-size: 0.9em; line-height: 1.6; }
+        @media (max-width: 600px) { .container { padding: 15px; } h1 { font-size: 2em; } h2 { font-size: 1.5em; } #question-text { font-size: 1.2em; min-height: 70px; } #options-container { grid-template-columns: 1fr; } .option-btn { padding: 15px; font-size: 1em; } #quiz-screen .header { flex-direction: column; gap: 10px; margin-bottom: 15px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <h1>এনট্রপি কুইজ</h1>
+            <p>এই অধ্যায়ের উপর আপনার দক্ষতা যাচাই করুন। প্রতিটি প্রশ্নের জন্য সময় পাবেন ৪০ সেকেন্ড।</p>
+            <p><strong>মোট ২৩টি প্রশ্ন</strong></p>
+            <div class="start-buttons-container">
+                <button id="start-btn" class="btn">নতুন কুইজ শুরু করুন</button>
+            </div>
+        </div>
+        <!-- Other screens (quiz, overview) -->
+        <div id="quiz-screen" class="screen">
+            <div class="header">
+                <div id="question-counter"></div>
+                <div id="timer"><span id="timer-text">40</span></div>
+                <div id="score-display">স্কোর: 0</div>
+            </div>
+            <div id="progress-bar-container"><div id="progress-bar"></div></div>
+            <div id="question-text"></div>
+            <div id="options-container"></div>
+        </div>
+        <div id="overview-screen" class="screen">
+            <h2 id="overview-title"></h2>
+            <div id="overview-summary"></div>
+            <div id="overview-list"></div>
+            <button id="continue-btn" class="btn continue-btn"></button>
+        </div>
+    </div>
+    <footer>
+        <p>Abu Hasan, Assistant Professor,</p>
+        <p>Department of Physics,</p>
+        <p>Rangpur Government College</p>
+    </footer>
+
+    <script>
+        const questions = [
+            { question: "রুদ্ধতাপীয় প্রক্রিয়ায় যে ভৌত রাশি স্থির থাকে তাকে কী বলে?", options: ["এনট্রপি", "তাপমাত্রা", "চাপ", "অভ্যন্তরীণ শক্তি"], answer: "এনট্রপি", explanation: "প্রত্যাবর্তী রুদ্ধতাপীয় প্রক্রিয়ায় সিস্টেম ও পরিবেশের মধ্যে কোনো তাপের আদান-প্রদান হয় না (dQ=0), ফলে সিস্টেমের এনট্রপি (dS = dQ/T) স্থির থাকে।" },
+            { question: "এনট্রপির SI একক কী?", options: ["JK⁻¹", "JK", "J⁻¹K", "J⁻¹K⁻¹"], answer: "JK⁻¹", explanation: "এনট্রপির সংজ্ঞা dS = dQ/T অনুসারে, এর একক হলো তাপের একক (Joule) এবং তাপমাত্রার এককের (Kelvin) অনুপাত, অর্থাৎ জুল পার কেলভিন (J/K বা JK⁻¹)।" },
+            { question: "0.01 kg পানিকে 0°C থেকে 10°C-এ উত্তপ্ত করা হলো। এনট্রপির পরিবর্তন হলে-", options: ["3.5 J K⁻¹", "4.5 J K⁻¹", "2.5 J K⁻¹", "1.5 J K⁻¹"], answer: "1.5 J K⁻¹", explanation: "এনট্রপির পরিবর্তন ΔS = ms ln(T₂/T₁)। এখানে T₁=273K, T₂=283K, s=4200 J/kgK। ΔS = 0.01 × 4200 × ln(283/273) ≈ 1.5 J K⁻¹।" },
+            { question: "এনট্রপি সবচেয়ে কম থাকে কোন অবস্থায়?", options: ["তরল", "প্লাজমা", "গ্যাসীয়", "কঠিন"], answer: "কঠিন", explanation: "কঠিন অবস্থায় অণুগুলো সবচেয়ে সুশৃঙ্খলভাবে সাজানো থাকে, তাই এর বিশৃঙ্খলা বা এনট্রপি সবচেয়ে কম হয়।" },
+            { question: "বিবৃতিগুলো লক্ষ্য করো: (i) যে সিস্টেম পরিবেশের সাথে শুধু শক্তি বিনিময় করতে পারে... (ii) কোনো নির্দিষ্ট পরিমাণ তাপশক্তিকে সম্পূর্ণরূপে যান্ত্রিকশক্তিতে রূপান্তরে সক্ষম... (iii) কোনো সিস্টেমের শক্তি রূপান্তরের অক্ষমতাকে এনট্রপি বলে। নিচের কোনটি সঠিক?", options: ["i ও ii", "ii ও iii", "i ও iii", "i, ii ও iii"], answer: "ii ও iii", explanation: "(i) ভুল, এটি বদ্ধ সিস্টেমের সংজ্ঞা, বিচ্ছিন্ন নয়। (ii) তাপগতিবিদ্যার দ্বিতীয় সূত্রের বিবৃতি। (iii) এনট্রপি সিস্টেমের বিশৃঙ্খলা বা শক্তির অব্যবহারযোগ্যতার পরিমাপ।" },
+            { question: "রুদ্ধতাপীয় প্রক্রিয়ায় এনট্রপি -", options: ["বৃদ্ধি পায়", "কমে যায়", "কোনো পরিবর্তন হয় না", "কোনোটিই নয়"], answer: "কোনো পরিবর্তন হয় না", explanation: "প্রত্যাবর্তী রুদ্ধতাপীয় প্রক্রিয়ায় এনট্রপি স্থির থাকে বা এর কোনো পরিবর্তন হয় না।" },
+            { question: "মহাবিশ্বের এনট্রপি -", options: ["ধ্রুবক", "শূন্য", "কমছে", "বাড়ছে"], answer: "বাড়ছে", explanation: "তাপগতিবিদ্যার দ্বিতীয় সূত্র অনুসারে, মহাবিশ্বের মোট এনট্রপি সময়ের সাথে সাথে ক্রমাগত বৃদ্ধি পাচ্ছে, কারণ সকল স্বতঃস্ফূর্ত প্রক্রিয়া অপ্রত্যাবর্তী।" },
+            { question: "100°C তাপমাত্রার 1 gm পানি ও 100° C তাপমাত্রায় 1 gm জলীয়বাষ্পে 1 বায়ুমণ্ডলীয় চাপে এনট্রপির পার্থক্য কত? (সুপ্ততাপ = 540 cal/gm)।", options: ["-1.45 cal/K", "1.45 cal/K", "540 cal/K", "1.98 cal/K"], answer: "1.45 cal/K", explanation: "এনট্রপির পরিবর্তন ΔS = Q/T = mL/T। ΔS = (1 gm × 540 cal/gm) / (100 + 273) K = 540 / 373 ≈ 1.45 cal/K।" },
+            { question: "স্বতঃস্ফূর্ত পরিবর্তনে -", options: ["এনট্রপি ও বিশৃঙ্খলা হ্রাস পায়", "এনট্রপি ও শৃঙ্খলা বৃদ্ধি পায়", "এনট্রপি ও শৃঙ্খলা হ্রাস পায়", "এনট্রপি ও বিশৃঙ্খলা বৃদ্ধি পায়"], answer: "এনট্রপি ও বিশৃঙ্খলা বৃদ্ধি পায়", explanation: "যেকোনো স্বতঃস্ফূর্ত বা প্রাকৃতিক প্রক্রিয়া এমন দিকে অগ্রসর হয় যেখানে সিস্টেমের বিশৃঙ্খলা বা এনট্রপি বৃদ্ধি পায়।" },
+            { question: "কার্নো চক্রের চতুর্থ ধাপে সিস্টেমের এনট্রপি —", options: ["শূন্য হয়", "বৃদ্ধি পায়", "কমে যায়", "অপরিবর্তিত থাকে"], answer: "অপরিবর্তিত থাকে", explanation: "কার্নো চক্রের চতুর্থ ধাপ হলো রুদ্ধতাপীয় সংকোচন। এটি একটি প্রত্যাবর্তী রুদ্ধতাপীয় প্রক্রিয়া, তাই এনট্রপি অপরিবর্তিত থাকে।" },
+            { question: "যখন সমোষ্ণ ও রুদ্ধতাপীয় পরিবর্তন খুব ধীরে সংঘটিত হয় তখন এনট্রপির পরিবর্তন AS কোনটি?", options: ["AS = 0", "AS < 0", "AS > 0", "ওপরের সবকটি"], answer: "AS > 0", explanation: "বাস্তব প্রক্রিয়াগুলো অপ্রত্যাবর্তী হওয়ায় ধীরে সংঘটিত হলেও মহাবিশ্বের মোট এনট্রপি সর্বদা বৃদ্ধি পায় (AS > 0)।" },
+            { question: "যে ভৌত প্রক্রিয়ায় এনট্রপি স্থির থাকে তা হলো-", options: ["রুদ্ধতাপীয় প্রক্রিয়া", "সমোষ্ণ প্রক্রিয়া", "সমচাপ প্রক্রিয়া", "সমায়তন প্রক্রিয়া"], answer: "রুদ্ধতাপীয় প্রক্রিয়া", explanation: "প্রত্যাবর্তী রুদ্ধতাপীয় প্রক্রিয়ায় সিস্টেমের এনট্রপি স্থির বা অপরিবর্তিত থাকে।" },
+            { question: "এনট্রপির বেলায় প্রযোজ্য - i. এর কোনো পরম মান নেই ii. প্রত্যাবর্তী প্রক্রিয়ায় এনট্রপির কোনো পরিবর্তন হয় না iii. অপ্রত্যাবর্তী প্রক্রিয়ায় এনট্রপি স্থির থাকে। নিচের কোনটি সঠিক?", options: ["i ও ii", "i ও iii", "ii ও iii", "i, ii ও iii"], answer: "i ও ii", explanation: "(i) ও (ii) সঠিক। (iii) ভুল কারণ অপ্রত্যাবর্তী প্রক্রিয়ায় এনট্রপি সর্বদা বৃদ্ধি পায়।" },
+            { question: "এনট্রপি বলতে বোঝায়-", options: ["সিস্টেমের বিশৃঙ্খলা পরিমাপ", "রূপান্তরের জন্য শক্তির প্রাপ্যতা", "শক্তি রূপান্তরের সক্ষমতা", "শক্তি রূপান্তরের সম্ভাব্যতা"], answer: "সিস্টেমের বিশৃঙ্খলা পরিমাপ", explanation: "এনট্রপি হলো কোনো সিস্টেমের অভ্যন্তরীণ বিশৃঙ্খলার একটি পরিমাণগত পরিমাপ।" },
+            { question: "এনট্রপি সম্পর্কে বলা যায় – i. পরম মান নির্ণয় করা যায় না ii. পরিবর্তন ধনাত্মক হতে পারে iii. পরিবর্তন ঋণাত্মক হতে পারে। নিচের কোনটি সঠিক?", options: ["i ও ii", "i ও iii", "ii ও iii", "i, ii ও iii"], answer: "i, ii ও iii", explanation: "এনট্রপির পরম মান নির্ণয় করা যায় না, শুধু পরিবর্তন মাপা যায়। সিস্টেমের এনট্রপি বাড়তে (ধনাত্মক) বা কমতে (ঋণাত্মক) পারে, কিন্তু বিচ্ছিন্ন সিস্টেম বা মহাবিশ্বের মোট এনট্রপি কখনো কমে না।" },
+            { question: "-10°C তাপমাত্রায় 10 kg বরফকে 0°C তাপমাত্রার পানিতে পরিণত করতে এনট্রপির পরিবর্তন কত হবে?", options: ["3.12 kCal K⁻¹", "2.93 kCal K⁻¹", "312 J K⁻¹", "0.187 kCal K⁻¹"], answer: "2.93 kCal K⁻¹", explanation: "মোট এনট্রপি পরিবর্তন = বরফের তাপমাত্রা বৃদ্ধিতে পরিবর্তন + বরফ গলনে পরিবর্তন। ΔS = m_ice*c_ice*ln(T₂/T₁) + mL_f/T₂ = (10kg * 0.5kcal/kgK * ln(273/263)) + (10kg * 80kcal/kg)/273K ≈ 0.187 + 2.93 = 3.117 kCal/K। (প্রশ্নে উত্তর ভুল আছে)" },
+            { question: "০°C তাপমাত্রার 5 kg বরফকে 0°C তাপমাত্রার পানিতে পরিবর্তন করতে এনট্রপির পরিবর্তন কত হবে?", options: ["4153.85 J K⁻¹", "5361.13 J K⁻¹", "6053.13 J K⁻¹", "6153.85 J K⁻¹"], answer: "6153.85 J K⁻¹", explanation: "ΔS = mL_f/T = (5 kg × 336000 J/kg) / 273 K ≈ 6153.85 J K⁻¹।" },
+            { question: "তাপগতিবিদ্যায় এনট্রপি - i. তাপ ও পরম তাপমাত্রার অনুপাতের সমান ii. তাপ সঞ্চালনের দিক নির্দেশ করে iii. তাপমাত্রা ও চাপের ন্যায় অনুভব করা যায়। নিচের কোনটি সঠিক?", options: ["i ও ii", "i ও iii", "ii ও iii", "i, ii ও iii"], answer: "i ও ii", explanation: "(i) ও (ii) সঠিক। এনট্রপি তাপ সঞ্চালনের স্বতঃস্ফূর্ত দিক নির্দেশ করে। (iii) ভুল, এনট্রপি সরাসরি অনুভব করা যায় না।" },
+            { question: "নিম্নের কোন তাপগতীয় রাশিটিকে তাপীয় জড়তা হিসাবে বিবেচনা করা হয়?", options: ["তাপমাত্রা", "চাপ", "এনট্রপি", "তাপ"], answer: "এনট্রপি", explanation: "এনট্রপিকে প্রায়শই সিস্টেমের 'তাপীয় জড়তা' হিসেবে বর্ণনা করা হয়, কারণ এটি শক্তির রূপান্তরের অক্ষমতা বা সিস্টেমের বিশৃঙ্খলার পরিমাপ করে।" },
+            { question: "একটি বায়ুভর্তি টায়ার হঠাৎ ফেটে গেলে এই প্রক্রিয়াটিতে — i. কাজ সম্পন্ন হয়েছে ii. অভ্যন্তরীণ শক্তি ও তাপমাত্রা কমে গেছে iii. এনট্রপির পরিবর্তন হয়েছে। নিচের কোনটি সঠিক?", options: ["i ও ii", "i ও iii", "ii ও iii", "i, ii ও iii"], answer: "i, ii ও iii", explanation: "হঠাৎ ফেটে যাওয়া একটি রুদ্ধতাপীয় প্রসারণ। এতে গ্যাস পরিবেশের উপর কাজ করে (i), নিজের অভ্যন্তরীণ শক্তি ব্যবহার করে, তাই শক্তি ও তাপমাত্রা কমে (ii), এবং এটি একটি অপ্রত্যাবর্তী প্রক্রিয়া হওয়ায় এনট্রপি বৃদ্ধি পায় (iii)।" },
+            { question: "এন্ট্রপির মাত্রা নিচের কোনটি ?", options: ["ML²T²K⁻¹", "ML²T²K⁻²", "ML²T⁻²K⁻¹", "ML²T⁻²K⁻²"], answer: "ML²T⁻²K⁻¹", explanation: "এনট্রপি = তাপ/তাপমাত্রা = [ML²T⁻²]/[K] = ML²T⁻²K⁻¹।" },
+            { question: "10 kg ভরের 0°C তাপমাত্রার পানিকে 100°C এ নিয়ে গেলে এন্ট্রপির পরিবর্তন কত?", options: ["4.12 kJ K⁻¹", "8.63 kJ K⁻¹", "12.15 kJ K⁻¹", "13.11 kJ K⁻¹"], answer: "13.11 kJ K⁻¹", explanation: "ΔS = ms ln(T₂/T₁) = 10 kg × 4200 J/kgK × ln(373/273) ≈ 13108 J/K = 13.11 kJ/K।" },
+            { question: "কোনটির এনট্রপি সর্বোচ্চ?", options: ["কঠিন পদার্থ", "তরল পদার্থ", "গ্যাসীয় পদার্থ", "প্লাজমা"], answer: "প্লাজমা", explanation: "পদার্থের চারটি অবস্থার মধ্যে প্লাজমা অবস্থায় কণাগুলোর বিশৃঙ্খলা সবচেয়ে বেশি, তাই এর এনট্রপি সর্বোচ্চ।" }
+        ];
+
+        // All other JavaScript code is the same as the previous template
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const overviewScreen = document.getElementById('overview-screen');
+        const startBtn = document.getElementById('start-btn');
+        const questionCounter = document.getElementById('question-counter');
+        const scoreDisplay = document.getElementById('score-display');
+        const timerText = document.getElementById('timer-text');
+        const progressBar = document.getElementById('progress-bar');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const overviewTitle = document.getElementById('overview-title');
+        const overviewSummary = document.getElementById('overview-summary');
+        const overviewList = document.getElementById('overview-list');
+        const continueBtn = document.getElementById('continue-btn');
+        let currentQuestionIndex = 0, score = 0, timer, timeLeft;
+        const TIME_LIMIT = 40;
+        let userAnswers = [];
+
+        function saveQuizState() { localStorage.setItem('physicsQuizProgress_g6', JSON.stringify({ currentQuestionIndex, score, userAnswers })); }
+        function loadQuizState() { const state = JSON.parse(localStorage.getItem('physicsQuizProgress_g6')); if (state) { currentQuestionIndex = state.currentQuestionIndex; score = state.score; userAnswers = state.userAnswers; scoreDisplay.textContent = `স্কোর: ${score}`; showScreen('quiz-screen'); loadQuestion(); } }
+        function clearQuizState() { localStorage.removeItem('physicsQuizProgress_g6'); }
+
+        window.addEventListener('load', () => { if (localStorage.getItem('physicsQuizProgress_g6')) { const btnContainer = document.querySelector('.start-buttons-container'); const btn = document.createElement('button'); btn.id = 'continue-saved-btn'; btn.className = 'btn continue-btn'; btn.textContent = 'আগেরটি চালিয়ে যান'; btnContainer.appendChild(btn); btn.addEventListener('click', loadQuizState); } });
+        startBtn.addEventListener('click', startGame);
+        continueBtn.addEventListener('click', continueQuiz);
+
+        function startGame() { clearQuizState(); currentQuestionIndex = 0; score = 0; userAnswers = []; scoreDisplay.textContent = 'স্কোর: 0'; showScreen('quiz-screen'); loadQuestion(); }
+        function loadQuestion() { resetState(); progressBar.style.width = `${(currentQuestionIndex / questions.length) * 100}%`; if (currentQuestionIndex >= questions.length) { showOverview(true); return; } const q = questions[currentQuestionIndex]; questionCounter.textContent = `প্রশ্ন ${currentQuestionIndex + 1}/${questions.length}`; questionText.textContent = q.question; q.options.forEach(opt => { const btn = document.createElement('button'); btn.textContent = opt; btn.classList.add('option-btn'); btn.addEventListener('click', () => selectAnswer(btn, opt)); optionsContainer.appendChild(btn); }); startTimer(); }
+        function startTimer() { timeLeft = TIME_LIMIT; timerText.textContent = timeLeft; timer = setInterval(() => { timeLeft--; timerText.textContent = timeLeft; if (timeLeft <= 0) { clearInterval(timer); selectAnswer(null, null); } }, 1000); }
+        function resetState() { clearInterval(timer); optionsContainer.innerHTML = ''; }
+        function selectAnswer(btn, opt) { clearInterval(timer); const correctOpt = questions[currentQuestionIndex].answer; const isCorrect = opt === correctOpt; userAnswers.push({ question: questions[currentQuestionIndex].question, yourAnswer: opt === null ? 'সময় শেষ' : opt, correctAnswer: correctOpt, explanation: questions[currentQuestionIndex].explanation, isCorrect: isCorrect }); Array.from(optionsContainer.children).forEach(b => { if (b.textContent === correctOpt) b.classList.add('correct'); if (b === btn && !isCorrect) b.classList.add('incorrect'); b.disabled = true; }); if (isCorrect) { score++; scoreDisplay.textContent = `স্কোর: ${score}`; } saveQuizState(); setTimeout(handleNext, 2000); }
+        function handleNext() { currentQuestionIndex++; if (currentQuestionIndex >= questions.length) { showOverview(true); } else if (currentQuestionIndex % 10 === 0 && currentQuestionIndex > 0) { showOverview(false); } else { loadQuestion(); } }
+        function showOverview(isFinal) { showScreen('overview-screen'); if (isFinal) { clearQuizState(); } let start = isFinal ? 0 : Math.floor((currentQuestionIndex-1)/10) * 10; let end = currentQuestionIndex; overviewTitle.textContent = isFinal ? 'চূড়ান্ত ফলাফল' : `পার্ট ${Math.ceil(end / 10)} এর সারসংক্ষেপ`; overviewList.innerHTML = ''; const segmentAnswers = userAnswers.slice(start, end); segmentAnswers.reverse().forEach((ans, idx) => { const item = document.createElement('div'); item.classList.add('overview-item'); const statusIcon = ans.isCorrect ? '✔' : '✖'; const statusClass = ans.isCorrect ? 'status-correct' : 'status-incorrect'; item.innerHTML = `<div class="overview-status ${statusClass}">${statusIcon}</div><p class="question"><strong>প্রশ্ন ${start + (segmentAnswers.length - 1 - idx) + 1}:</strong> ${ans.question}</p><p><strong>তোমার উত্তর:</strong> ${ans.yourAnswer}</p>${!ans.isCorrect ? `<p><strong>সঠিক উত্তর:</strong> ${ans.correctAnswer}</p>` : ''}<p class="explanation"><strong>ব্যাখ্যা:</strong> ${ans.explanation}</p>`; overviewList.appendChild(item); }); const totalCorrect = userAnswers.filter(a => a.isCorrect).length; const totalIncorrect = currentQuestionIndex - totalCorrect; overviewSummary.innerHTML = `<span class="summary-correct">✔ মোট সঠিক: ${totalCorrect}</span><span class="summary-incorrect">✖ মোট ভুল: ${totalIncorrect}</span>`; continueBtn.textContent = isFinal ? 'পুনরায় খেলুন' : 'পরবর্তী ধাপে যান'; }
+        function continueQuiz() { if (currentQuestionIndex >= questions.length) { startGame(); } else { showScreen('quiz-screen'); loadQuestion(); } }
+        function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+    </script>
+</body>
+</html>

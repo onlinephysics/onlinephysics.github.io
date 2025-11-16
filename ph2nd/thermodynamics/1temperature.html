@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>তাপমাত্রা কুইজ</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;700&family=Poppins:wght@600&display=swap');
+        :root { --primary-bg: #1488CC; --secondary-bg: #2B32B2; --card-bg: rgba(255, 255, 255, 0.95); --text-color: #333; --accent-color: #f953c6; --correct-color: #2ecc71; --incorrect-color: #e74c3c; --light-gray: #f0f0f0; --shadow: 0 10px 25px rgba(0, 0, 0, 0.2); --border-radius: 15px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Sans Bengali', sans-serif; }
+        body { background: linear-gradient(135deg, var(--primary-bg), var(--secondary-bg)); color: var(--text-color); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 20px 15px; overflow-x: hidden; }
+        .container { width: 100%; max-width: 800px; background: var(--card-bg); border-radius: var(--border-radius); box-shadow: var(--shadow); padding: 30px; text-align: center; overflow: hidden; position: relative; margin-bottom: 20px; }
+        .screen { display: none; animation: fadeIn 0.5s ease-in-out; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { font-size: 2.5em; margin-bottom: 10px; color: var(--primary-bg); }
+        h2 { font-size: 1.8em; margin-bottom: 20px; color: var(--primary-bg); }
+        p { margin-bottom: 20px; font-size: 1.1em; }
+        .start-buttons-container { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .btn { background: linear-gradient(45deg, var(--accent-color), #f953c6); color: white; border: none; padding: 15px 30px; font-size: 1.2em; font-weight: 700; border-radius: 50px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(249, 83, 198, 0.4); display: inline-block; }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 7px 20px rgba(249, 83, 198, 0.6); }
+        .btn.continue-btn { background: linear-gradient(45deg, #2980b9, #3498db); box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4); }
+        .btn.continue-btn:hover { box-shadow: 0 7px 20px rgba(52, 152, 219, 0.6); }
+        #quiz-screen .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 1.1em; font-weight: 500; }
+        #question-counter, #score-display { background: var(--light-gray); padding: 8px 15px; border-radius: 20px; }
+        #timer { display: flex; align-items: center; font-size: 1.5em; font-family: 'Poppins', sans-serif; font-weight: 600; color: var(--primary-bg); }
+        #progress-bar-container { width: 100%; height: 10px; background-color: var(--light-gray); border-radius: 5px; margin-bottom: 25px; overflow: hidden; }
+        #progress-bar { height: 100%; background: linear-gradient(90deg, var(--correct-color), #f7b733); width: 0%; border-radius: 5px; transition: width 0.5s ease-out; }
+        #question-text { font-size: 1.4em; font-weight: 700; margin-bottom: 25px; min-height: 80px; }
+        #options-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .option-btn { width: 100%; padding: 18px; font-size: 1.1em; font-weight: 500; border-radius: var(--border-radius); border: 2px solid var(--light-gray); background: white; cursor: pointer; transition: all 0.2s ease; text-align: left; }
+        .option-btn:hover:not([disabled]) { border-color: var(--secondary-bg); background-color: #f7f7ff; transform: scale(1.02); }
+        .option-btn:disabled { cursor: not-allowed; opacity: 0.8; }
+        .option-btn.correct { background-color: var(--correct-color); color: white; border-color: var(--correct-color); animation: pulse 0.5s; }
+        .option-btn.incorrect { background-color: var(--incorrect-color); color: white; border-color: var(--incorrect-color); animation: shake 0.5s; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        #overview-screen h2 { margin-bottom: 10px; }
+        #overview-summary { font-size: 1.2em; font-weight: bold; margin-bottom: 25px; background: var(--light-gray); padding: 15px; border-radius: 10px; display: flex; justify-content: center; gap: 30px; }
+        .summary-correct { color: var(--correct-color); }
+        .summary-incorrect { color: var(--incorrect-color); }
+        #overview-list { max-height: 40vh; overflow-y: auto; text-align: left; margin-bottom: 25px; }
+        .overview-item { background: #fff; border: 1px solid var(--light-gray); border-radius: 10px; padding: 15px; margin-bottom: 10px; position: relative; padding-right: 40px; }
+        .overview-item p { margin-bottom: 8px; font-size: 1em; }
+        .overview-item .question { font-weight: bold; }
+        .overview-item .explanation { font-size: 0.9em; color: #555; background: #f8f9fa; padding: 8px; border-radius: 5px; margin-top: 5px; }
+        .overview-status { position: absolute; top: 50%; right: 15px; transform: translateY(-50%); font-size: 2em; }
+        .status-correct { color: var(--correct-color); }
+        .status-incorrect { color: var(--incorrect-color); }
+        footer { text-align: center; color: rgba(255, 255, 255, 0.8); font-size: 0.9em; line-height: 1.6; }
+        @media (max-width: 600px) { .container { padding: 15px; } h1 { font-size: 2em; } h2 { font-size: 1.5em; } #question-text { font-size: 1.2em; min-height: 70px; } #options-container { grid-template-columns: 1fr; } .option-btn { padding: 15px; font-size: 1em; } #quiz-screen .header { flex-direction: column; gap: 10px; margin-bottom: 15px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <h1>তাপমাত্রা কুইজ</h1>
+            <p>এই অধ্যায়ের উপর আপনার দক্ষতা যাচাই করুন। প্রতিটি প্রশ্নের জন্য সময় পাবেন ৪০ সেকেন্ড।</p>
+            <p><strong>মোট ২৮টি প্রশ্ন</strong></p>
+            <div class="start-buttons-container">
+                <button id="start-btn" class="btn">নতুন কুইজ শুরু করুন</button>
+            </div>
+        </div>
+        <!-- Other screens (quiz, overview) -->
+        <div id="quiz-screen" class="screen">
+            <div class="header">
+                <div id="question-counter"></div>
+                <div id="timer"><span id="timer-text">40</span></div>
+                <div id="score-display">স্কোর: 0</div>
+            </div>
+            <div id="progress-bar-container"><div id="progress-bar"></div></div>
+            <div id="question-text"></div>
+            <div id="options-container"></div>
+        </div>
+        <div id="overview-screen" class="screen">
+            <h2 id="overview-title"></h2>
+            <div id="overview-summary"></div>
+            <div id="overview-list"></div>
+            <button id="continue-btn" class="btn continue-btn"></button>
+        </div>
+    </div>
+    <footer>
+        <p>Abu Hasan, Assistant Professor,</p>
+        <p>Department of Physics,</p>
+        <p>Rangpur Government College</p>
+    </footer>
+
+    <script>
+        const questions = [
+            { question: "তিনটি বস্তু তাপীয় সাম্যাবস্থায় থাকলে নিচের কোন রাশিটি একই হবে?", options: ["ভর", "বিভবশক্তি", "অভ্যন্তরীণ শক্তি", "তাপমাত্রা"], answer: "তাপমাত্রা", explanation: "তাপগতিবিদ্যার শূন্যতম সূত্র অনুসারে, একাধিক বস্তু তাপীয় সাম্যাবস্থায় থাকলে তাদের তাপমাত্রা একই থাকে।" },
+            { question: "একটি পদার্থের তাপমাত্রিক ধর্ম – (i) চাপের সমানুপাতিক (ii) আয়তনের সমানুপাতিক (iii) তাপমাত্রার সাথে পরিবর্তিত হয়। নিচের কোনটি সঠিক?", options: ["i", "ii", "iii", "i ও ii"], answer: "iii", explanation: "তাপমাত্রিক ধর্ম হলো পদার্থের এমন একটি বৈশিষ্ট্য যা তাপমাত্রার পরিবর্তনের সাথে সুষমভাবে পরিবর্তিত হয় এবং এই পরিবর্তনকে তাপমাত্রা পরিমাপের জন্য ব্যবহার করা হয়।" },
+            { question: "তাপগতিবিদ্যার কোন সূত্রকে ভিত্তি করে থার্মোমিটার তৈরি করা হয়?", options: ["শূন্যতম", "প্রথম", "দ্বিতীয়", "তৃতীয়"], answer: "শূন্যতম", explanation: "তাপগতিবিদ্যার শূন্যতম সূত্র তাপীয় সাম্যাবস্থা এবং তাপমাত্রার ধারণা দেয়, যা থার্মোমিটার তৈরির মূল ভিত্তি।" },
+            { question: "যে তাপমাত্রায় প্রমাণ চাপে বিশুদ্ধ বরফ গলতে শুরু করে তাকে বলা হয় –", options: ["ঊর্ধ্বস্থিরবিন্দু", "নিম্নস্থিরবিন্দু", "স্টিমবিন্দু", "ত্রৈধবিন্দু"], answer: "নিম্নস্থিরবিন্দু", explanation: "প্রমাণ চাপে যে তাপমাত্রায় বিশুদ্ধ বরফ গলে পানিতে পরিণত হয়, তাকে নিম্নস্থিরাঙ্ক বা বরফবিন্দু বলা হয়।" },
+            { question: "যে স্কেলে বরফবিন্দুকে ০° এবং স্টিমবিন্দুকে 100° ধরে মধ্যবর্তী মৌলিক ব্যবধানকে 100 ভাগে ভাগ করা হয় তাকে বলা হয় -", options: ["ফারেনহাইট স্কেল", "কেলভিন স্কেল", "সেলসিয়াস স্কেল", "আন্তর্জাতিক স্কেল"], answer: "সেলসিয়াস স্কেল", explanation: "সেলসিয়াস স্কেলে বরফবিন্দুকে 0°C এবং স্টিমবিন্দুকে 100°C ধরা হয়।" },
+            { question: "এক স্থিরবিন্দু পদ্ধতিতে তাপমাত্রা পরিমাপের মূলনীতি ব্যবহৃত হয় নিম্নের কোন স্কেলে?", options: ["সেলসিয়াস", "রোমার", "কেলভিন", "ফারেনহাইট"], answer: "কেলভিন", explanation: "কেলভিন স্কেল পানির ত্রৈধবিন্দুকে (273.16 K) একমাত্র স্থিরবিন্দু বা প্রমাণ বিন্দু হিসেবে ব্যবহার করে তাপমাত্রা পরিমাপ করে।" },
+            { question: "পানির ত্রৈধবিন্দুর তাপমাত্রা ধরা হয় -", options: ["273 K", "273.16 K", "273.15 K", "0°C"], answer: "273.16 K", explanation: "সংজ্ঞানুসারে, পানির ত্রৈধবিন্দুর তাপমাত্রা হলো 273.16 K। এই তাপমাত্রায় পানি তিনটি অবস্থাতেই (কঠিন, তরল, গ্যাসীয়) সাম্যাবস্থায় থাকে।" },
+            { question: "এক কেলভিন পানির ত্রৈধবিন্দুর তাপমাত্রার কত ভগ্নাংশ?", options: ["1/273", "1/273.15", "1/273.16", "এর কোনোটিই নয়"], answer: "1/273.16", explanation: "কেলভিনের সংজ্ঞা অনুসারে, 1 কেলভিন হলো পানির ত্রৈধবিন্দুর তাপমাত্রার 1/273.16 অংশ।" },
+            { question: "পানির ত্রৈধবিন্দুর তাপমাত্রার ওপর নির্ভর করে পরমশূন্য তাপমাত্রা কত?", options: ["0°C", "0 K", "273°C", "273 K"], answer: "0 K", explanation: "পরমশূন্য তাপমাত্রা হলো সর্বনিম্ন সম্ভাব্য তাপমাত্রা, যা কেলভিন স্কেলে 0 K। এর মান সেলসিয়াস স্কেলে -273.15°C।" },
+            { question: "পানির ত্রৈধবিন্দুর ওপর ভিত্তি করে বরফবিন্দুর তাপমাত্রা কত?", options: ["273 K", "273.16 K", "273.15 K", "373 K"], answer: "273.15 K", explanation: "পানির ত্রৈধবিন্দু (273.16 K) এবং বরফবিন্দু (0°C বা 273.15 K) প্রায় কাছাকাছি হলেও এদের মধ্যে 0.01 K এর পার্থক্য রয়েছে।" },
+            { question: "পানির ত্রৈধবিন্দুর ওপর ভিত্তি করে স্টিমবিন্দুর তাপমাত্রা কত ?", options: ["373 K", "373.15 K", "273.15 K", "273 K"], answer: "373.15 K", explanation: "স্টিমবিন্দু হলো 100°C। কেলভিনে এর মান T(K) = t(°C) + 273.15 = 100 + 273.15 = 373.15 K।" },
+            { question: "ফারেনহাইট স্কেলে পানির ত্রৈধবিন্দুর তাপমাত্রা হলো –", options: ["0° F", "32° F", "273° F", "273.16° F"], answer: "32° F", explanation: "পানির ত্রৈধবিন্দু 0.01°C বা 273.16 K। ফারেনহাইটে রূপান্তর করলে এটি প্রায় 32.02°F হয়, যা বিকল্পগুলোর মধ্যে 32° F এর সবচেয়ে কাছাকাছি।" },
+            { question: "501.85° C তাপমাত্রার সমতুল্য থার্মোডায়নামিক তাপমাত্রা কত ?", options: ["775.01 K", "774.85 K", "775.00 K", "228.85 K"], answer: "775.01 K", explanation: "থার্মোডায়নামিক বা কেলভিন তাপমাত্রা T(K) = t(°C) + 273.16। সুতরাং, T = 501.85 + 273.16 = 775.01 K।" },
+            { question: "কোনো তাপমান যন্ত্র 0° C তাপমাত্রায় 0.5° C পাঠ দেয় এবং 100°C তাপমাত্রায় 100.8° C পাঠ দেয়। 26° C তাপমাত্রায় যন্ত্রটি কত পাঠ দিবে?", options: ["25° C", "27° C", "26.57° C", "কোনোটিই নয়"], answer: "26.57° C", explanation: "ত্রুটিপূর্ণ স্কেলের সূত্র (θ-θ_ice)/(θ_steam-θ_ice) = (C-0)/(100-0) ব্যবহার করে, (θ-0.5)/(100.8-0.5) = 26/100 সমাধান করলে θ ≈ 26.57°C পাওয়া যায়।" },
+            { question: "কোন তাপমাত্রায় সেলসিয়াস ও ফারেনহাইট স্কেলে একই পাঠ পাওয়া যাবে?", options: ["-40°", "40°", "4°", "-30°"], answer: "-40°", explanation: "C/5 = (F-32)/9 সূত্রে C=F=x বসিয়ে সমাধান করলে x = -40 পাওয়া যায়। অর্থাৎ -40°C = -40°F।" },
+            { question: "কোন তাপমাত্রায় ফারেনহাইট ও কেলভিন স্কেলে একই পাঠ পাওয়া যাবে?", options: ["574.25°", "577.25°", "570.25°", "579.25°"], answer: "574.25°", explanation: "(K-273)/5 = (F-32)/9 সূত্রে K=F=x বসিয়ে সমাধান করলে x ≈ 574.25 পাওয়া যায়।" },
+            { question: "একটি বস্তুর তাপমাত্রা 9 মিনিটে 50°C থেকে 35°C-এ নেমে আসে। ফারেনহাইট স্কেলে তাপমাত্রা নেমে আসার হার কত?", options: ["0.03° F s⁻¹", "0.04° F s⁻¹", "0.05° F s⁻¹", "0.06° F s⁻¹"], answer: "0.05° F s⁻¹", explanation: "সেলসিয়াসে তাপমাত্রা পরিবর্তন ΔC = 50-35 = 15°C। ফারেনহাইটে পরিবর্তন ΔF = (9/5)ΔC = (9/5)×15 = 27°F। সময় t = 9 min = 540 s। হার = ΔF/t = 27/540 = 0.05° F s⁻¹।" },
+            { question: "পানিকে 70° C থেকে 1°C-এ ঠাণ্ডা করলে কী ঘটে?", options: ["এটি শুধুমাত্র সংকুচিত হয়", "এটি শুধুমাত্র প্রসারিত হয়", "এটি প্রথমে সংকুচিত হয় ও পরে প্রসারিত হয়", "এটি প্রথমে প্রসারিত হয় ও পরে সংকুচিত হয়"], answer: "এটি প্রথমে সংকুচিত হয় ও পরে প্রসারিত হয়", explanation: "পানির ব্যতিক্রান্ত প্রসারণের কারণে, 4°C তাপমাত্রায় এর ঘনত্ব সর্বোচ্চ হয়। তাই 70°C থেকে 4°C পর্যন্ত ঠাণ্ডা করলে এটি সংকুচিত হয় এবং 4°C থেকে 1°C পর্যন্ত ঠাণ্ডা করলে এটি প্রসারিত হয়।" },
+            { question: "পানিভর্তি গ্লাসে একটুকরো বরফ ভাসমান রয়েছে। বরফ গলার পর পানির লেভেল-", options: ["ওপরে ওঠবে", "নিচে নামবে", "একই থাকবে", "প্রথমে ওপরে ওঠবে পরে নিচে নামবে"], answer: "একই থাকবে", explanation: "আর্কিমিডিসের নীতি অনুসারে, ভাসমান বস্তু তার নিজের ওজনের সমান পানি অপসারণ করে। বরফ গলে যে আয়তনের পানি তৈরি করে, তা ঠিক অপসারিত পানির আয়তনের সমান। তাই পানির স্তর অপরিবর্তিত থাকে।" },
+            { question: "তাপমাত্রার স্কেল পরিবর্তনের ক্ষেত্রে নিচের কোনটি সঠিক নয়?", options: ["1° C = 9/5 °F", "1°C = 4/5 K", "1°F = 5/9 °C", "1 K = 0°C"], answer: "1°C = 4/5 K", explanation: "তাপমাত্রার *পরিবর্তন* এর ক্ষেত্রে ΔC = ΔK, অর্থাৎ 1°C পরিবর্তন 1 K পরিবর্তনের সমান। 1°C = 4/5 K সম্পর্কটি ভুল।" },
+            { question: "সেলসিয়াস স্কেলে 98.5° ফারেনহাইট তাপমাত্রার মান কত?", options: ["45.456° C", "35.944°C", "36.544° C", "36.944° C"], answer: "36.944° C", explanation: "C = (5/9) × (F - 32) সূত্র ব্যবহার করে, C = (5/9) × (98.5 - 32) = (5/9) × 66.5 ≈ 36.944°C।" },
+            { question: "পরমশূন্য তাপমাত্রা হচ্ছে মাইনাস —", options: ["273.15° C", "273.25° C", "273.45° C", "273.35° C"], answer: "273.15° C", explanation: "পরমশূন্য তাপমাত্রা (0 K) সেলসিয়াস স্কেলে -273.15°C এর সমান।" },
+            { question: "পানির ত্রৈধবিন্দুতে mmHg-এককে চাপ এবং K-এককে তাপমাত্রা যথাক্রমে-", options: ["4.58, 273.15", "4.58, 273.16", "4.58, 273.0", "5.58, 0"], answer: "4.58, 273.16", explanation: "সংজ্ঞানুসারে, পানির ত্রৈধবিন্দু হলো সেই তাপমাত্রা (273.16 K) এবং চাপ (4.58 mmHg) যেখানে বরফ, পানি ও জলীয়বাষ্প সাম্যাবস্থায় থাকে।" },
+            { question: "98.6° F তাপমাত্রার সমতুল্য থার্মোডায়নামিক তাপমাত্রা কত ?", options: ["310.16 K", "345.16 K", "393.16 K", "408.16 K"], answer: "310.16 K", explanation: "প্রথমে ফারেনহাইটকে সেলসিয়াসে রূপান্তর করুন: C = (5/9)(98.6 - 32) = 37°C। তারপর কেলভিনে রূপান্তর করুন: K = C + 273.16 = 37 + 273.16 = 310.16 K।" },
+            { question: "থার্মোমিতির মূল সমীকরণ নিচের কোনটি?", options: ["(N / (θ - θ_ice)) = (Xθ - X_ice) / (X_steam - X_ice)", "(θ - θ_ice) / N = (Xθ - X_ice) / (X_steam - X_ice)", "(N / (θ - θ_ice)) = (X_steam - X_ice) / (Xθ - X_ice)", "(θ - θ_ice) / N = (X_steam - X_ice) / (Xθ - X_ice)"], answer: "(θ - θ_ice) / N = (Xθ - X_ice) / (X_steam - X_ice)", explanation: "থার্মোমিতির মূলনীতি হলো তাপমাত্রার পরিবর্তন তাপমাত্রিক ধর্মের পরিবর্তনের সমানুপাতিক। দুই বিন্দুর স্কেলের জন্য সঠিক সম্পর্কটি হলো (খ)।" },
+            { question: "ফারেনহাইট স্কেলের কোন তাপমাত্রা সেলসিয়াস স্কেলের পাঠের দ্বিগুণ হয়?", options: ["12.31°", "22.15°", "160.00°", "288.00°"], answer: "160.00°", explanation: "প্রশ্নমতে F = 2C। C/5 = (F-32)/9 সমীকরণে F=2C বসিয়ে পাই C/5 = (2C-32)/9, যা সমাধান করলে C=160° পাওয়া যায়।" },
+            { question: "একজন রোগীর দেহের তাপমাত্রা একটি ত্রুটিপূর্ণ থার্মোমিটারের সাহায্যে মেপে 45°C পাওয়া গেল। যদি এ থার্মোমিটারের বরফবিন্দু ও বাষ্পবিন্দু যথাক্রমে 3°C এবং 107°C পাওয়া যায়, তাহলে রোগীর দেহের প্রকৃত তাপমাত্রা ফারেনহাইট স্কেলে কত?", options: ["124.69°F", "100.69°F", "104.69°F", "102.59°F"], answer: "104.69°F", explanation: "প্রথমে প্রকৃত সেলসিয়াস তাপমাত্রা বের করতে হবে: (C-0)/(100-0) = (45-3)/(107-3)। সমাধান করলে C = 40.38°C। এখন ফারেনহাইটে রূপান্তর করুন: F = (9/5)C + 32 = (9/5)×40.38 + 32 ≈ 104.69°F।" },
+            { question: "ফারেনহাইট স্কেলে মৌলিক ব্যবধানকে কয়ভাগে ভাগ করা হয়েছে?", options: ["32", "100", "180", "212"], answer: "180", explanation: "ফারেনহাইট স্কেলে বরফবিন্দু 32°F এবং স্টিমবিন্দু 212°F। সুতরাং, মৌলিক ব্যবধান হলো 212 - 32 = 180 ভাগ।" }
+        ];
+
+        // All other JavaScript code is the same as the previous template
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const overviewScreen = document.getElementById('overview-screen');
+        const startBtn = document.getElementById('start-btn');
+        const questionCounter = document.getElementById('question-counter');
+        const scoreDisplay = document.getElementById('score-display');
+        const timerText = document.getElementById('timer-text');
+        const progressBar = document.getElementById('progress-bar');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const overviewTitle = document.getElementById('overview-title');
+        const overviewSummary = document.getElementById('overview-summary');
+        const overviewList = document.getElementById('overview-list');
+        const continueBtn = document.getElementById('continue-btn');
+        let currentQuestionIndex = 0, score = 0, timer, timeLeft;
+        const TIME_LIMIT = 40;
+        let userAnswers = [];
+
+        function saveQuizState() { localStorage.setItem('physicsQuizProgress_g1', JSON.stringify({ currentQuestionIndex, score, userAnswers })); }
+        function loadQuizState() { const state = JSON.parse(localStorage.getItem('physicsQuizProgress_g1')); if (state) { currentQuestionIndex = state.currentQuestionIndex; score = state.score; userAnswers = state.userAnswers; scoreDisplay.textContent = `স্কোর: ${score}`; showScreen('quiz-screen'); loadQuestion(); } }
+        function clearQuizState() { localStorage.removeItem('physicsQuizProgress_g1'); }
+
+        window.addEventListener('load', () => { if (localStorage.getItem('physicsQuizProgress_g1')) { const btnContainer = document.querySelector('.start-buttons-container'); const btn = document.createElement('button'); btn.id = 'continue-saved-btn'; btn.className = 'btn continue-btn'; btn.textContent = 'আগেরটি চালিয়ে যান'; btnContainer.appendChild(btn); btn.addEventListener('click', loadQuizState); } });
+        startBtn.addEventListener('click', startGame);
+        continueBtn.addEventListener('click', continueQuiz);
+
+        function startGame() { clearQuizState(); currentQuestionIndex = 0; score = 0; userAnswers = []; scoreDisplay.textContent = 'স্কোর: 0'; showScreen('quiz-screen'); loadQuestion(); }
+        function loadQuestion() { resetState(); progressBar.style.width = `${(currentQuestionIndex / questions.length) * 100}%`; if (currentQuestionIndex >= questions.length) { showOverview(true); return; } const q = questions[currentQuestionIndex]; questionCounter.textContent = `প্রশ্ন ${currentQuestionIndex + 1}/${questions.length}`; questionText.textContent = q.question; q.options.forEach(opt => { const btn = document.createElement('button'); btn.textContent = opt; btn.classList.add('option-btn'); btn.addEventListener('click', () => selectAnswer(btn, opt)); optionsContainer.appendChild(btn); }); startTimer(); }
+        function startTimer() { timeLeft = TIME_LIMIT; timerText.textContent = timeLeft; timer = setInterval(() => { timeLeft--; timerText.textContent = timeLeft; if (timeLeft <= 0) { clearInterval(timer); selectAnswer(null, null); } }, 1000); }
+        function resetState() { clearInterval(timer); optionsContainer.innerHTML = ''; }
+        function selectAnswer(btn, opt) { clearInterval(timer); const correctOpt = questions[currentQuestionIndex].answer; const isCorrect = opt === correctOpt; userAnswers.push({ question: questions[currentQuestionIndex].question, yourAnswer: opt === null ? 'সময় শেষ' : opt, correctAnswer: correctOpt, explanation: questions[currentQuestionIndex].explanation, isCorrect: isCorrect }); Array.from(optionsContainer.children).forEach(b => { if (b.textContent === correctOpt) b.classList.add('correct'); if (b === btn && !isCorrect) b.classList.add('incorrect'); b.disabled = true; }); if (isCorrect) { score++; scoreDisplay.textContent = `স্কোর: ${score}`; } saveQuizState(); setTimeout(handleNext, 2000); }
+        function handleNext() { currentQuestionIndex++; if (currentQuestionIndex >= questions.length) { showOverview(true); } else if (currentQuestionIndex % 10 === 0 && currentQuestionIndex > 0) { showOverview(false); } else { loadQuestion(); } }
+        function showOverview(isFinal) { showScreen('overview-screen'); if (isFinal) { clearQuizState(); } let start = isFinal ? 0 : Math.floor((currentQuestionIndex-1)/10) * 10; let end = currentQuestionIndex; overviewTitle.textContent = isFinal ? 'চূড়ান্ত ফলাফল' : `পার্ট ${end / 10} এর সারসংক্ষেপ`; overviewList.innerHTML = ''; const segmentAnswers = userAnswers.slice(start, end); segmentAnswers.reverse().forEach((ans, idx) => { const item = document.createElement('div'); item.classList.add('overview-item'); const statusIcon = ans.isCorrect ? '✔' : '✖'; const statusClass = ans.isCorrect ? 'status-correct' : 'status-incorrect'; item.innerHTML = `<div class="overview-status ${statusClass}">${statusIcon}</div><p class="question"><strong>প্রশ্ন ${start + (segmentAnswers.length - 1 - idx) + 1}:</strong> ${ans.question}</p><p><strong>তোমার উত্তর:</strong> ${ans.yourAnswer}</p>${!ans.isCorrect ? `<p><strong>সঠিক উত্তর:</strong> ${ans.correctAnswer}</p>` : ''}<p class="explanation"><strong>ব্যাখ্যা:</strong> ${ans.explanation}</p>`; overviewList.appendChild(item); }); const totalCorrect = userAnswers.filter(a => a.isCorrect).length; const totalIncorrect = currentQuestionIndex - totalCorrect; overviewSummary.innerHTML = `<span class="summary-correct">✔ মোট সঠিক: ${totalCorrect}</span><span class="summary-incorrect">✖ মোট ভুল: ${totalIncorrect}</span>`; continueBtn.textContent = isFinal ? 'পুনরায় খেলুন' : 'পরবর্তী ধাপে যান'; }
+        function continueQuiz() { if (currentQuestionIndex >= questions.length) { startGame(); } else { showScreen('quiz-screen'); loadQuestion(); } }
+        function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+    </script>
+</body>
+</html>
