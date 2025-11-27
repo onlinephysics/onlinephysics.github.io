@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Physics - Moved</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;700;900&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            font-family: 'Montserrat', sans-serif;
+            background: #0f0c29; /* Fallback */
+            background: linear-gradient(to bottom, #24243e, #302b63, #0f0c29);
+            color: white;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* The canvas for 3D animation */
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        /* The Content Overlay */
+        .content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            text-align: center;
+            width: 90%;
+            max-width: 800px;
+            
+            /* Glassmorphism Effect */
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            
+            animation: fadeIn 1.5s ease-out;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 300;
+            margin-bottom: 1rem;
+            color: #ccc;
+        }
+
+        h2 {
+            font-size: 3rem;
+            font-weight: 900;
+            line-height: 1.2;
+            margin-bottom: 2rem;
+            background: linear-gradient(to right, #00c6ff, #0072ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0px 0px 20px rgba(0, 198, 255, 0.3);
+        }
+
+        .old-url {
+            text-decoration: line-through;
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+
+        .new-url {
+            color: #4facfe;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .btn {
+            display: inline-block;
+            margin-top: 2rem;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-decoration: none;
+            color: white;
+            background: linear-gradient(45deg, #ff0099, #493240);
+            border-radius: 50px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 0 15px #ff009980;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px #ff0099;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -40%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            h2 { font-size: 2rem; }
+            .content { padding: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 3D Background Container -->
+    <div id="canvas-container"></div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <h1>We have moved!</h1>
+        <p style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 10px;">
+            Now you don't have to type <span class="old-url">onlinephysics.github.io</span>
+        </p>
+        
+        <h2>
+            Type <span style="color:white">onlinephysics.xyz</span><br>
+            to go in Online Physics
+        </h2>
+
+        <a href="https://onlinephysics.xyz" class="btn">Go There Now</a>
+    </div>
+
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <script>
+        // 1. Scene Setup
+        const scene = new THREE.Scene();
+        // Fog creates depth fading
+        scene.fog = new THREE.FogExp2(0x0f0c29, 0.002);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 50;
+
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        // 2. Create Floating Shapes (Physics Particles)
+        const geometry = new THREE.IcosahedronGeometry(1, 0);
+        const particles = [];
+        
+        // Create 200 random floating shapes
+        for (let i = 0; i < 200; i++) {
+            // Material: Wireframe for a "Tech/Physics" look
+            const material = new THREE.MeshPhongMaterial({
+                color: Math.random() * 0xffffff,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.7
+            });
+
+            const mesh = new THREE.Mesh(geometry, material);
+
+            // Random positioning
+            mesh.position.x = (Math.random() - 0.5) * 150;
+            mesh.position.y = (Math.random() - 0.5) * 150;
+            mesh.position.z = (Math.random() - 0.5) * 150;
+
+            // Random Rotation speed
+            mesh.rotationSpeed = {
+                x: Math.random() * 0.02,
+                y: Math.random() * 0.02
+            };
+
+            scene.add(mesh);
+            particles.push(mesh);
+        }
+
+        // 3. Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0xff0099, 1);
+        pointLight.position.set(25, 50, 25);
+        scene.add(pointLight);
+
+        const pointLight2 = new THREE.PointLight(0x00c6ff, 1);
+        pointLight2.position.set(-25, -50, 25);
+        scene.add(pointLight2);
+
+        // 4. Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Rotate the entire scene slightly
+            scene.rotation.y += 0.002;
+
+            // Rotate individual particles
+            particles.forEach(p => {
+                p.rotation.x += p.rotationSpeed.x;
+                p.rotation.y += p.rotationSpeed.y;
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // 5. Handle Window Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // Add mouse interaction
+        document.addEventListener('mousemove', (event) => {
+            const mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+            const mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            // Subtle camera movement based on mouse
+            camera.position.x += (mouseX * 10 - camera.position.x) * 0.05;
+            camera.position.y += (mouseY * 10 - camera.position.y) * 0.05;
+            camera.lookAt(scene.position);
+        });
+    </script>
+</body>
+</html>
